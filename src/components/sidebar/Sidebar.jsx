@@ -25,10 +25,11 @@ const menu = [
   { label: "Profile", icon: IconUser },
 ];
 
-export default function Sidebar({ active, onSelect }) {
+export default function Sidebar({ active, onSelect, mobileOpen, setMobileOpen, collapsed, setCollapsed }) {
+
   
-const [collapsed, setCollapsed] = useState(false);
-const [mobileOpen, setMobileOpen] = useState(false);
+/* const [collapsed, setCollapsed] = useState(false);
+const [mobileOpen, setMobileOpen] = useState(false); */
 
 const toggleSidebar = () => {
   if (window.innerWidth <= 768) {
@@ -46,6 +47,7 @@ const toggleSidebar = () => {
     />
   )}
   <Box
+    
     className={`${classes.sidebar} 
       ${collapsed ? classes.collapsed : ''} 
       ${mobileOpen ? classes.mobileOpen : ''}`}

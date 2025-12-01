@@ -262,7 +262,7 @@ export default function Dashboard() {
             }}
           >
             <Group justify="space-between" align="center">
-              <Group gap="md">
+              <Group gap="2rem" wrap='true' > 
                 <Box
                   style={{
                     backgroundColor: '#000000ff',
@@ -304,6 +304,7 @@ export default function Dashboard() {
                   <Text size="xs" c="dimmed" fw={500}>Capital</Text>
                   <Text size="md" fw={600}>0</Text>
                 </Box>
+                <Button bg={"#000"} radius={"0.5rem"} > Exit all</Button>
               </Group>
 
  <Group gap="sm">

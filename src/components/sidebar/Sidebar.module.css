@@ -3,7 +3,6 @@
   display: none;
 }
 
-
 .sidebar {
   width: 250px;
   background: #ffffff;
@@ -13,12 +12,24 @@
   border: 1.5px solid #e7e7e7;
   padding-top: 18px;
   padding-right: 10px;
-  transition: width 0.25s ease;    /* Smooth collapse animation */
-  overflow: hidden;                /* Prevent content overflow */
+  transition: width 0.25s ease;
+  overflow: hidden;
+}
+
+/* ⬇️ FIXED SIDEBAR ONLY ON PC & TABLET */
+@media (min-width: 769px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    overflow-y: auto; /* sidebar scrolls independently if long */
+    z-index: 1000;
+  }
 }
 
 .sidebar.collapsed {
-  width: 80px;                     /* Collapsed sidebar width */
+  width: 80px;
   padding-right: 4px;
 }
 
@@ -64,58 +75,59 @@
   color: #fff !important;
 }
 
-/* When collapsed: hide menu text smoothly */
+/* Hide menu text on collapse */
 .sidebar.collapsed .menuItem .mantine-Text-root {
   opacity: 0;
   width: 0;
   pointer-events: none;
 }
 
-/* When collapsed: center icon */
+/* Center icon when collapsed */
 .sidebar.collapsed .menuItem {
   justify-content: center;
   padding: 10px 0;
 }
 
-/* Header spacing & hamburger alignment */
+/* Header */
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 14px 16px 14px;
 }
-/* Mobile hidden default */
+
+/* 🔥 MOBILE BEHAVIOR — Drawer mode */
 @media (max-width: 768px) {
   .sidebar {
     position: fixed;
-    left: -250px; /* hide */
+    left: -250px;
     top: 0;
     height: 100vh;
     z-index: 2000;
     transition: left 0.3s ease;
-    width: 250px !important; /* always expanded in mobile */
+    width: 250px !important; /* always expanded on mobile */
     padding: 18px 10px;
   }
 
   .sidebar.mobileOpen {
-    left: 0; /* slide into view */
+    left: 0;
   }
 
-  /* Disable collapsed behavior for mobile */
+  /* Disable collapse in mobile */
   .collapsed {
     width: 250px !important;
   }
 
-  /* Overlay behind sidebar */
+  /* Overlay when sidebar open */
   .overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.45);
+    background: rgba(0, 0, 0, 0.45);
     z-index: 1500;
   }
 }
 
-
+/* Show mobile hamburger */
 @media (max-width: 768px) {
   .mobile-hamburger {
     display: flex !important;
@@ -128,4 +140,3 @@
     display: none !important;
   }
 }
-
