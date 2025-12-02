@@ -1,69 +1,84 @@
-import { useState } from "react";
+import { useNavigate, Outlet, useLocation } from "react-router-dom";
 import Sidebar from "../components/sidebar/Sidebar.jsx";
+import { useState } from "react";
 import { ActionIcon } from "@mantine/core";
 import { IconMenu2 } from "@tabler/icons-react";
 
-import Dashboard from "../components/Dashboard";
-import Stratergies from "../components/Stratergies";
-import Subscriptions from "../components/Subscriptions";
-import Reports from "../components/Reports";
-import Createstratergy from "../components/Createstratergy";
-import Tradersignal from "../components/Tradersignal";
-import Profile from "../components/Profile";
-
-const pages = [
-  Dashboard,
-  Stratergies,
-  Subscriptions,
-  Reports,
-  Createstratergy,
-  Tradersignal,
-  Profile,
-];
-
 export default function Home() {
-  const [active, setActive] = useState(0);
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
-  const Page = pages[active];
+
+  {/* <ActionIcon 
+    onClick={() => setMobileOpen(true)}
+     className="mobile-hamburger" 
+     style={{ 
+     position: "fixed", 
+     top: 14, left: 14,
+      zIndex: 3000,
+       background: "#fff",
+        border: "1px solid #ddd" }} >
+         <IconMenu2 size={22} color="black" /> 
+         </ActionIcon> */}
+
+  // pages order for sidebar index
+  const routeMap = [
+    "/",
+    "/trader-signal",
+    "/strategies",
+    "/subscriptions",
+    "/reports",
+    "/create-strategy",
+    "/plans",
+   "/tutorials"
+  ];
+
+  // detect active index from current URL
+  const active = routeMap.indexOf(location.pathname);
+
+  const handleSelect = (index) => {
+    navigate(routeMap[index]);
+  };
 
   return (
     <div style={{ display: "flex" }}>
-      
       <Sidebar
         active={active}
-        onSelect={setActive}
+        onSelect={handleSelect}
         mobileOpen={mobileOpen}
         setMobileOpen={setMobileOpen}
         collapsed={collapsed}
         setCollapsed={setCollapsed}
       />
- 
-{/*       <ActionIcon
-        onClick={() => setMobileOpen(true)}
-        className="mobile-hamburger"
-        style={{
-          position: "fixed",
-          top: 14,
-          left: 14,
-          zIndex: 3000,
-          background: "#fff",
-          border: "1px solid #ddd"
-        }}
-      >
-        <IconMenu2 size={22} color="black" />
-      </ActionIcon>  */}
+ <ActionIcon
+  onClick={() => setMobileOpen(true)}
+  className="mobile-hamburger"
+  hiddenFrom="sm"
+  style={{
+    position: "fixed",
+    top: 14,
+    left: 14,
+    zIndex: 3000,
+    background: "#fff",
+    border: "1px solid #ddd",
+  }}
+>
+  <IconMenu2 size={22} color="black" />
+</ActionIcon>
 
-      {/* PAGE CONTENT */}
       <div
         style={{
           flex: 1,
           padding: "20px",
           transition: "margin-left 0.25s ease",
-          marginLeft: window.innerWidth > 768 ? (collapsed ? "80px" : "250px") : "0px"
+          marginLeft:
+            window.innerWidth > 768 ? (collapsed ? "80px" : "250px") : "0px",
         }}
       >
-        <Page />
+        {/* PAGE CONTENT VIA ROUTES */}
+        <Outlet />
       </div>
     </div>
   );

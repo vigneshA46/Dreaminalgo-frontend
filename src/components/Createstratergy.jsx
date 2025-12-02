@@ -64,9 +64,7 @@ const Createstratergy = () => {
         <Box style={{ backgroundColor: '#ffffffff', minHeight: '100vh', padding: '20px' }}>
         <Stack size="xl" style={{ maxWidth: '1400px' }}>
           {/* Strategy Builder Header */}
-          <Text size="xl" fw={700} mb="xl" ta="center" c="#212529">
-            Strategy Builder
-          </Text>
+          <Text size='1.5rem' fw={"600"} pb={"1rem"} >Stratergy Builder</Text>
 
           {/* Top Section - Pre Build, Create, Custom */}
           <Grid gutter="lg" mb="xl">

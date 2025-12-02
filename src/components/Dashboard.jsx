@@ -16,7 +16,11 @@ import {
   Pagination,
   Container,
   Select,
-  ActionIcon
+  ActionIcon,
+  Menu,
+  Divider,
+  UnstyledButton,
+  Avatar
 } from '@mantine/core';
 import { 
   IconCurrencyDollar, 
@@ -27,7 +31,17 @@ import {
   IconSettings,
   IconPlus,
   IconCurrencyRupee,
-  IconFilter
+  IconFilter,
+  IconBell,
+  IconUser,
+  IconInfoCircle,
+  IconLogout,
+  IconReceipt,
+  IconWallet,
+  IconKey,
+  IconBook,
+  IconBuildingBank,
+  IconHelpCircle
 } from '@tabler/icons-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 
@@ -165,6 +179,110 @@ export default function Dashboard() {
             Track your algorithmic trading performance
           </Text>
         </Box>
+<Flex gap="2rem" align="center" justify="center">
+  
+  {/* 🔔 Notification icon */}
+  <Menu width={310} position="bottom-end" shadow="md">
+    <Menu.Target>
+      <UnstyledButton>
+        <IconBell size={22} />
+      </UnstyledButton>
+    </Menu.Target>
+
+    <Menu.Dropdown>
+      <Text fw={600} p="sm">Notifications</Text>
+      <Divider />
+
+      <Box p="sm">
+        <Text size="sm" fw={500}>Order Completed</Text>
+        <Text size="xs" c="dimmed">02 Dec 2025 • 11:45 AM</Text>
+      </Box>
+      <Divider />
+
+      <Box p="sm">
+        <Text size="sm" fw={500}>Subscription Expiring Soon</Text>
+        <Text size="xs" c="dimmed">01 Dec 2025 • 3:12 PM</Text>
+      </Box>
+
+      <Divider />
+      <Menu.Item>View all</Menu.Item>
+    </Menu.Dropdown>
+  </Menu>
+
+  {/* 👤 Profile icon */}
+  <Menu width={260} position="bottom-end" shadow="md">
+    <Menu.Target>
+      <UnstyledButton>
+        <Box
+          style={{
+            border: "2px solid #000",
+            borderRadius: "50%",
+            width: "2rem",
+            height: "2rem",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <IconUser size={20} />
+        </Box>
+      </UnstyledButton>
+    </Menu.Target>
+
+ <Menu.Dropdown>
+  {/* User Section */}
+  <Group wrap="nowrap" p="md">
+    <Avatar radius="xl" color="black">V</Avatar>
+    <div>
+      <Text fw={600}>Vignesh Arumugam</Text>
+      <Text size="sm" c="dimmed">vignesh2024a@gmail.com</Text>
+    </div>
+  </Group>
+
+  <Divider />
+
+  {/* About */}
+  <Menu.Item leftSection={<IconInfoCircle size={18} />}>
+    About
+  </Menu.Item>
+
+  {/* New Sections from Screenshot */}
+  <Menu.Item leftSection={<IconBook size={18} />}>
+    Broker & Exchanges
+  </Menu.Item>
+
+  <Menu.Item leftSection={<IconWallet size={18} />}>
+    Wallet
+  </Menu.Item>
+
+    <Menu.Item leftSection={<IconBuildingBank size={18} />}>
+    Demat Account
+  </Menu.Item>
+
+  <Menu.Item leftSection={<IconReceipt size={18} />}>
+    Invoices
+  </Menu.Item>
+
+    <Menu.Item leftSection={<IconHelpCircle size={18} />}>
+    Support & Policy
+  </Menu.Item>
+
+  <Menu.Item leftSection={<IconKey size={18} />}>
+    Change Password
+  </Menu.Item>
+
+  <Divider />
+
+  {/* Logout should stay last */}
+  <Menu.Item color="red" leftSection={<IconLogout size={18} />}>
+    Log Out
+  </Menu.Item>
+</Menu.Dropdown>
+
+  </Menu>
+
+</Flex>
+
       </Flex>
       <Grid gutter="lg" mb="xl">
   {[
