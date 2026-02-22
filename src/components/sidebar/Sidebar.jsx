@@ -10,6 +10,7 @@ import {
   IconMenu2,
   IconCoinRupee,
   IconBook,
+  IconLogout,
 } from "@tabler/icons-react";
 import classes from "./Sidebar.module.css";
 import logowhite from "../../assets/logowhite.png"
@@ -26,7 +27,7 @@ const menu = [
   { label: "Create Strategy", icon: IconPlus },
   { label: "Plans & Pricing", icon: IconCoinRupee},
   { label: "Tutorials", icon: IconBook},
-
+  { label: "Logout", icon: IconLogout}
 ];
 
 export default function Sidebar({ active, onSelect, mobileOpen, setMobileOpen, collapsed, setCollapsed }) {
@@ -51,7 +52,6 @@ const toggleSidebar = () => {
     />
   )}
   <Box
-    
     className={`${classes.sidebar} 
       ${collapsed ? classes.collapsed : ''} 
       ${mobileOpen ? classes.mobileOpen : ''}`}
