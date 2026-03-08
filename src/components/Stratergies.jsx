@@ -1,32 +1,30 @@
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { MantineProvider, Box, Container, Group, Button, TextInput, Radio, Text, Card, Badge, Anchor, Grid } from '@mantine/core';
 import { IconSearch, IconCurrencyRupee } from '@tabler/icons-react';
+import { apiRequest } from '../utils/api';
 
 
 const Stratergies = () => {
     const [activeTab, setActiveTab] = useState('marketplace');
   const [selectedFee, setSelectedFee] = useState('');
   const [selectedSort, setSelectedSort] = useState('');
+  const [strategies , setstrategies] = useState([])
+  useEffect(()=>{
+    const fetchStratergy = async ()=>{
+      try {
+        const strategies = await apiRequest("GET","/api/stratergy",{})
+        console.log(strategies)
+        await setstrategies(strategies)
+      }
+      catch(err){
+        console.log(err)
+      }
+    }
+    fetchStratergy()
+  },[])
 
-  const strategies = [
-    {
-      id: 7411153,
-      title: 'Nifty 15 Mins Ultra Scalping martingale',
-      description: 'Nifty Order Type : MIS Entry Time : 9:30 AM onwards Timeframe : 15 Min Option Contracts : ',
-      subscribed: true,
-      capital: 40000,
-      dd: '85.15%',
-    },
-    {
-      id: 7469009,
-      title: 'Nifty RSI option buying strategy',
-      description: 'Explanation video youtube link - https://youtu.be/Tv9OuN0Vul8?si=juY5c3aCpFU4P034------------ Nift',
-      subscribed: true,
-      capital: 0,
-      dd: '23%',
-    },
-  ];
+  
   return (
      <Box style={{ backgroundColor: '#ffffffff', minHeight: '100vh' }}>
         <Container size="xl" style={{ maxWidth: '1400px' }}>
@@ -200,7 +198,7 @@ const Stratergies = () => {
                   <Group justify="space-between" align="flex-start" mb="md">
                     <Box style={{ flex: 1 }}>
                       <Text size="lg" fw={600} c="#212529" mb={8}>
-                        {strategy.title} - ID: {strategy.id}
+                        {strategy.name}
                       </Text>
                       <Text size="sm" c="#495057" mb={8}>
                         {strategy.description}
@@ -238,18 +236,18 @@ const Stratergies = () => {
                         <Group gap={4} align="center">
                           <IconCurrencyRupee size={18} color="#dc3545" stroke={2} />
                           <Text size="lg" fw={700} c="#dc3545">
-                            {strategy.capital}
+                            {strategy.capital_required}
                           </Text>
                         </Group>
                       </Box>
-                      <Box>
+                     {/*  <Box>
                         <Text size="xs" c="#868e96" mb={4}>
                           DD
                         </Text>
                         <Text size="lg" fw={700} c="#1864ab">
                           {strategy.dd}
                         </Text>
-                      </Box>
+                      </Box> */}
                     </Group>
 
                     <Button

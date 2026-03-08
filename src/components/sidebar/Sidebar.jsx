@@ -27,7 +27,6 @@ const menu = [
   { label: "Create Strategy", icon: IconPlus },
   { label: "Plans & Pricing", icon: IconCoinRupee},
   { label: "Tutorials", icon: IconBook},
-  { label: "Logout", icon: IconLogout}
 ];
 
 export default function Sidebar({ active, onSelect, mobileOpen, setMobileOpen, collapsed, setCollapsed }) {

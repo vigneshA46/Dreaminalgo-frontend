@@ -4,7 +4,7 @@ const localurl = `http://localhost:5000`
 const cloudurl = `https://dreaminalgo-backend-production.up.railway.app`
 
 const api = axios.create({
-  baseURL: "https://dreaminalgo-backend-production.up.railway.app",
+  baseURL: `${cloudurl}`,
   withCredentials: true, // 🍪 cookies auto sent
   headers: {
     'Content-Type': 'application/json',
@@ -17,7 +17,7 @@ const api = axios.create({
 
 const refreshAccessToken = async () => {
   try {
-    await api.post('/api/admin/auth/refresh');
+    await api.post('/api/auth/refresh');
     return true;
   } catch (err) {
     return false;

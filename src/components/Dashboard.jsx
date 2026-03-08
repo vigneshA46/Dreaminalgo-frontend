@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useMarketWebSocket } from "../hooks/useMarketWebSocket";
 import { 
   Box, 
   Text, 
@@ -44,6 +45,8 @@ import {
   IconHelpCircle
 } from '@tabler/icons-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
+import { useUser } from '../context/UserContext';
+import { useNavigate } from 'react-router-dom';
 
 // Static data for portfolio performance
 const portfolioData = [
@@ -167,6 +170,22 @@ function RiskCard({ title, description, level, color }) {
 
 export default function Dashboard() {
    const [active, setActive] = useState("live"); 
+   const {logout , fetchUser} = useUser();
+     const ltpData = useMarketWebSocket();
+     const navigation = useNavigate()
+
+     const indices = [
+    { name: "NIFTY", label: "NIFTY50" },
+    { name: "BANKNIFTY", label: "BANKNIFTY" },
+    { name: "FINNIFTY", label: "FINNIFTY" },
+    { name: "SENSEX", label: "SENSEX" },
+    { name: "MIDCAP", label: "MIDCAP" },
+  ];
+
+
+   useEffect(()=>{
+    fetchUser()
+   },[])
   return (
     <Box>
       {/* Header */}
@@ -247,7 +266,7 @@ export default function Dashboard() {
   </Menu.Item>
 
   {/* New Sections from Screenshot */}
-  <Menu.Item leftSection={<IconBook size={18} />}>
+  <Menu.Item onClick={()=>navigation('/broker')} leftSection={<IconBook size={18} />}>
     Broker & Exchanges
   </Menu.Item>
 
@@ -274,7 +293,7 @@ export default function Dashboard() {
   <Divider />
 
   {/* Logout should stay last */}
-  <Menu.Item color="red" leftSection={<IconLogout size={18} />}>
+  <Menu.Item onClick={()=>{logout()}} color="red" leftSection={<IconLogout size={18} />}>
     Log Out
   </Menu.Item>
 </Menu.Dropdown>
@@ -285,38 +304,31 @@ export default function Dashboard() {
 
       </Flex>
       <Grid gutter="lg" mb="xl">
-  {[
-    { name: "NIFTY50", price: 22333.2, change: "-12.34", color: "red" },
-    { name: "BANKNIFTY", price: 48754.6, change: "+44", color: "red" },
-    { name: "FINNIFTY", price: 48754.6, change: "+44", color: "green" },
-    { name: "SENSEX", price: 19640.5, change: "+44", color: "green" },
-    { name: "MIDCAP", price: 73120.8, change: "+44", color: "red" },
-  ].map((item) => (
-    <Grid.Col span="auto" key={item.name} /* xs={12} sm={6} md={4} lg={3} xl={2} */>
-      <Stack
-        style={{
-          border: "1.5px solid #d6d6d6ff",
-          borderLeft: `3px solid ${item.color}`,
-          padding: "0.5rem",
-          borderRadius: "0.3rem",
-          background: "#fff",
-          minWidth: "140px",
-        }}
-      >
-        <Text fw={600}>{item.name}</Text>
-        <Flex gap="0.4rem">
-          <Text size="0.8rem" c={item.color} fw={600}>
-            {item.price}
-          </Text>
-          <Text size="0.8rem" fw={600}>
-            {item.change}
-          </Text>
-        </Flex>
-      </Stack>
-    </Grid.Col>
-  ))}
-</Grid>
+      {indices.map((item) => (
+        <Grid.Col span="auto" key={item.name}>
+          <Stack
+            style={{
+              border: "1.5px solid #d6d6d6ff",
+              borderLeft: "3px solid #2563eb",
+              padding: "0.5rem",
+              borderRadius: "0.3rem",
+              background: "#fff",
+              minWidth: "140px",
+            }}
+          >
+            <Text fw={600}>{item.label}</Text>
 
+            <Flex gap="0.4rem">
+              <Text size="0.9rem" fw={600}>
+                {ltpData[item.name] !== null
+                  ? ltpData[item.name].toFixed(2)
+                  : "—"}
+              </Text>
+            </Flex>
+          </Stack>
+        </Grid.Col>
+      ))}
+    </Grid>
 <Grid gutter="lg" mb="xl">
   <Grid.Col  span={3}>
     <StatCard
