@@ -9,7 +9,8 @@ import {
   Switch,
   Button,
   ActionIcon,
-  TextInput
+  TextInput,
+  SegmentedControl
 } from "@mantine/core";
 
 import {
@@ -27,7 +28,7 @@ export default function Leg({
   expiry = "",
   number=1
 }) {
-  const [marketType] = useState(segment);
+  const [marketType  ,setMarketType] = useState(segment);
 
   const [targetProfit, setTargetProfit] = useState(false);
   const [stopLoss, setStopLoss] = useState(false);
@@ -46,10 +47,24 @@ export default function Leg({
     <Card shadow="xs" radius="md" p="lg" withBorder>
 
       {/* Header */}
-      <Group justify="left" mb="md">
-        <Text fw={600}>#{number}</Text>
-        <Text c={"#000"} size="1rem" fw={"500"} >{marketType.toUpperCase()}</Text>
-      </Group>
+      <Grid>
+        {/* Market Type */}
+        <Grid.Col span={{ base: 12, md: 2 }}>
+          <Text fw={500} size="0.9rem" mb="0.5rem">
+            Market Type
+          </Text>
+
+          <SegmentedControl
+            fullWidth
+            value={marketType}
+            onChange={setMarketType}
+            data={[
+              { label: "Futures", value: "futures" },
+              { label: "Options", value: "options" }
+            ]}
+          />
+        </Grid.Col>
+      </Grid>
 
       {/* Main Inputs */}
       <Grid align="flex-end">

@@ -29,7 +29,6 @@ export default function Createleg({
   strike_value= ""
 }) {
   const [marketType] = useState(segment);
-
   const [targetProfit, setTargetProfit] = useState(false);
   const [stopLoss, setStopLoss] = useState(false);
   const [trailSL, setTrailSL] = useState(false);
@@ -38,7 +37,7 @@ export default function Createleg({
   const [momentum, setMomentum] = useState(false);
   const [rangeBreakout, setRangeBreakout] = useState(false);
   const [strikeType, setStrikeType] = useState(strike_type || "atm_spot");
-const [strikeValue, setStrikeValue] = useState(strike_value || "ATM");
+  const [strikeValue, setStrikeValue] = useState(strike_value || "ATM");
 
   const expiryOptions =
     marketType === "futures"

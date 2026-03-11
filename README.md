@@ -401,3 +401,107 @@ If you are developing a production application, we recommend using TypeScript wi
                 </Grid.Col> 
 
       </Grid>
+
+
+
+
+
+
+////leg builder code while reminving the builder component
+
+        <Card shadow="sm" p="lg" my="lg">
+      <Group justify="space-between" mb="md">
+        <Title order={4}>Leg Builder</Title>
+      </Group>
+
+      <Grid>
+        {/* Market Type */}
+        <Grid.Col span={{ base: 12, md: 2 }}>
+          <Text fw={500} size="0.9rem" mb="0.5rem">
+            Market Type
+          </Text>
+
+          <SegmentedControl
+            fullWidth
+            value={marketType}
+            onChange={setMarketType}
+            data={[
+              { label: "Futures", value: "futures" },
+              { label: "Options", value: "options" }
+            ]}
+          />
+        </Grid.Col>
+
+        {/* Lot */}
+        <Grid.Col span={{ base: 12, md: 1 }}>
+          <NumberInput
+  label="Total Lot"
+  value={formData.lots}
+  onChange={(val) => handleChange("lots", val)}
+/>
+        </Grid.Col>
+
+        {/* Position (Only for Options) */}
+    
+          <Grid.Col span={{ base: 12, md: 2 }}>
+            <Text fw={500} size="0.9rem" mb="0.5rem">
+              Position
+            </Text>
+
+            <SegmentedControl
+  fullWidth
+  value={formData.position}
+  onChange={(val) => handleChange("position", val)}
+  data={[
+    { label: "Buy", value: "Buy" },
+    { label: "Sell", value: "Sell" }
+  ]}
+/>
+          </Grid.Col>
+        
+
+        {/* Option Type (Only for Options) */}
+        {marketType === "options" && (
+          <Grid.Col span={{ base: 12, md: 2 }}>
+            <Text fw={500} size="0.9rem" mb="0.5rem">
+              Option Type
+            </Text>
+
+            <SegmentedControl
+  fullWidth
+  value={formData.option_type}
+  onChange={(val) => handleChange("option_type", val)}
+  data={[
+    { label: "Call", value: "Call" },
+    { label: "Put", value: "Put" }
+  ]}
+/>
+          </Grid.Col>
+        )}
+
+        {/* Expiry */}
+        <Grid.Col span={{ base: 12, md: 2 }}>
+          <Select
+            label="Expiry"
+            data={expiryOptions}
+            onSelect={(value)=>handleChange("expiry",value)}
+          />
+        </Grid.Col>
+
+        {/* Strike */}
+        {marketType === "options" && (
+        <Grid.Col span={{ base: 12, md: 2 }}>
+          <TextInput
+  label="Strike Price"
+  type="number"
+  value={formData.strike_price}
+  onChange={(e) => handleChange("strike_price", e.target.value)}
+/>
+        </Grid.Col>
+        )}
+      </Grid>
+
+      <Group justify="center" mt="md">
+        <Button bg="#000" onClick={addLeg}>Add Leg</Button>
+      </Group>
+    </Card>
