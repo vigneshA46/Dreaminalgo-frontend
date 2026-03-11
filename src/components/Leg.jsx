@@ -40,15 +40,15 @@ export default function Leg({
   const expiryOptions =
     marketType === "futures"
       ? ["Current Month", "Next Month"]
-      : ["Weekly", "Monthly"];
+  : ["This Week", "Next Week"];
 
   return (
     <Card shadow="xs" radius="md" p="lg" withBorder>
 
       {/* Header */}
-      <Group justify="space-between" mb="md">
+      <Group justify="left" mb="md">
         <Text fw={600}>#{number}</Text>
-
+        <Text c={"#000"} size="1rem" fw={"500"} >{marketType.toUpperCase()}</Text>
       </Group>
 
       {/* Main Inputs */}
@@ -58,7 +58,7 @@ export default function Leg({
           <NumberInput label="Lots" defaultValue={lots} min={1} />
         </Grid.Col>
 
-        {marketType === "options" && (
+        
           <Grid.Col span={{ base: 12, md: 2 }}>
             <Select
               label="Position"
@@ -66,7 +66,7 @@ export default function Leg({
               defaultValue={position}
             />
           </Grid.Col>
-        )}
+
 
         {marketType === "options" && (
           <Grid.Col span={{ base: 12, md: 2 }}>
@@ -82,10 +82,11 @@ export default function Leg({
           <Select
             label="Expiry"
             data={expiryOptions}
-            defaultValue={expiry || expiryOptions[0]}
+            defaultValue={expiry}
           />
         </Grid.Col>
 
+         {marketType === "options" && (
         <Grid.Col span={{ base: 12, md: 3 }}>
           <Group align="center" gap={4}>
             <Text size="sm">Strike Price</Text>
@@ -93,10 +94,10 @@ export default function Leg({
           </Group>
 
           <Group grow>
-            <TextInput type="number" value={strike_price} />
+            <TextInput type="number" defaultValue={strike_price} />
           </Group>
         </Grid.Col>
-
+  )}
       </Grid>
 
       {/* Profit / SL */}

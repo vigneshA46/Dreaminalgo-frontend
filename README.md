@@ -17,3 +17,387 @@ If you are developing a production application, we recommend using TypeScript wi
 
 
 ₹
+
+
+
+/// trader signal
+
+<Title order={4} mb="sm">
+        Overall Signal Settings
+      </Title>
+          <Grid>
+
+
+        {/* ENTRY TYPE */}
+
+
+        <Grid.Col span={{ base: 12, md: 4 }}>
+      <Card shadow="sm" p="lg">
+
+        <Group justify="space-between">
+          <span>Entry Type</span>
+        </Group>
+
+        <Select
+          mt="md"
+          data={["Time", "Current Price", "Limit Price"]}
+          value={entryType}
+          onChange={setEntryType}
+        />
+
+        {/* TIME INPUT */}
+        {entryType === "Time" && (
+          <TimeInput
+            mt="md"
+            label="Entry Time"
+          />
+        )}
+
+        {/* LIMIT PRICE INPUT */}
+        {entryType === "Limit Price" && (
+          <TextInput
+            mt="md"
+            label="Value"
+            placeholder="Enter Limit Price"
+            type="number"
+          />
+        )}
+
+        {/* CURRENT PRICE -> NOTHING */}
+      </Card>
+    </Grid.Col>
+
+        {/* SL TYPE */}
+
+        <Grid.Col span={{ base: 12, md: 4 }}>
+      <Card shadow="sm" p="lg">
+
+        <Group justify="space-between">
+          <Text>SL Type</Text>
+          <Switch
+            checked={slEnabled}
+            onChange={(e) => setSlEnabled(e.currentTarget.checked)}
+          />
+        </Group>
+
+        {slEnabled && (
+          <>
+            <Select
+              mt="md"
+              value={slType}
+              onChange={setSlType}
+              data={[
+                { label: "Time", value: "time" },
+                { label: "Percentage", value: "percentage" },
+                { label: "Limit Price", value: "limit" },
+                { label: "MTM", value: "mtm" }
+              ]}
+            />
+
+            {/* TIME */}
+            {slType === "time" && (
+              <TimeInput
+                mt="md"
+                label="Exit Time"
+              />
+            )}
+
+            {/* LIMIT PRICE */}
+            {slType === "limit" && (
+              <TextInput
+                mt="md"
+                label="Limit Price"
+                type="number"
+                placeholder="Enter price"
+              />
+            )}
+
+            {/* PERCENTAGE */}
+            {slType === "percentage" && (
+              <TextInput
+                mt="md"
+                label="Percentage"
+                type="number"
+                rightSection="%"
+                placeholder="Enter %"
+              />
+            )}
+
+            {/* MTM */}
+            {slType === "mtm" && (
+              <TextInput
+                mt="md"
+                label="MTM Value"
+                type="number"
+                placeholder="Enter MTM"
+              />
+            )}
+
+            <Group mt="1rem" justify="space-between">
+  <Text>Re-entry after SL</Text>
+  <Switch
+    checked={reentrySL}
+    onChange={(e) => setReentrySL(e.currentTarget.checked)}
+  />
+</Group>
+
+{reentrySL && (
+  <NumberInput
+    mt="sm"
+    label="Re-entry Count"
+    min={1}
+    value={reentrySLCount}
+    onChange={setReentrySLCount}
+  />
+)}
+          </>
+        )}
+
+      </Card>
+    </Grid.Col>
+        {/* TARGET TYPE */}
+        <Grid.Col span={{ base: 12, md: 4 }}>
+      <Card shadow="sm" p="lg">
+
+        <Group justify="space-between">
+          <Text>Target Type</Text>
+        </Group>
+
+        <Select
+          mt="md"
+          value={targetType}
+          onChange={setTargetType}
+          data={[
+            { label: "Time", value: "time" },
+            { label: "MTM", value: "mtm" },
+            { label: "Limit Price", value: "limit" },
+            {label:"Percentage",value:"Percentage"}
+          ]}
+        />
+
+        {/* TIME */}
+        {targetType === "time" && (
+          <TimeInput
+            mt="md"
+            label="Target Time"
+          />
+        )}
+
+        {/* MTM */}
+        {targetType === "mtm" && (
+          <NumberInput
+            mt="md"
+            label="MTM Target"
+            placeholder="Enter value"
+          />
+        )}
+
+        {/* LIMIT PRICE */}
+        {targetType === "limit" && (
+          <NumberInput
+            mt="md"
+            label="Limit Price"
+            placeholder="Enter price"
+          />
+        )}
+        {targetType === "Percentage" && (
+          <NumberInput
+            mt="md"
+            label="Percentage"
+            placeholder="Enter percentage"
+          />
+        )}
+
+        {/* REENTRY */}
+        <Group mt="1rem" >
+          <Text>Re-entry after Target</Text>
+          <Switch
+            checked={reentryTarget}
+            onChange={(e) => setReentryTarget(e.currentTarget.checked)}
+          />
+
+        </Group>
+
+        {reentryTarget && (
+          <NumberInput
+            mt="sm"
+            label="Re-entry Count"
+            min={1}
+            value={reentryTargetCount}
+            onChange={setReentryTargetCount}
+          />
+        )}
+
+      </Card>
+    </Grid.Col>
+
+        {/* TRAILING */}
+
+        <Grid.Col span={{ base: 12, md: 4 }}>
+          <Card shadow="sm" p="lg">
+
+            <Group justify="space-between">
+              <span>Trailing Options</span>
+              <Switch />
+            </Group>
+
+            <Select
+              mt="md"
+              data={["MTM", "Points","Percentage"]}
+              defaultValue="Lock"
+            />
+
+            <NumberInput
+              mt="sm"
+              label="TSL Active"
+              placeholder="0"
+            />
+
+            <NumberInput
+              mt="sm"
+              label="SL positition"
+              placeholder="1"
+            />
+            <NumberInput
+              mt="sm"
+              label="Trail Value"
+              placeholder="1"
+            />
+            
+            <Group mt={"1rem"} ><Text>Re-entry after TSL</Text> <Switch/>
+            <NumberInput label="Re-entry number" />
+            </Group>
+
+          </Card>
+        </Grid.Col>
+
+                  </Grid>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/// create stratergy
+
+
+  {/* OVERALL SETTINGS */}
+
+      <Title order={4} mb="sm">
+        Overall Strategy Settings
+      </Title>
+
+      <Grid mb="lg">
+
+        {/* STOP LOSS */}
+
+        <Grid.Col span={{ base: 12, md: 4 }}>
+          <Card shadow="sm" p="lg">
+
+            <Group justify="space-between">
+              <span>Overall Stop Loss</span>
+              <Switch />
+            </Group>
+
+            <Select
+              mt="md"
+              data={["MTM", "Points","Percentage"]}
+              defaultValue="Max Loss"
+            />
+
+            <NumberInput mt="sm" placeholder="0" />
+
+            <Group justify="space-between" mt="lg">
+              <span>Overall Re-entry on SL</span>
+              <Switch />
+            </Group>
+
+            <Select
+              mt="sm"
+              data={["RE ASAP", "Next Candle"]}
+              defaultValue="RE ASAP"
+            />
+
+          </Card>
+        </Grid.Col>
+
+        {/* TARGET */}
+
+        <Grid.Col span={{ base: 12, md: 4 }}>
+          <Card shadow="sm" p="lg">
+
+            <Group justify="space-between">
+              <span>Overall Target</span>
+              <Switch />
+            </Group>
+
+            <Select
+              mt="md"
+              data={["MTM", "Points","Percentage"]}
+              defaultValue="Max Profit"
+            />
+
+            <NumberInput mt="sm" placeholder="0" />
+
+            <Group justify="space-between" mt="lg">
+              <span>Overall Re-entry on Tgt</span>
+              <Switch />
+            </Group>
+
+            <Select
+              mt="sm"
+              data={["RE ASAP", "Next Candle"]}
+              defaultValue="RE ASAP"
+            />
+
+          </Card>
+        </Grid.Col>
+
+                {/* TRAILING */}
+        
+                <Grid.Col span={{ base: 12, md: 4 }}>
+                  <Card shadow="sm" p="lg">
+        
+                    <Group justify="space-between">
+                      <span>Trailing Options</span>
+                      <Switch />
+                    </Group>
+        
+                    <Select
+                      mt="md"
+                      data={["MTM", "Points","Percentage"]}
+                      defaultValue="Lock"
+                    />
+        
+                    <NumberInput
+                      mt="sm"
+                      label="TSL Active"
+                      placeholder="0"
+                    />
+        
+                    <NumberInput
+                      mt="sm"
+                      label="SL positition"
+                      placeholder="1"
+                    />
+                    <NumberInput
+                      mt="sm"
+                      label="Trail Value"
+                      placeholder="1"
+                    />
+                    <Group mt={"1rem"} ><Text>Re-entry after TSL</Text> <Switch/></Group>
+        
+                  </Card>
+                </Grid.Col> 
+
+      </Grid>

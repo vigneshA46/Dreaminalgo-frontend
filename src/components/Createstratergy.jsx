@@ -20,17 +20,39 @@ import { TimeInput } from "@mantine/dates";
 import { useState } from "react";
 import Leg from "./Leg";
 import { IconCopy, IconTrash } from "@tabler/icons-react";
+import Createleg from "./Createleg";
 
 export default function CreateStrategy() {
   const [mode, setMode] = useState("intraday");
     const [marketType, setMarketType] = useState("options");
+
+    const strikeTypeOptions = [
+  { label: "ATM Spot", value: "atm_spot" },
+  { label: "ATM Futures", value: "atm_futures" },
+  { label: "Premium Nearest", value: "premium_nearest" },
+  { label: "Premium <", value: "premium_lt" },
+  { label: "Premium >", value: "premium_gt" },
+  { label: "Delta Nearest", value: "delta_nearest" },
+  { label: "Delta <", value: "delta_lt" },
+  { label: "Delta >", value: "delta_gt" }
+];
+
+const atmValueOptions = [
+  { label: "ATM", value: "ATM" },
+  { label: "ITM 0", value: "ITM0" },
+  { label: "ITM 1", value: "ITM1" },
+  { label: "OTM 0", value: "OTM0" },
+  { label: "OTM 1", value: "OTM1" }
+];
   
     const [formData, setFormData] = useState({
     lots: 1,
     position: "Sell",
     option_type: "Call",
     strike_price: "",
-    expiry: "This Week"
+    expiry: "This Week",
+    strike_type: "",
+    strike_value: ""
   });
   
     
@@ -284,8 +306,7 @@ export default function CreateStrategy() {
 
       </Grid> 
 
-      {/* LEG BUILDER */}
-        {/* LEG BUILDER */}
+            {/* LEG BUILDER */}
                   <Card shadow="sm" p="lg" my="lg">
       <Group justify="space-between" mb="md">
         <Title order={4}>Leg Builder</Title>
@@ -319,7 +340,7 @@ export default function CreateStrategy() {
         </Grid.Col>
 
         {/* Position (Only for Options) */}
-        {marketType === "options" && (
+    
           <Grid.Col span={{ base: 12, md: 2 }}>
             <Text fw={500} size="0.9rem" mb="0.5rem">
               Position
@@ -335,7 +356,7 @@ export default function CreateStrategy() {
   ]}
 />
           </Grid.Col>
-        )}
+        
 
         {/* Option Type (Only for Options) */}
         {marketType === "options" && (
@@ -361,19 +382,48 @@ export default function CreateStrategy() {
           <Select
             label="Expiry"
             data={expiryOptions}
-            defaultValue={expiryOptions[0]}
+            onSelect={(value)=>handleChange("expiry",value)}
           />
         </Grid.Col>
 
-        {/* Strike */}
-        <Grid.Col span={{ base: 12, md: 2 }}>
-          <TextInput
-  label="Strike Price"
-  type="number"
-  value={formData.strike_price}
-  onChange={(e) => handleChange("strike_price", e.target.value)}
-/>
-        </Grid.Col>
+        {/* Strike Type */}
+{marketType === "options" && (
+  <Grid.Col span={{ base: 12, md: 2 }}>
+    <Select
+      label="Strike Type"
+      data={strikeTypeOptions}
+      value={formData.strike_type}
+      onChange={(val) => handleChange("strike_type", val)}
+    />
+  </Grid.Col>
+)}
+
+{/* Strike Value */}
+{marketType === "options" && (
+  <Grid.Col span={{ base: 12, md: 2 }}>
+
+    {(formData.strike_type === "atm_spot" ||
+      formData.strike_type === "atm_futures") ? (
+
+      <Select
+        label="Value"
+        data={atmValueOptions}
+        value={formData.strike_value}
+        onChange={(val) => handleChange("strike_value", val)}
+      />
+
+    ) : (
+
+      <NumberInput
+        label="Value"
+        value={formData.strike_value}
+        onChange={(val) => handleChange("strike_value", val)}
+      />
+
+    )}
+
+  </Grid.Col>
+)}
       </Grid>
 
       <Group justify="center" mt="md">
@@ -405,131 +455,22 @@ export default function CreateStrategy() {
       </Group>
     </Group>
 
-    <Leg
+    <Createleg
       number={index + 1}
       segment={leg.segment}
       lots={leg.lots}
       position={leg.position}
       option_type={leg.option_type}
-      strike_price={leg.strike_price}
+      strike_type={leg.strike_type}
       expiry={leg.expiry}
+      strike_value={leg.strike_value}
     />
 
   </Card>
 ))}
 
 
-      {/* OVERALL SETTINGS */}
-
-      <Title order={4} mb="sm">
-        Overall Strategy Settings
-      </Title>
-
-      <Grid mb="lg">
-
-        {/* STOP LOSS */}
-
-        <Grid.Col span={{ base: 12, md: 4 }}>
-          <Card shadow="sm" p="lg">
-
-            <Group justify="space-between">
-              <span>Overall Stop Loss</span>
-              <Switch />
-            </Group>
-
-            <Select
-              mt="md"
-              data={["MTM", "Points","Percentage"]}
-              defaultValue="Max Loss"
-            />
-
-            <NumberInput mt="sm" placeholder="0" />
-
-            <Group justify="space-between" mt="lg">
-              <span>Overall Re-entry on SL</span>
-              <Switch />
-            </Group>
-
-            <Select
-              mt="sm"
-              data={["RE ASAP", "Next Candle"]}
-              defaultValue="RE ASAP"
-            />
-
-          </Card>
-        </Grid.Col>
-
-        {/* TARGET */}
-
-        <Grid.Col span={{ base: 12, md: 4 }}>
-          <Card shadow="sm" p="lg">
-
-            <Group justify="space-between">
-              <span>Overall Target</span>
-              <Switch />
-            </Group>
-
-            <Select
-              mt="md"
-              data={["MTM", "Points","Percentage"]}
-              defaultValue="Max Profit"
-            />
-
-            <NumberInput mt="sm" placeholder="0" />
-
-            <Group justify="space-between" mt="lg">
-              <span>Overall Re-entry on Tgt</span>
-              <Switch />
-            </Group>
-
-            <Select
-              mt="sm"
-              data={["RE ASAP", "Next Candle"]}
-              defaultValue="RE ASAP"
-            />
-
-          </Card>
-        </Grid.Col>
-
-                {/* TRAILING */}
-        
-                <Grid.Col span={{ base: 12, md: 4 }}>
-                  <Card shadow="sm" p="lg">
-        
-                    <Group justify="space-between">
-                      <span>Trailing Options</span>
-                      <Switch />
-                    </Group>
-        
-                    <Select
-                      mt="md"
-                      data={["MTM", "Points","Percentage"]}
-                      defaultValue="Lock"
-                    />
-        
-                    <NumberInput
-                      mt="sm"
-                      label="TSL Active"
-                      placeholder="0"
-                    />
-        
-                    <NumberInput
-                      mt="sm"
-                      label="SL positition"
-                      placeholder="1"
-                    />
-                    <NumberInput
-                      mt="sm"
-                      label="Trail Value"
-                      placeholder="1"
-                    />
-                    <Group mt={"1rem"} ><Text>Re-entry after TSL</Text> <Switch/></Group>
-        
-                  </Card>
-                </Grid.Col> 
-
-      </Grid>
-
+    
       {/* LOWER SECTION */}
 
           <Flex align={"center"} justify={"center"} >

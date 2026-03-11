@@ -18,14 +18,15 @@ import {
   IconInfoCircle
 } from "@tabler/icons-react";
 
-export default function Leg({
+export default function Createleg({
   segment = "options",
   lots = 1,
   position = "Sell",
   option_type="Call",
-  strike_type = "",
   expiry = "",
   number=1,
+  strike_type= "",
+  strike_value= ""
 }) {
   const [marketType] = useState(segment);
 
@@ -36,19 +37,40 @@ export default function Leg({
   const [reentrySL, setReentrySL] = useState(false);
   const [momentum, setMomentum] = useState(false);
   const [rangeBreakout, setRangeBreakout] = useState(false);
+  const [strikeType, setStrikeType] = useState(strike_type || "atm_spot");
+const [strikeValue, setStrikeValue] = useState(strike_value || "ATM");
 
   const expiryOptions =
     marketType === "futures"
       ? ["Current Month", "Next Month"]
-      : ["Weekly", "Monthly"];
+  : ["This Week", "Next Week"];
+
+  const strikeTypeOptions = [
+  { label: "ATM Spot", value: "atm_spot" },
+  { label: "ATM Futures", value: "atm_futures" },
+  { label: "Premium Nearest", value: "premium_nearest" },
+  { label: "Premium <", value: "premium_lt" },
+  { label: "Premium >", value: "premium_gt" },
+  { label: "Delta Nearest", value: "delta_nearest" },
+  { label: "Delta <", value: "delta_lt" },
+  { label: "Delta >", value: "delta_gt" }
+];
+
+const atmValueOptions = [
+  { label: "ATM", value: "ATM" },
+  { label: "ITM 0", value: "ITM0" },
+  { label: "ITM 1", value: "ITM1" },
+  { label: "OTM 0", value: "OTM0" },
+  { label: "OTM 1", value: "OTM1" }
+];
 
   return (
     <Card shadow="xs" radius="md" p="lg" withBorder>
 
       {/* Header */}
-      <Group justify="space-between" mb="md">
+      <Group justify="left" mb="md">
         <Text fw={600}>#{number}</Text>
-
+        <Text c={"#000"} size="1rem" fw={"500"} >{marketType.toUpperCase()}</Text>
       </Group>
 
       {/* Main Inputs */}
@@ -58,7 +80,7 @@ export default function Leg({
           <NumberInput label="Lots" defaultValue={lots} min={1} />
         </Grid.Col>
 
-        {marketType === "options" && (
+        
           <Grid.Col span={{ base: 12, md: 2 }}>
             <Select
               label="Position"
@@ -66,7 +88,7 @@ export default function Leg({
               defaultValue={position}
             />
           </Grid.Col>
-        )}
+
 
         {marketType === "options" && (
           <Grid.Col span={{ base: 12, md: 2 }}>
@@ -82,21 +104,50 @@ export default function Leg({
           <Select
             label="Expiry"
             data={expiryOptions}
-            defaultValue={expiry || expiryOptions[0]}
+            defaultValue={expiry}
           />
         </Grid.Col>
 
-        <Grid.Col span={{ base: 12, md: 3 }}>
-          <Group align="center" gap={4}>
-            <Text size="sm">Strike Price</Text>
-            <IconInfoCircle size={14} />
-          </Group>
+         {marketType === "options" && (
+  <Grid.Col span={{ base: 12, md: 4 }}>
 
-          <Group grow>
-            <Select label="Strike Type" value={strike_type} data={["Premium Range","closest premium","premium>=","premium<=","straddle width","% of ATM","Synthetic Future","ATM sraddle premium %","closest Delta","Delta Range"]} />
-          </Group>
-        </Grid.Col>
+    <Group align="center" gap={4}>
+      <Text size="sm">Strike Selection</Text>
+      <IconInfoCircle size={14} />
+    </Group>
 
+    <Group grow>
+
+      {/* Strike Type */}
+      <Select
+        data={strikeTypeOptions}
+        value={strikeType}
+        onChange={(val) => setStrikeType(val)}
+      />
+
+      {/* Strike Value */}
+      {(strikeType === "atm_spot" || strikeType === "atm_futures") ? (
+
+        <Select
+          data={atmValueOptions}
+          value={strikeValue}
+          onChange={(val) => setStrikeValue(val)}
+        />
+
+      ) : (
+
+        <NumberInput
+          placeholder="Value"
+          value={strikeValue}
+          onChange={(val) => setStrikeValue(val)}
+        />
+
+      )}
+
+    </Group>
+
+  </Grid.Col>
+)}
       </Grid>
 
       {/* Profit / SL */}
