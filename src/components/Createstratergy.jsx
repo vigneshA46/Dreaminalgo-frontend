@@ -61,7 +61,18 @@ const atmValueOptions = [
     ? ["Current Month", "Next Month"]
     : ["This Week", "Next Week"];
     
-    const [legs, setLegs] = useState([]);
+    const [legs, setLegs] = useState([
+      {
+    id: Date.now(), 
+    segment: "options",
+    lots: 1,
+    position: "Sell",
+    option_type: "Call",
+    strike_type:"",
+    strike_price:"",
+    expiry: "This Week"
+  }
+    ]);
   
   
     const handleChange = (field, value) => {
@@ -307,167 +318,58 @@ const atmValueOptions = [
       </Grid> 
 
             {/* LEG BUILDER */}
-                  <Card shadow="sm" p="lg" my="lg">
-      <Group justify="space-between" mb="md">
-        <Title order={4}>Leg Builder</Title>
-      </Group>
-
-      <Grid>
-        {/* Market Type */}
-        <Grid.Col span={{ base: 12, md: 2 }}>
-          <Text fw={500} size="0.9rem" mb="0.5rem">
-            Market Type
-          </Text>
-
-          <SegmentedControl
-            fullWidth
-            value={marketType}
-            onChange={setMarketType}
-            data={[
-              { label: "Futures", value: "futures" },
-              { label: "Options", value: "options" }
-            ]}
-          />
-        </Grid.Col>
-
-        {/* Lot */}
-        <Grid.Col span={{ base: 12, md: 1 }}>
-          <NumberInput
-  label="Total Lot"
-  value={formData.lots}
-  onChange={(val) => handleChange("lots", val)}
-/>
-        </Grid.Col>
-
-        {/* Position (Only for Options) */}
-    
-          <Grid.Col span={{ base: 12, md: 2 }}>
-            <Text fw={500} size="0.9rem" mb="0.5rem">
-              Position
-            </Text>
-
-            <SegmentedControl
-  fullWidth
-  value={formData.position}
-  onChange={(val) => handleChange("position", val)}
-  data={[
-    { label: "Buy", value: "Buy" },
-    { label: "Sell", value: "Sell" }
-  ]}
-/>
-          </Grid.Col>
-        
-
-        {/* Option Type (Only for Options) */}
-        {marketType === "options" && (
-          <Grid.Col span={{ base: 12, md: 2 }}>
-            <Text fw={500} size="0.9rem" mb="0.5rem">
-              Option Type
-            </Text>
-
-            <SegmentedControl
-  fullWidth
-  value={formData.option_type}
-  onChange={(val) => handleChange("option_type", val)}
-  data={[
-    { label: "Call", value: "Call" },
-    { label: "Put", value: "Put" }
-  ]}
-/>
-          </Grid.Col>
-        )}
-
-        {/* Expiry */}
-        <Grid.Col span={{ base: 12, md: 2 }}>
-          <Select
-            label="Expiry"
-            data={expiryOptions}
-            onSelect={(value)=>handleChange("expiry",value)}
-          />
-        </Grid.Col>
-
-        {/* Strike Type */}
-{marketType === "options" && (
-  <Grid.Col span={{ base: 12, md: 2 }}>
-    <Select
-      label="Strike Type"
-      data={strikeTypeOptions}
-      value={formData.strike_type}
-      onChange={(val) => handleChange("strike_type", val)}
-    />
-  </Grid.Col>
-)}
-
-{/* Strike Value */}
-{marketType === "options" && (
-  <Grid.Col span={{ base: 12, md: 2 }}>
-
-    {(formData.strike_type === "atm_spot" ||
-      formData.strike_type === "atm_futures") ? (
-
-      <Select
-        label="Value"
-        data={atmValueOptions}
-        value={formData.strike_value}
-        onChange={(val) => handleChange("strike_value", val)}
-      />
-
-    ) : (
-
-      <NumberInput
-        label="Value"
-        value={formData.strike_value}
-        onChange={(val) => handleChange("strike_value", val)}
-      />
-
-    )}
-
-  </Grid.Col>
-)}
-      </Grid>
-
-      <Group justify="center" mt="md">
-        <Button bg="#000" onClick={addLeg}>Add Leg</Button>
-      </Group>
-    </Card>
-
-    {legs.map((leg, index) => (
-  <Card key={leg.id} shadow="sm" p="sm" mt="md">
-
-    <Group justify="space-between" mb="xs">
-      <Text fw={600}>Leg #{index + 1}</Text>
-
-      <Group>
-        <ActionIcon
-          variant="light"
-          onClick={() => copyLeg(leg)}
-        >
-          <IconCopy size={16} />
-        </ActionIcon>
-
-        <ActionIcon
-          variant="light"
-          color="red"
-          onClick={() => deleteLeg(leg.id)}
-        >
-          <IconTrash size={16} />
-        </ActionIcon>
-      </Group>
-    </Group>
-
-    <Createleg
-      number={index + 1}
-      segment={leg.segment}
-      lots={leg.lots}
-      position={leg.position}
-      option_type={leg.option_type}
-      strike_type={leg.strike_type}
-      expiry={leg.expiry}
-      strike_value={leg.strike_value}
-    />
-
-  </Card>
-))}
+                    {legs.map((leg, index) => (
+                      <Card key={leg.id} shadow="sm" p="sm" mt="md">
+                    
+                        <Group justify="space-between" mb="xs">
+                    
+                          <Text fw={600}>#{index + 1}</Text>
+                    
+                          {/* Only show icons after first leg */}
+                            <Group>
+                              <ActionIcon
+                                variant="light"
+                                onClick={() => copyLeg(leg)}
+                                >
+                                <IconCopy size={16} />
+                              </ActionIcon>
+                              {index !== 0 && (
+                    
+                              <ActionIcon
+                                variant="light"
+                                color="red"
+                                onClick={() => deleteLeg(leg.id)}
+                              >
+                                <IconTrash size={16} />
+                              </ActionIcon>
+                            )}
+                            </Group>
+                    
+                        </Group>
+                    
+                        <Createleg
+                          number={index + 1}
+                          segment={leg.segment}
+                          lots={leg.lots}
+                          position={leg.position}
+                          option_type={leg.option_type}
+                          strike_type={leg.strike_type}
+                          strike_value={leg.strike_value}
+                          expiry={leg.expiry}
+                        />
+                    
+                        {/* Add Leg button only after first leg */}
+                        {index === 0 && (
+                          <Group justify="center" mt="md">
+                            <Button bg="#000" onClick={addLeg}>
+                              Add Leg
+                            </Button>
+                          </Group>
+                        )}
+                    
+                      </Card>
+                    ))}
+                    
 
 
     

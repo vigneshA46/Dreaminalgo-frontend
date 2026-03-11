@@ -47,7 +47,7 @@ export default function Leg({
     <Card shadow="xs" radius="md" p="lg" withBorder>
 
       {/* Header */}
-      <Grid>
+      <Grid  >
         {/* Market Type */}
         <Grid.Col span={{ base: 12, md: 2 }}>
           <Text fw={500} size="0.9rem" mb="0.5rem">
@@ -234,7 +234,7 @@ export default function Leg({
           )}
         </Grid.Col>
 
-        <Grid.Col span={{ base: 12, md: 3 }}>
+        {/* <Grid.Col span={{ base: 12, md: 3 }}>
           <Group justify="space-between">
             <Text size="sm">Range Breakout</Text>
             <Switch
@@ -250,7 +250,7 @@ export default function Leg({
               <Select data={["Strike Price"]} />
             </Group>
           )}
-        </Grid.Col>
+        </Grid.Col> */}
 
       </Grid>
 

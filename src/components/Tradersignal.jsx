@@ -29,8 +29,7 @@ const Tradersignal = () => {
     lots: 1,
     position: "Sell",
     option_type: "Call",
-    strike_type: "atm_spot",
-    strike_value: "ATM",
+    strike_price:"",
     expiry: "This Week"
   }
   ]);
@@ -96,7 +95,7 @@ const copyLeg = (leg) => {
       
               <Grid.Col span={{ base: 12, md: 5 }}>
                 <Card shadow="sm" p="lg">
-      
+                   
                   <Title order={5} mb="md">
                     Creator Name
                   </Title>
@@ -150,14 +149,14 @@ const copyLeg = (leg) => {
       <Text fw={600}>#{index + 1}</Text>
 
       {/* Only show icons after first leg */}
-      {index !== 0 && (
         <Group>
           <ActionIcon
             variant="light"
             onClick={() => copyLeg(leg)}
-          >
+            >
             <IconCopy size={16} />
           </ActionIcon>
+          {index !== 0 && (
 
           <ActionIcon
             variant="light"
@@ -166,8 +165,8 @@ const copyLeg = (leg) => {
           >
             <IconTrash size={16} />
           </ActionIcon>
+        )}
         </Group>
-      )}
 
     </Group>
 
@@ -177,8 +176,7 @@ const copyLeg = (leg) => {
       lots={leg.lots}
       position={leg.position}
       option_type={leg.option_type}
-      strike_type={leg.strike_type}
-      strike_value={leg.strike_value}
+      strike_price={leg.strike_price}
       expiry={leg.expiry}
     />
 

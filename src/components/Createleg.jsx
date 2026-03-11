@@ -79,7 +79,6 @@ const atmValueOptions = [
           <NumberInput label="Lots" defaultValue={lots} min={1} />
         </Grid.Col>
 
-        
           <Grid.Col span={{ base: 12, md: 2 }}>
             <Select
               label="Position"
@@ -87,7 +86,6 @@ const atmValueOptions = [
               defaultValue={position}
             />
           </Grid.Col>
-
 
         {marketType === "options" && (
           <Grid.Col span={{ base: 12, md: 2 }}>
