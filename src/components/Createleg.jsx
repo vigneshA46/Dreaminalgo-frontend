@@ -41,7 +41,7 @@ export default function Createleg({
   const [rangeBreakout, setRangeBreakout] = useState(false);
   const [strikeType, setStrikeType] = useState(strike_type || "atm_spot");
   const [strikeValue, setStrikeValue] = useState(strike_value || "ATM");
-    const [entryType, setEntryType] = useState("Current Price");
+  const [entryType, setEntryType] = useState("Current Price");
 
 const [slEnabled, setSlEnabled] = useState(false);
 const [slType, setSlType] = useState("limit");
@@ -174,7 +174,7 @@ const atmValueOptions = [
 )}
       </Grid>
 
-    <Title order={4} mb="sm">
+    <Title order={6} my="sm">
         Leg Settings
       </Title>
           <Grid>
@@ -184,7 +184,7 @@ const atmValueOptions = [
 
 
         <Grid.Col span={{ base: 12, md: 4 }}>
-      <Card shadow="sm" p="lg">
+      <Card shadow="sm">
 
         <Group justify="space-between">
           <span>Entry Type</span>
