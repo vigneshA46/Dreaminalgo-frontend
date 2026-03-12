@@ -23,7 +23,7 @@ If you are developing a production application, we recommend using TypeScript wi
 /// trader signal
 
 <Title order={4} mb="sm">
-        Overall Signal Settings
+        Leg Settings
       </Title>
           <Grid>
 
@@ -505,3 +505,294 @@ If you are developing a production application, we recommend using TypeScript wi
         <Button bg="#000" onClick={addLeg}>Add Leg</Button>
       </Group>
     </Card>
+
+
+
+
+
+
+    ////current options in the leg 
+
+    
+      {/* Profit / SL */}
+      <Grid mt="md">
+{/* 
+        <Grid.Col span={{ base: 12, md: 4 }}>
+          <Group justify="space-between">
+            <Text size="sm">Target Profit</Text>
+            <Switch
+              checked={targetProfit}
+              onChange={(e) => setTargetProfit(e.currentTarget.checked)}
+            />
+          </Group>
+
+          {targetProfit && (
+            <Group mt="xs">
+              <Select data={["Points (Pts)", "Percent"]} defaultValue="Points (Pts)" />
+              <NumberInput placeholder="0" />
+            </Group>
+          )}
+        </Grid.Col> */}
+
+{/*         <Grid.Col span={{ base: 12, md: 4 }}>
+          <Group justify="space-between">
+            <Text size="sm">Stop Loss</Text>
+            <Switch
+              checked={stopLoss}
+              onChange={(e) => setStopLoss(e.currentTarget.checked)}
+            />
+          </Group>
+
+          {stopLoss && (
+            <Group mt="xs">
+              <Select data={["Points (Pts)", "Percent"]} defaultValue="Points (Pts)" />
+              <NumberInput placeholder="0" />
+            </Group>
+          )}
+        </Grid.Col> */}
+{/* 
+        <Grid.Col span={{ base: 12, md: 4 }}>
+          <Group justify="space-between">
+            <Group gap={4}>
+              <Text size="sm">Trail SL</Text>
+              <IconInfoCircle size={14} />
+            </Group>
+
+            <Switch
+              checked={trailSL}
+              onChange={(e) => setTrailSL(e.currentTarget.checked)}
+            />
+          </Group>
+
+          {trailSL && (
+            <Group mt="xs">
+              <Select data={["Points"]} defaultValue="Points" />
+              <NumberInput placeholder="0" />
+              <NumberInput placeholder="0" />
+            </Group>
+          )}
+        </Grid.Col> */}
+
+      </Grid>
+
+      {/* Advanced Settings */}
+      <Grid mt="md">
+
+        {/* <Grid.Col span={{ base: 12, md: 3 }}>
+          <Group justify="space-between">
+            <Text size="sm">Re-entry on Tgt</Text>
+            <Switch
+              checked={reentryTgt}
+              onChange={(e) => setReentryTgt(e.currentTarget.checked)}
+            />
+          </Group>
+
+          {reentryTgt && (
+            <Group mt="xs">
+              <Select data={["RE ASAP"]} defaultValue="RE ASAP" />
+              <NumberInput defaultValue={1} />
+            </Group>
+          )}
+        </Grid.Col> */}
+
+{/*         <Grid.Col span={{ base: 12, md: 3 }}>
+          <Group justify="space-between">
+            <Text size="sm">Re-entry on SL</Text>
+            <Switch
+              checked={reentrySL}
+              onChange={(e) => setReentrySL(e.currentTarget.checked)}
+            />
+          </Group>
+
+          {reentrySL && (
+            <Group mt="xs">
+              <Select data={["RE ASAP"]} defaultValue="RE ASAP" />
+              <NumberInput defaultValue={1} />
+            </Group>
+          )}
+        </Grid.Col> */}
+
+{/*         <Grid.Col span={{ base: 12, md: 3 }}>
+          <Group justify="space-between">
+            <Group gap={4}>
+              <Text size="sm">Simple Momentum</Text>
+              <IconInfoCircle size={14} />
+            </Group>
+
+            <Switch
+              checked={momentum}
+              onChange={(e) => setMomentum(e.currentTarget.checked)}
+            />
+          </Group>
+
+          {momentum && (
+            <Group mt="xs">
+              <Select data={["Points (Pts) ↑"]} />
+              <NumberInput placeholder="0" />
+            </Group>
+          )}
+        </Grid.Col> */}
+
+        {/* <Grid.Col span={{ base: 12, md: 3 }}>
+          <Group justify="space-between">
+            <Text size="sm">Range Breakout</Text>
+            <Switch
+              checked={rangeBreakout}
+              onChange={(e) => setRangeBreakout(e.currentTarget.checked)}
+            />
+          </Group>
+
+          {rangeBreakout && (
+            <Group mt="xs">
+              <TextInput placeholder="09:45" />
+              <Select data={["High", "Low"]} defaultValue="High" />
+              <Select data={["Strike Price"]} />
+            </Group>
+          )}
+        </Grid.Col> */}
+
+      </Grid>
+
+
+
+
+//// create stratergy old leg
+
+      {/* Profit / SL */}
+      <Grid mt="md">
+
+        <Grid.Col span={{ base: 12, md: 4 }}>
+          <Group justify="space-between">
+            <Text size="sm">Target Profit</Text>
+            <Switch
+              checked={targetProfit}
+              onChange={(e) => setTargetProfit(e.currentTarget.checked)}
+            />
+          </Group>
+
+          {targetProfit && (
+            <Group mt="xs">
+              <Select data={["Points (Pts)", "Percent"]} defaultValue="Points (Pts)" />
+              <NumberInput placeholder="0" />
+            </Group>
+          )}
+        </Grid.Col>
+
+        <Grid.Col span={{ base: 12, md: 4 }}>
+          <Group justify="space-between">
+            <Text size="sm">Stop Loss</Text>
+            <Switch
+              checked={stopLoss}
+              onChange={(e) => setStopLoss(e.currentTarget.checked)}
+            />
+          </Group>
+
+          {stopLoss && (
+            <Group mt="xs">
+              <Select data={["Points (Pts)", "Percent"]} defaultValue="Points (Pts)" />
+              <NumberInput placeholder="0" />
+            </Group>
+          )}
+        </Grid.Col>
+
+        <Grid.Col span={{ base: 12, md: 4 }}>
+          <Group justify="space-between">
+            <Group gap={4}>
+              <Text size="sm">Trail SL</Text>
+              <IconInfoCircle size={14} />
+            </Group>
+
+            <Switch
+              checked={trailSL}
+              onChange={(e) => setTrailSL(e.currentTarget.checked)}
+            />
+          </Group>
+
+          {trailSL && (
+            <Group mt="xs">
+              <Select data={["Points"]} defaultValue="Points" />
+              <NumberInput placeholder="0" />
+              <NumberInput placeholder="0" />
+            </Group>
+          )}
+        </Grid.Col>
+
+      </Grid>
+
+      {/* Advanced Settings */}
+      <Grid mt="md">
+
+        <Grid.Col span={{ base: 12, md: 3 }}>
+          <Group justify="space-between">
+            <Text size="sm">Re-entry on Tgt</Text>
+            <Switch
+              checked={reentryTgt}
+              onChange={(e) => setReentryTgt(e.currentTarget.checked)}
+            />
+          </Group>
+
+          {reentryTgt && (
+            <Group mt="xs">
+              <Select data={["RE ASAP"]} defaultValue="RE ASAP" />
+              <NumberInput defaultValue={1} />
+            </Group>
+          )}
+        </Grid.Col>
+
+        <Grid.Col span={{ base: 12, md: 3 }}>
+          <Group justify="space-between">
+            <Text size="sm">Re-entry on SL</Text>
+            <Switch
+              checked={reentrySL}
+              onChange={(e) => setReentrySL(e.currentTarget.checked)}
+            />
+          </Group>
+
+          {reentrySL && (
+            <Group mt="xs">
+              <Select data={["RE ASAP"]} defaultValue="RE ASAP" />
+              <NumberInput defaultValue={1} />
+            </Group>
+          )}
+        </Grid.Col>
+
+        <Grid.Col span={{ base: 12, md: 3 }}>
+          <Group justify="space-between">
+            <Group gap={4}>
+              <Text size="sm">Simple Momentum</Text>
+              <IconInfoCircle size={14} />
+            </Group>
+
+            <Switch
+              checked={momentum}
+              onChange={(e) => setMomentum(e.currentTarget.checked)}
+            />
+          </Group>
+
+          {momentum && (
+            <Group mt="xs">
+              <Select data={["Points (Pts) ↑"]} />
+              <NumberInput placeholder="0" />
+            </Group>
+          )}
+        </Grid.Col>
+
+        <Grid.Col span={{ base: 12, md: 3 }}>
+          <Group justify="space-between">
+            <Text size="sm">Range Breakout</Text>
+            <Switch
+              checked={rangeBreakout}
+              onChange={(e) => setRangeBreakout(e.currentTarget.checked)}
+            />
+          </Group>
+
+          {rangeBreakout && (
+            <Group mt="xs">
+              <TextInput placeholder="09:45" />
+              <Select data={["High", "Low"]} defaultValue="High" />
+              <Select data={["Strike Price"]} />
+            </Group>
+          )}
+        </Grid.Col>
+
+      </Grid>
