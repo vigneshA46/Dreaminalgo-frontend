@@ -1,27 +1,109 @@
 
 import React, { useEffect, useState } from 'react';
-import { MantineProvider, Box, Container, Group, Button, TextInput, Radio, Text, Card, Badge, Anchor, Grid } from '@mantine/core';
+import { MantineProvider, Box, Container, Group, Button, TextInput, Radio, Text, Card, Badge, Anchor, Grid, Stack } from '@mantine/core';
 import { IconSearch, IconCurrencyRupee } from '@tabler/icons-react';
 import { apiRequest } from '../utils/api';
 
 
 const Stratergies = () => {
-    const [activeTab, setActiveTab] = useState('marketplace');
+  const [activeTab, setActiveTab] = useState('marketplace');
   const [selectedFee, setSelectedFee] = useState('');
   const [selectedSort, setSelectedSort] = useState('');
   const [strategies , setstrategies] = useState([])
-  useEffect(()=>{
-    const fetchStratergy = async ()=>{
+  const [mystartergieslist , setmystartergieslist] = useState([]);
+
+  const SingleTraderSignal = ({
+    startergyname,
+    timestamp,
+    description,
+    onDeploy,
+    onView
+  }) => {
+    return (
+      <Card
+        radius="md"
+        withBorder
+        p="lg"
+        style={{
+          borderColor: "#e5e5e5",
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+        }}
+      >
+        {/* Content */}
+        <Stack gap={6}>
+          <Text fw={600} size="md">
+            {startergyname}
+          </Text>
+  
+          <Text size="xs" c="dimmed">
+            {timestamp}
+          </Text>
+  
+          <Text size="sm" c="black">
+            {description}
+          </Text>
+        </Stack>
+  
+        {/* Buttons */}
+        <Group mt="lg" grow px={"1rem"}>
+          <Button
+          radius={"0.4rem"}
+            styles={{
+              root: {
+                border:"1px solid #a0a0a0",
+                backgroundColor: "#fff",
+                color: "#000",
+              },
+            }}
+            onClick={onView}
+          >
+            View
+          </Button>
+          <Button
+          radius={"0.4rem"}
+            styles={{
+              root: {
+                backgroundColor: "#000",
+                color: "#fff",
+              },
+            }}
+            onClick={onDeploy}
+          >
+            Deploy
+          </Button>
+        </Group>
+      </Card>
+    );
+  };
+
+      const fetchStratergy = async ()=>{
       try {
-        const strategies = await apiRequest("GET","/api/stratergy",{})
-        console.log(strategies)
+        const strategies = await apiRequest("GET","/api/stratergy")
+        /* console.log(strategies) */
         await setstrategies(strategies)
       }
       catch(err){
         console.log(err)
       }
     }
-    fetchStratergy()
+
+    const fetmystartergies = async () =>{
+      try {
+        const strategies = await apiRequest("POST","/api/createstartergy/user/userid")
+        console.log(strategies)
+        setmystartergieslist(strategies);
+      }
+      catch(err){
+        console.log(err)
+      }
+    }
+  
+  useEffect(()=>{
+    fetchStratergy();
+    fetmystartergies();
   },[])
 
   
@@ -63,8 +145,9 @@ const Stratergies = () => {
               My Strategies
             </Button>
           </Group>
-
-          <Grid gutter="lg">
+          {
+            activeTab == 'marketplace' ? (
+                <Grid gutter="lg">
             {/* Left Sidebar - Filters */}
             <Grid.Col span={{ base: 12, md: 3 }}>
               <Card
@@ -265,10 +348,31 @@ const Stratergies = () => {
                       DEPLOY
                     </Button>
                   </Group>
-                </Card>
+                </Card> 
               ))}
             </Grid.Col>
           </Grid>
+            ) : (
+              <Grid>
+                    {mystartergieslist.map((signal) => (
+                      <Grid.Col
+                        key={signal.id}
+                        span={{ base: 12, sm: 6, md: 4, lg: 6 }}
+                      >
+                        <SingleTraderSignal
+                          startergyname={signal.startergy_name}
+                          description={signal.description}
+                          timestamp={signal.created_at}
+                          onView={() => console.log("view", signal.id)}
+                          onDeploy={() => console.log("deploy", signal.id)}
+                        />
+                      </Grid.Col>
+                    ))}
+                  </Grid>
+            )
+          }
+
+          
 
           {/* Footer */}
 {/*           <Group justify="space-between" mt="xl" pt="xl" style={{ borderTop: '1px solid #e9ecef' }}>

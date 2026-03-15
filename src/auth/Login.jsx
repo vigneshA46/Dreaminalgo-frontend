@@ -80,7 +80,7 @@ function Login(){
                 letterSpacing: '0.5px'
               }}
             >
-              DreaminAlgo Academy
+              DreaminAlgo
             </Text>
 
             {/* Welcome Text */}
@@ -104,7 +104,7 @@ function Login(){
                 lineHeight: '1.3'
               }}
             >
-              Our Academy
+              Our Algo Trading Platform
             </Text>
 
             {/* Subtitle */}
@@ -116,7 +116,7 @@ function Login(){
                 lineHeight: '1.5'
               }}
             >
-             Master the skills that move the world: Trading & Coding.
+             Explore Multiple Startergies and Create your own Startergy!
             </Text>
 
             {/* Email Input */}

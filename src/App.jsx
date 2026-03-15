@@ -19,6 +19,7 @@ import Tutorials from './components/Tutorials';
 import Login from './auth/Login.jsx';
 import Signup from './auth/Signup.jsx';
 import Brokers from './components/Brokers.jsx';
+import Createtradersignal from './components/Createtradersignal.jsx';
 
 function App() {
   return (
@@ -53,7 +54,8 @@ function App() {
             <Route path="subscriptions" element={<Subscriptions />} />
             <Route path="reports" element={<Reports />} />
             <Route path="create-strategy" element={<Createstratergy />} />
-            <Route path="trader-signal" element={<Tradersignal />} />
+            <Route path="create-signal" element={<Tradersignal />} />
+            <Route path="trader-signal" element={<Createtradersignal />} />
             <Route path="profile" element={<Profile />} />
             <Route path="plans" element={<Planandpricing />} />
             <Route path="tutorials" element={<Tutorials />} />

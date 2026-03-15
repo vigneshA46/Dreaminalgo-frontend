@@ -21,16 +21,8 @@ import {
 } from "@tabler/icons-react";
 import { TimeInput } from "@mantine/dates";
 
-export default function Leg({
-  segment = "options",
-  lots = 1,
-  position = "Sell",
-  option_type="Call",
-  strike_price = "",
-  expiry = "",
-  number=1
-}) {
-  const [marketType  ,setMarketType] = useState(segment);
+export default function Leg({ leg, updateLeg } ) {
+  const [marketType  ,setMarketType] = useState();
 
   const [targetProfit, setTargetProfit] = useState(false);
   const [stopLoss, setStopLoss] = useState(false);
@@ -50,6 +42,9 @@ const [targetType, setTargetType] = useState("mtm");
 
 const [reentryTarget, setReentryTarget] = useState(false);
 const [reentryTargetCount, setReentryTargetCount] = useState(1);
+const [targetEnabled, setTargetEnabled] = useState(false);
+const [trailingEnabled, setTrailingEnabled] = useState(false);
+const [reentryTSL, setReentryTSL] = useState(false);
 
   const expiryOptions =
     marketType === "futures"
@@ -60,321 +55,520 @@ const [reentryTargetCount, setReentryTargetCount] = useState(1);
     <Card shadow="xs" radius="md" p="lg" withBorder>
 
       {/* Header */}
-      <Grid  >
-        {/* Market Type */}
-        <Grid.Col span={{ base: 12, md: 2 }}>
-          <Text fw={500} size="0.9rem" mb="0.5rem">
-            Market Type
-          </Text>
+      <Grid>
+  <Grid.Col span={{ base: 12, md: 2 }}>
+    <Text fw={500} size="0.9rem" mb="0.5rem">
+      Market Type
+    </Text>
 
-          <SegmentedControl
-            fullWidth
-            value={marketType}
-            onChange={setMarketType}
-            data={[
-              { label: "Futures", value: "futures" },
-              { label: "Options", value: "options" }
-            ]}
-          />
-        </Grid.Col>
-      </Grid>
+    <SegmentedControl
+      fullWidth
+      value={leg.market_type}
+      onChange={(value) =>
+        updateLeg(leg.id, "market_type", value)
+      }
+      data={[
+        { label: "Futures", value: "futures" },
+        { label: "Options", value: "options" }
+      ]}
+    />
+  </Grid.Col>
+</Grid>
 
       {/* Main Inputs */}
       <Grid align="flex-end">
 
-        <Grid.Col span={{ base: 12, md: 2 }}>
-          <NumberInput label="Lots" defaultValue={lots} min={1} />
-        </Grid.Col>
+  <Grid.Col span={{ base: 12, md: 2 }}>
+    <NumberInput
+      label="Lots"
+      value={leg.lots}
+      min={1}
+      onChange={(value) => updateLeg(leg.id, "lots", value)}
+    />
+  </Grid.Col>
 
-        
-          <Grid.Col span={{ base: 12, md: 2 }}>
-            <Select
-              label="Position"
-              data={["Buy", "Sell"]}
-              defaultValue={position}
-            />
-          </Grid.Col>
+  <Grid.Col span={{ base: 12, md: 2 }}>
+    <Select
+      label="Position"
+      data={["Buy", "Sell"]}
+      value={leg.position}
+      onChange={(value) =>
+        updateLeg(leg.id, "position", value)
+      }
+    />
+  </Grid.Col>
 
-
-        {marketType === "options" && (
-          <Grid.Col span={{ base: 12, md: 2 }}>
-            <Select
-              label="Option Type"
-              data={["Call", "Put"]}
-              defaultValue={option_type}
-            />
-          </Grid.Col>
-        )}
-
-        <Grid.Col span={{ base: 12, md: 2 }}>
-          <Select
-            label="Expiry"
-            data={expiryOptions}
-            defaultValue={expiry}
-          />
-        </Grid.Col>
-
-         {marketType === "options" && (
-        <Grid.Col span={{ base: 12, md: 3 }}>
-          <Group align="center" gap={4}>
-            <Text size="sm">Strike Price</Text>
-            <IconInfoCircle size={14} />
-          </Group>
-
-          <Group grow>
-            <TextInput type="number" defaultValue={strike_price} />
-          </Group>
-        </Grid.Col>
+  {leg.market_type === "options" && (
+    <Grid.Col span={{ base: 12, md: 2 }}>
+      <Select
+        label="Option Type"
+        data={["Call", "Put"]}
+        value={leg.option_type}
+        onChange={(value) =>
+          updateLeg(leg.id, "option_type", value)
+        }
+      />
+    </Grid.Col>
   )}
-      </Grid>
+
+  <Grid.Col span={{ base: 12, md: 2 }}>
+    <Select
+      label="Expiry"
+      data={expiryOptions}
+      value={leg.expiry}
+      onChange={(value) =>
+        updateLeg(leg.id, "expiry", value)
+      }
+    />
+  </Grid.Col>
+
+  {leg.market_type === "options" && (
+    <Grid.Col span={{ base: 12, md: 3 }}>
+      <Group align="center" gap={4}>
+        <Text size="sm">Strike Price</Text>
+        <IconInfoCircle size={14} />
+      </Group>
+
+      <TextInput
+        type="number"
+        value={leg.strike_price}
+        onChange={(e) =>
+          updateLeg(leg.id, "strike_price", e.target.value)
+        }
+      />
+    </Grid.Col>
+  )}
+
+</Grid>
       <Title order={4} mb="sm">
         Leg Settings
       </Title>
+    <Grid mb="1rem">
+  <Grid.Col span={{ base: 12, md: 4 }}>
+    <Card shadow="sm" p="lg">
+
+      <Group justify="space-between">
+        <span>Entry Type</span>
+      </Group>
+
+      <Select
+        mt="md"
+        data={[
+          { label: "Time", value: "time" },
+          { label: "Current Price", value: "current_price" },
+          { label: "Limit Price", value: "limit" }
+        ]}
+        value={leg.entry.type}
+        onChange={(value) =>
+          updateLeg(leg.id, "entry.type", value)
+        }
+      />
+
+      {/* TIME ENTRY */}
+      {leg.entry.type === "time" && (
+        <TimeInput
+          mt="md"
+          label="Entry Time"
+          value={leg.entry.value || ""}
+          onChange={(event) =>
+            updateLeg(leg.id, "entry.value", event.target.value)
+          }
+        />
+      )}
+
+      {/* LIMIT PRICE ENTRY */}
+      {leg.entry.type === "limit" && (
+        <TextInput
+          mt="md"
+          label="Limit Price"
+          type="number"
+          placeholder="Enter Limit Price"
+          value={leg.entry.value || ""}
+          onChange={(e) =>
+            updateLeg(leg.id, "entry.value", e.target.value)
+          }
+        />
+      )}
+
+      {/* CURRENT PRICE -> NO VALUE */}
+
+    </Card>
+  </Grid.Col>
+</Grid>
+
           <Grid>
 
 
-        {/* ENTRY TYPE */}
-
-
-        <Grid.Col span={{ base: 12, md: 4 }}>
-      <Card shadow="sm" p="lg">
-
-        <Group justify="space-between">
-          <span>Entry Type</span>
-        </Group>
-
-        <Select
-          mt="md"
-          data={["Time", "Current Price", "Limit Price"]}
-          value={entryType}
-          onChange={setEntryType}
-        />
-
-        {/* TIME INPUT */}
-        {entryType === "Time" && (
-          <TimeInput
-            mt="md"
-            label="Entry Time"
-          />
-        )}
-
-        {/* LIMIT PRICE INPUT */}
-        {entryType === "Limit Price" && (
-          <TextInput
-            mt="md"
-            label="Value"
-            placeholder="Enter Limit Price"
-            type="number"
-          />
-        )}
-
-        {/* CURRENT PRICE -> NOTHING */}
-      </Card>
-    </Grid.Col>
+        
 
         {/* SL TYPE */}
 
-        <Grid.Col span={{ base: 12, md: 4 }}>
-      <Card shadow="sm" p="lg">
+<Grid.Col span={{ base: 12, md: 4 }}>
+  <Card shadow="sm" p="lg">
 
-        <Group justify="space-between">
-          <Text>SL Type</Text>
-          <Switch
-            checked={slEnabled}
-            onChange={(e) => setSlEnabled(e.currentTarget.checked)}
-          />
-        </Group>
+    <Group justify="space-between">
+      <Text>SL Type</Text>
 
-        {slEnabled && (
-          <>
-            <Select
-              mt="md"
-              value={slType}
-              onChange={setSlType}
-              data={[
-                { label: "Time", value: "time" },
-                { label: "Percentage", value: "percentage" },
-                { label: "Limit Price", value: "limit" },
-                { label: "MTM", value: "mtm" }
-              ]}
-            />
+      <Switch
+        checked={leg.stoploss.enabled}
+        onChange={(e) =>
+          updateLeg(
+            leg.id,
+            "stoploss.enabled",
+            e.currentTarget.checked
+          )
+        }
+      />
+    </Group>
 
-            {/* TIME */}
-            {slType === "time" && (
-              <TimeInput
-                mt="md"
-                label="Exit Time"
-              />
-            )}
-
-            {/* LIMIT PRICE */}
-            {slType === "limit" && (
-              <TextInput
-                mt="md"
-                label="Limit Price"
-                type="number"
-                placeholder="Enter price"
-              />
-            )}
-
-            {/* PERCENTAGE */}
-            {slType === "percentage" && (
-              <TextInput
-                mt="md"
-                label="Percentage"
-                type="number"
-                rightSection="%"
-                placeholder="Enter %"
-              />
-            )}
-
-            {/* MTM */}
-            {slType === "mtm" && (
-              <TextInput
-                mt="md"
-                label="MTM Value"
-                type="number"
-                placeholder="Enter MTM"
-              />
-            )}
-
-            <Group mt="1rem" justify="space-between">
-  <Text>Re-entry after SL</Text>
-  <Switch
-    checked={reentrySL}
-    onChange={(e) => setReentrySL(e.currentTarget.checked)}
-  />
-</Group>
-
-{reentrySL && (
-  <NumberInput
-    mt="sm"
-    label="Re-entry Count"
-    min={1}
-    value={reentrySLCount}
-    onChange={setReentrySLCount}
-  />
-)}
-          </>
-        )}
-
-      </Card>
-    </Grid.Col>
-        {/* TARGET TYPE */}
-        <Grid.Col span={{ base: 12, md: 4 }}>
-      <Card shadow="sm" p="lg">
-
-        <Group justify="space-between">
-          <Text>Target Type</Text>
-        </Group>
-
+    {leg.stoploss.enabled && (
+      <>
         <Select
           mt="md"
-          value={targetType}
-          onChange={setTargetType}
+          value={leg.stoploss.type}
+          onChange={(value) =>
+            updateLeg(leg.id, "stoploss.type", value)
+          }
           data={[
             { label: "Time", value: "time" },
-            { label: "MTM", value: "mtm" },
+            { label: "Percentage", value: "percentage" },
             { label: "Limit Price", value: "limit" },
-            {label:"Percentage",value:"Percentage"}
+            { label: "MTM", value: "mtm" }
           ]}
         />
 
         {/* TIME */}
-        {targetType === "time" && (
+        {leg.stoploss.type === "time" && (
           <TimeInput
             mt="md"
-            label="Target Time"
-          />
-        )}
-
-        {/* MTM */}
-        {targetType === "mtm" && (
-          <NumberInput
-            mt="md"
-            label="MTM Target"
-            placeholder="Enter value"
+            label="Exit Time"
+            value={leg.stoploss.value || ""}
+            onChange={(e) =>
+              updateLeg(
+                leg.id,
+                "stoploss.value",
+                e.target.value
+              )
+            }
           />
         )}
 
         {/* LIMIT PRICE */}
-        {targetType === "limit" && (
-          <NumberInput
+        {leg.stoploss.type === "limit" && (
+          <TextInput
             mt="md"
             label="Limit Price"
+            type="number"
             placeholder="Enter price"
+            value={leg.stoploss.value || ""}
+            onChange={(e) =>
+              updateLeg(
+                leg.id,
+                "stoploss.value",
+                e.target.value
+              )
+            }
           />
         )}
-        {targetType === "Percentage" && (
-          <NumberInput
+
+        {/* PERCENTAGE */}
+        {leg.stoploss.type === "percentage" && (
+          <TextInput
             mt="md"
             label="Percentage"
-            placeholder="Enter percentage"
+            type="number"
+            rightSection="%"
+            placeholder="Enter %"
+            value={leg.stoploss.value || ""}
+            onChange={(e) =>
+              updateLeg(
+                leg.id,
+                "stoploss.value",
+                e.target.value
+              )
+            }
           />
         )}
 
-        {/* REENTRY */}
-        <Group mt="1rem" >
-          <Text>Re-entry after Target</Text>
-          <Switch
-            checked={reentryTarget}
-            onChange={(e) => setReentryTarget(e.currentTarget.checked)}
+        {/* MTM */}
+        {leg.stoploss.type === "mtm" && (
+          <TextInput
+            mt="md"
+            label="MTM Value"
+            type="number"
+            placeholder="Enter MTM"
+            value={leg.stoploss.value || ""}
+            onChange={(e) =>
+              updateLeg(
+                leg.id,
+                "stoploss.value",
+                e.target.value
+              )
+            }
           />
+        )}
 
+        {/* REENTRY SWITCH */}
+        <Group mt="1rem" justify="space-between">
+          <Text>Re-entry after SL</Text>
+
+          <Switch
+            checked={leg.stoploss.reentry.enabled}
+            onChange={(e) =>
+              updateLeg(
+                leg.id,
+                "stoploss.reentry.enabled",
+                e.currentTarget.checked
+              )
+            }
+          />
         </Group>
 
-        {reentryTarget && (
+        {/* REENTRY COUNT */}
+        {leg.stoploss.reentry.enabled && (
           <NumberInput
             mt="sm"
             label="Re-entry Count"
             min={1}
-            value={reentryTargetCount}
-            onChange={setReentryTargetCount}
+            value={leg.stoploss.reentry.count}
+            onChange={(value) =>
+              updateLeg(
+                leg.id,
+                "stoploss.reentry.count",
+                value
+              )
+            }
+          />
+        )}
+      </>
+    )}
+  </Card>
+</Grid.Col>
+
+      <Grid.Col span={{ base: 12, md: 4 }}>
+  <Card shadow="sm" p="lg">
+
+    <Group justify="space-between">
+      <Text>Target Type</Text>
+
+      <Switch
+        checked={leg.target.enabled}
+        onChange={(e) =>
+          updateLeg(
+            leg.id,
+            "target.enabled",
+            e.currentTarget.checked
+          )
+        }
+      />
+    </Group>
+
+    {leg.target.enabled && (
+      <>
+        <Select
+          mt="md"
+          value={leg.target.type}
+          onChange={(value) =>
+            updateLeg(leg.id, "target.type", value)
+          }
+          data={[
+            { label: "Time", value: "time" },
+            { label: "MTM", value: "mtm" },
+            { label: "Limit Price", value: "limit" },
+            { label: "Percentage", value: "percentage" }
+          ]}
+        />
+
+        {/* TIME */}
+        {leg.target.type === "time" && (
+          <TimeInput
+            mt="md"
+            label="Target Time"
+            value={leg.target.value || ""}
+            onChange={(e) =>
+              updateLeg(
+                leg.id,
+                "target.value",
+                e.target.value
+              )
+            }
           />
         )}
 
-      </Card>
-    </Grid.Col>
+        {/* MTM */}
+        {leg.target.type === "mtm" && (
+          <NumberInput
+            mt="md"
+            label="MTM Target"
+            placeholder="Enter value"
+            value={leg.target.value || ""}
+            onChange={(value) =>
+              updateLeg(leg.id, "target.value", value)
+            }
+          />
+        )}
 
-        {/* TRAILING */}
+        {/* LIMIT PRICE */}
+        {leg.target.type === "limit" && (
+          <NumberInput
+            mt="md"
+            label="Limit Price"
+            placeholder="Enter price"
+            value={leg.target.value || ""}
+            onChange={(value) =>
+              updateLeg(leg.id, "target.value", value)
+            }
+          />
+        )}
 
-        <Grid.Col span={{ base: 12, md: 4 }}>
-          <Card shadow="sm" p="lg">
+        {/* PERCENTAGE */}
+        {leg.target.type === "percentage" && (
+          <NumberInput
+            mt="md"
+            label="Percentage"
+            placeholder="Enter percentage"
+            value={leg.target.value || ""}
+            onChange={(value) =>
+              updateLeg(leg.id, "target.value", value)
+            }
+          />
+        )}
 
-            <Group justify="space-between">
-              <span>Trailing Options</span>
-              <Switch />
-            </Group>
+        {/* REENTRY SWITCH */}
+        <Group mt="1rem" justify="space-between">
+          <Text>Re-entry after Target</Text>
 
-            <Select
-              mt="md"
-              data={["MTM", "Points","Percentage"]}
-              defaultValue="Lock"
-            />
+          <Switch
+            checked={leg.target.reentry.enabled}
+            onChange={(e) =>
+              updateLeg(
+                leg.id,
+                "target.reentry.enabled",
+                e.currentTarget.checked
+              )
+            }
+          />
+        </Group>
 
-            <NumberInput
-              mt="sm"
-              label="TSL Active"
-              placeholder="0"
-            />
+        {/* REENTRY COUNT */}
+        {leg.target.reentry.enabled && (
+          <NumberInput
+            mt="sm"
+            label="Re-entry Count"
+            min={1}
+            value={leg.target.reentry.count}
+            onChange={(value) =>
+              updateLeg(
+                leg.id,
+                "target.reentry.count",
+                value
+              )
+            }
+          />
+        )}
+      </>
+    )}
+  </Card>
+</Grid.Col>
 
-            <NumberInput
-              mt="sm"
-              label="SL positition"
-              placeholder="1"
-            />
-            <NumberInput
-              mt="sm"
-              label="Trail Value"
-              placeholder="1"
-            />
-            
-            <Group mt={"1rem"} ><Text>Re-entry after TSL</Text> <Switch/>
-            <NumberInput label="Re-entry number" />
-            </Group>
+      <Grid.Col span={{ base: 12, md: 4 }}>
+  <Card shadow="sm" p="lg">
 
-          </Card>
-        </Grid.Col>
+    <Group justify="space-between">
+      <Text>Trailing Options</Text>
+
+      <Switch
+        checked={leg.trailing.enabled}
+        onChange={(e) =>
+          updateLeg(
+            leg.id,
+            "trailing.enabled",
+            e.currentTarget.checked
+          )
+        }
+      />
+    </Group>
+
+    {leg.trailing.enabled && (
+      <>
+        <Select
+          mt="md"
+          data={[
+            { label: "MTM", value: "mtm" },
+            { label: "Points", value: "points" },
+            { label: "Percentage", value: "percentage" }
+          ]}
+          value={leg.trailing.type}
+          onChange={(value) =>
+            updateLeg(leg.id, "trailing.type", value)
+          }
+        />
+
+        <NumberInput
+          mt="sm"
+          label="TSL Active"
+          placeholder="0"
+          value={leg.trailing.tsl_active || ""}
+          onChange={(value) =>
+            updateLeg(leg.id, "trailing.tsl_active", value)
+          }
+        />
+
+        <NumberInput
+          mt="sm"
+          label="SL Position"
+          placeholder="1"
+          value={leg.trailing.sl_position || ""}
+          onChange={(value) =>
+            updateLeg(leg.id, "trailing.sl_position", value)
+          }
+        />
+
+        <NumberInput
+          mt="sm"
+          label="Trail Value"
+          placeholder="1"
+          value={leg.trailing.trail_value || ""}
+          onChange={(value) =>
+            updateLeg(leg.id, "trailing.trail_value", value)
+          }
+        />
+
+        <Group mt="1rem" justify="space-between">
+          <Text>Re-entry after TSL</Text>
+
+          <Switch
+            checked={leg.trailing.reentry.enabled}
+            onChange={(e) =>
+              updateLeg(
+                leg.id,
+                "trailing.reentry.enabled",
+                e.currentTarget.checked
+              )
+            }
+          />
+        </Group>
+
+        {leg.trailing.reentry.enabled && (
+          <NumberInput
+            mt="sm"
+            label="Re-entry number"
+            min={1}
+            value={leg.trailing.reentry.count}
+            onChange={(value) =>
+              updateLeg(
+                leg.id,
+                "trailing.reentry.count",
+                value
+              )
+            }
+          />
+        )}
+      </>
+    )}
+
+  </Card>
+</Grid.Col>
 
                   </Grid>
 

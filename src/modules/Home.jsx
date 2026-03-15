@@ -31,6 +31,7 @@ export default function Home() {
   // pages order for sidebar index
   const routeMap = [
     "/",
+    "/create-signal",
     "/trader-signal",
     "/strategies",
     "/subscriptions",

@@ -1,12 +1,136 @@
-import { ActionIcon, Box, Button, Card, Container, Divider, Flex, Grid, Group, NumberInput, SegmentedControl, Select, Switch, Text, TextInput, Title } from '@mantine/core'
-import React, { useState } from 'react'
+import { ActionIcon, Box, Button, Card, Container, Divider, Flex, Grid, Group, NumberInput, SegmentedControl, Select, Switch, Text, Textarea, TextInput, Title } from '@mantine/core'
+import React, { useEffect, useState } from 'react'
 import Leg from './Leg';
 import { IconCopy, IconTrash } from '@tabler/icons-react';
 import { TimeInput } from "@mantine/dates";
+import { apiRequest } from '../utils/api';
 
 
 const Tradersignal = () => {
+  const [indexes, setIndexes] = useState([])
+const [index, setIndex] = useState(null)
+const [index_neme , setindex_name] = useState("")
+const [description , setdescription] = useState("")
+useEffect(() => {
+
+  const fetchIndexes = async () => {
+    try {
+
+      const res = await apiRequest("GET", "/api/instruments/indexes")
+
+      const formatted = res.map((item) => ({
+        value: item.id,
+        label: item.index_name
+      }))
+      setIndexes(formatted)
+ 
+    } catch (err) {
+      console.log("Index fetch error:", err)
+    }
+  }
+
+  fetchIndexes()
+
+}, [])
+  const createDefaultLeg = () => ({
+  id: Date.now(),
+
+  market_type: "options",
+
+  lots: 1,
+  position: "Sell",
+  option_type: "Call",
+  strike_price: "26000",
+  expiry: "This Week",
+
+  entry: {
+    type: "current_price",
+    value: null
+  },
+
+  stoploss: {
+    enabled: false,
+    type: "percentage",
+    value: null,
+    reentry: {
+      enabled: false,
+      count: 0
+    }
+  },
+
+  target: {
+    enabled: false,
+    type: "mtm",
+    value: null,
+    reentry: {
+      enabled: false,
+      count: 0
+    }
+  },
+
+  trailing: {
+    enabled: false,
+    type: "points",
+    tsl_active: null,
+    sl_position: null,
+    trail_value: null,
+    reentry: {
+      enabled: false,
+      count: 0
+    }
+  }
+});
   
+  const updateLeg = (id, path, value) => {
+  setLegs((prev) =>
+    prev.map((leg) => {
+      if (leg.id !== id) return leg;
+
+      const keys = path.split(".");
+      let updated = { ...leg };
+
+      let obj = updated;
+
+      for (let i = 0; i < keys.length - 1; i++) {
+        obj[keys[i]] = { ...obj[keys[i]] };
+        obj = obj[keys[i]];
+      }
+
+      obj[keys[keys.length - 1]] = value;
+
+      return updated;
+    })
+  );
+};
+
+const handleSaveSignal = async() => {
+
+  const signalJSON = {
+    creator_name: creatorName,
+    index_id: index,
+    index_name:index_neme,
+    description:description,
+    config_json: {
+      legs: legs
+    },
+    status:"pending"
+  };
+  const response = await apiRequest('POST','/api/trader-signal',{
+    creator_name: creatorName,
+    index_id: index,
+    index_name:index_neme,
+    description:description,
+    config_json:{legs : legs},
+    status:"pending"
+  })
+
+  console.log(response)
+  console.log("FINAL SIGNAL JSON 👇");
+  console.log(JSON.stringify(signalJSON, null, 2));
+};
+
+
+
   const [marketType, setMarketType] = useState("options");
   const [formData, setFormData] = useState({
   lots: 1,
@@ -21,36 +145,15 @@ const Tradersignal = () => {
   marketType === "futures"
   ? ["Current Month", "Next Month"]
   : ["This Week", "Next Week"];
+
+  const [creatorName, setCreatorName] = useState("");
   
-  const [legs, setLegs] = useState([
-     {
-    id: Date.now(),
-    segment: "options",
-    lots: 1,
-    position: "Sell",
-    option_type: "Call",
-    strike_price:"",
-    expiry: "This Week"
-  }
-  ]);
+  const [legs, setLegs] = useState([createDefaultLeg()]);
 
 
-  const handleChange = (field, value) => {
-  setFormData((prev) => ({
-    ...prev,
-    [field]: value
-  }));
-};
 
 const addLeg = () => {
-  setLegs((prev) => [
-    ...prev,
-    {
-      id: Date.now(),
-      ...formData,
-      segment: marketType
-    }
-  ]);
+  setLegs((prev) => [...prev, createDefaultLeg()]);
 };
 
 const deleteLeg = (id) => {
@@ -59,18 +162,17 @@ const deleteLeg = (id) => {
 
 const copyLeg = (leg) => {
   const newLeg = {
-    ...leg,
+    ...JSON.parse(JSON.stringify(leg)),
     id: Date.now()
   };
 
   setLegs((prev) => [...prev, newLeg]);
 };
 
-
   return (
     <Container size="xl" py="md">
       <Title mb={10} order={3} >
-        Trader Signal
+        Create Signal
       </Title>
       <Grid>
       
@@ -84,60 +186,55 @@ const copyLeg = (leg) => {
                   </Title>
       
                   <Select
-                    label="Index"
-                    data={["NIFTY", "BANKNIFTY", "FINNIFTY"]}
-                    defaultValue="NIFTY"
-                  />  
+  label="Index"
+  placeholder="Select index"
+  data={indexes}
+  value={index}
+  onChange={(value) => {
+    setIndex(value);
+
+    const selected = indexes.find((item) => item.value === value);
+    setindex_name(selected?.label || "");
+    
+  }}
+  searchable
+  nothingFoundMessage="No index found"
+/>
                 </Card>
               </Grid.Col>
       
               {/* ENTRY SETTINGS */}
       
-              <Grid.Col span={{ base: 12, md: 5 }}>
+              <Grid.Col span={{ base: 12, md: 4 }}>
                 <Card shadow="sm" p="lg">
                    
                   <Title order={5} mb="md">
                     Creator Name
                   </Title>
-                  <TextInput label="Name" type='text' /> 
+                  <TextInput
+  label="Name"
+  value={creatorName}
+  onChange={(e) => setCreatorName(e.target.value)}
+/>
 
                 </Card>
               </Grid.Col>
-      
-              {/* LEGWISE SETTINGS */}
-      {/* 
-              <Grid.Col span={{ base: 12, md: 3 }}>
+              <Grid.Col span={{ base: 12, md: 4 }}>
                 <Card shadow="sm" p="lg">
-      
+                   
                   <Title order={5} mb="md">
-                    Legwise settings
+                    Description
                   </Title>
-      
-                  <SegmentedControl
-                    fullWidth
-                    data={[
-                      { label: "Partial", value: "partial" },
-                      { label: "Complete", value: "complete" }
-                    ]}
-                  />
-      
-                  <Switch
-                    mt="md"
-                    label="Trail SL to Break-even price"
-                  />
-      
-                  <SegmentedControl
-                    mt="md"
-                    fullWidth
-                    data={[
-                      { label: "All Legs", value: "all" },
-                      { label: "SL Legs", value: "sl" }
-                    ]}
-                  />
-      
+                  <Textarea
+                  value={description}
+                  onChange={(e)=>setdescription(e.target.value)}
+                  placeholder='Enter descripion'
+  
+/>
+
                 </Card>
-              </Grid.Col> */}
-      
+              </Grid.Col>
+    
             </Grid> 
 
             {/* LEG BUILDER */}
@@ -171,14 +268,9 @@ const copyLeg = (leg) => {
     </Group>
 
     <Leg
-      number={index + 1}
-      segment={leg.segment}
-      lots={leg.lots}
-      position={leg.position}
-      option_type={leg.option_type}
-      strike_price={leg.strike_price}
-      expiry={leg.expiry}
-    />
+  leg={leg}
+  updateLeg={updateLeg}
+/>
 
     {/* Add Leg button only after first leg */}
     {index === 0 && (
@@ -192,45 +284,11 @@ const copyLeg = (leg) => {
   </Card>
 ))}
 
-   {/*  {legs.map((leg, index) => (
-  <Card key={leg.id} shadow="sm" p="sm" mt="md">
-
-    <Group justify="space-between" mb="xs">
-      <Text fw={600}>Leg #{index + 1}</Text>
-
-      <Group>
-        <ActionIcon
-          variant="light"
-          onClick={() => copyLeg(leg)}
-        >
-          <IconCopy size={16} />
-        </ActionIcon>
-
-        <ActionIcon
-          variant="light"
-          color="red"
-          onClick={() => deleteLeg(leg.id)}
-        >
-          <IconTrash size={16} />
-        </ActionIcon>
-      </Group>
-    </Group>
-
-    <Leg
-      number={index + 1}
-      segment={leg.segment}
-      lots={leg.lots}
-      position={leg.position}
-      option_type={leg.option_type}
-      strike_price={leg.strike_price}
-      expiry={leg.expiry}
-    />
-
-  </Card>
-))} */}
-
+ 
     <Flex align={"center"} justify={"center"} my={"2rem"} >
-      <Button bg={"#000"}  >Save Signal</Button>
+      <Button bg="#000" onClick={handleSaveSignal}>
+  Save Signal
+</Button>
     </Flex>
 
     </Container>

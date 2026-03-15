@@ -20,6 +20,7 @@ import { useState } from "react";
 
 const menu = [
   { label: "Dashboard", icon: IconGauge },
+  { label: "Create Signal", icon: IconAntenna },
   { label: "Trader Signal", icon: IconAntenna },
   { label: "Strategies", icon: IconChartLine },
   { label: "Subscriptions", icon: IconCreditCard },

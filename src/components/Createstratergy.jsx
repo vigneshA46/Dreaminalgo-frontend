@@ -13,18 +13,176 @@ import {
   Divider,
   Text,
   ActionIcon,
-  Flex
+  Flex,
+  Textarea
 } from "@mantine/core";
 import { TimeInput } from "@mantine/dates";
-
-import { useState } from "react";
-import Leg from "./Leg";
+import { useEffect, useState } from "react";
 import { IconCopy, IconTrash } from "@tabler/icons-react";
 import Createleg from "./Createleg";
+import { apiRequest } from "../utils/api";
 
 export default function CreateStrategy() {
+
+  const [indexes, setIndexes] = useState([])
+  const [index, setIndex] = useState(null)
+  const [description , setdescription] = useState("")
+  const [startergyname , setstartergyname] = useState("")
+  useEffect(() => {
+  
+    const fetchIndexes = async () => {
+      try {
+        const res = await apiRequest("GET", "/api/instruments/indexes")
+        const formatted = res.map((item) => ({
+          value: item.id,
+          label: item.index_name
+        }))
+  
+        setIndexes(formatted)
+  
+      } catch (err) {
+        console.log("Index fetch error:", err)
+      }
+    }
+  
+    fetchIndexes()
+  
+  }, [])
+  
+
+    const createDefaultLeg = () => ({
+  id: Date.now(),
+
+  market_type: "options",
+
+  lots: 1,
+  position: "Sell",
+  option_type: "Call",
+  strike_type: {
+    type: "ATM spot",
+    value:""
+  },
+  expiry: "This Week",
+
+  entry: {
+    type: "current_price",
+    value: null
+  },
+
+  stoploss: {
+    enabled: false,
+    type: "percentage",
+    value: null,
+    reentry: {
+      enabled: false,
+      count: 0
+    }
+  },
+
+  target: {
+    enabled: false,
+    type: "mtm",
+    value: null,
+    reentry: {
+      enabled: false,
+      count: 0
+    }
+  },
+
+  trailing: {
+    enabled: false,
+    type: "points",
+    tsl_active: null,
+    sl_position: null,
+    trail_value: null,
+    reentry: {
+      enabled: false,
+      count: 0
+    }
+  }
+});
+
+const [entrySettings, setEntrySettings] = useState({
+  mode: "intraday",
+
+  entry_time: null,
+  exit_time: null,
+
+  no_reentry_after: {
+    enabled: false,
+    time: null
+  },
+
+  delay_restart: {
+    enabled: false,
+    time: null
+  },
+
+  positional: {
+    expiry_type: "weekly",
+    entry_days_before_expiry: 0,
+    exit_days_before_expiry: 0
+  },
+
+  momentum: {
+    enabled: false,
+    type: "points",
+    value: 50
+  }
+});
+  
+  const updateLeg = (id, path, value) => {
+  setLegs((prev) =>
+    prev.map((leg) => {
+      if (leg.id !== id) return leg;
+
+      const keys = path.split(".");
+      let updated = { ...leg };
+
+      let obj = updated;
+
+      for (let i = 0; i < keys.length - 1; i++) {
+        obj[keys[i]] = { ...obj[keys[i]] };
+        obj = obj[keys[i]];
+      }
+
+      obj[keys[keys.length - 1]] = value;
+
+      return updated;
+    })
+  );
+};
+
+const handleSaveSignal = async() => {
+
+  const signalJSON = {
+    index: index,
+    startergyname:startergyname,
+    description : description,
+    config_json: {
+      entry_settings: entrySettings,
+      legs: legs
+    }
+  };
+
+  const response = await apiRequest('POST','/api/createstartergy/create',{
+    index_id:index,
+    startergy_name:startergyname,
+    description: description,
+    entry_settings: entrySettings,
+    config_json: {legs:legs},
+    status: 'published',
+    created_by: 'user'
+  })
+
+  /* console.log(response) */
+
+  /* console.log("FINAL SIGNAL JSON 👇"); */
+  /* console.log(JSON.stringify(signalJSON, null, 2)); */
+};
+
   const [mode, setMode] = useState("intraday");
-    const [marketType, setMarketType] = useState("options");
+  const [marketType, setMarketType] = useState("options");
 
     const strikeTypeOptions = [
   { label: "ATM Spot", value: "atm_spot" },
@@ -61,18 +219,7 @@ const atmValueOptions = [
     ? ["Current Month", "Next Month"]
     : ["This Week", "Next Week"];
     
-    const [legs, setLegs] = useState([
-      {
-    id: Date.now(), 
-    segment: "options",
-    lots: 1,
-    position: "Sell",
-    option_type: "Call",
-    strike_type:"",
-    strike_price:"",
-    expiry: "This Week"
-  }
-    ]);
+    const [legs, setLegs] = useState([createDefaultLeg()]);
   
   
     const handleChange = (field, value) => {
@@ -83,28 +230,21 @@ const atmValueOptions = [
   };
   
   const addLeg = () => {
-    setLegs((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
-        ...formData,
-        segment: marketType
-      }
-    ]);
-  };
+  setLegs((prev) => [...prev, createDefaultLeg()]);
+};
   
   const deleteLeg = (id) => {
     setLegs((prev) => prev.filter((leg) => leg.id !== id));
   };
   
   const copyLeg = (leg) => {
-    const newLeg = {
-      ...leg,
-      id: Date.now()
-    };
-  
-    setLegs((prev) => [...prev, newLeg]);
+  const newLeg = {
+    ...JSON.parse(JSON.stringify(leg)),
+    id: Date.now()
   };
+
+  setLegs((prev) => [...prev, newLeg]);
+};
 
   return (
     <Container size="xl" py="md">
@@ -115,17 +255,20 @@ const atmValueOptions = [
         {/* INSTRUMENT SETTINGS */}
 
         <Grid.Col span={{ base: 12, md: 4 }}>
+
           <Card shadow="sm" p="lg">
-
-            <Title order={5} mb="md">
-              Instrument settings
-            </Title>
-
+            <TextInput mb={'1rem'} value={startergyname} onChange={(e)=>setstartergyname(e.target.value)} label='Startegy Name' />
             <Select
-              label="Index"
-              data={["NIFTY", "BANKNIFTY", "FINNIFTY"]}
-              defaultValue="NIFTY"
+              mb={"1rem"}
+              label="Underlying"
+              placeholder="Select index"
+              data={indexes}
+              value={index}
+              onChange={setIndex}
+              searchable
+              nothingFoundMessage="No index found"
             />
+            <Textarea label="Description" maxLength={300} value={description} onChange={(e)=>setdescription(e.target.value)} />
           </Card>
         </Grid.Col>
 
@@ -140,8 +283,13 @@ const atmValueOptions = [
 
         <SegmentedControl
           fullWidth
-          value={mode}
-          onChange={setMode}
+          value={entrySettings.mode}
+          onChange={(val) =>
+            setEntrySettings((prev) => ({
+            ...prev,
+              mode: val
+              }))
+            }
           data={[
             { label: "Intraday", value: "intraday" },
             { label: "BTST", value: "btst" },
@@ -156,18 +304,60 @@ const atmValueOptions = [
             <Grid mt="md">
 
               <Grid.Col span={6}>
-                <TimeInput label="Entry Time" />
+                <TimeInput
+  label="Entry Time"
+  value={entrySettings.entry_time || ""}
+  onChange={(e) =>
+    setEntrySettings((prev) => ({
+      ...prev,
+      entry_time: e.currentTarget.value
+    }))
+  }
+/>
               </Grid.Col>
 
               <Grid.Col span={6}>
-                <TimeInput label="Exit Time" />
+                <TimeInput
+  label="Exit Time"
+  value={entrySettings.exit_time || ""}
+  onChange={(e) =>
+    setEntrySettings((prev) => ({
+      ...prev,
+      exit_time: e.currentTarget.value
+    }))
+  }
+/>
               </Grid.Col>
 
             </Grid>
 
             <Group mt="md" align="end">
-              <Switch label="No re-entry after" />
-              <TimeInput placeholder="Time" />
+              <Switch
+  label="No re-entry after"
+  checked={entrySettings.no_reentry_after.enabled}
+  onChange={(e) =>
+    setEntrySettings((prev) => ({
+      ...prev,
+      no_reentry_after: {
+        ...prev.no_reentry_after,
+        enabled: e.currentTarget.checked
+      }
+    }))
+  }
+/>
+              <TimeInput
+  placeholder="Time"
+  value={entrySettings.no_reentry_after.time || ""}
+  onChange={(e) =>
+    setEntrySettings((prev) => ({
+      ...prev,
+      no_reentry_after: {
+        ...prev.no_reentry_after,
+        time: e.currentTarget.value
+      }
+    }))
+  }
+/>
             </Group>
           </>
         )}
@@ -179,18 +369,60 @@ const atmValueOptions = [
             <Grid mt="md">
 
               <Grid.Col span={6}>
-                <TimeInput label="Entry Time" />
+               <TimeInput
+  label="Entry Time"
+  value={entrySettings.entry_time || ""}
+  onChange={(e) =>
+    setEntrySettings((prev) => ({
+      ...prev,
+      entry_time: e.currentTarget.value
+    }))
+  }
+/>
               </Grid.Col>
 
               <Grid.Col span={6}>
-                <TimeInput label="Exit Time" />
+                <TimeInput
+  label="Exit Time"
+  value={entrySettings.exit_time || ""}
+  onChange={(e) =>
+    setEntrySettings((prev) => ({
+      ...prev,
+      exit_time: e.currentTarget.value
+    }))
+  }
+/>
               </Grid.Col>
 
             </Grid>
 
             <Group mt="md" align="end">
-              <Switch label="Delay restart" />
-              <TimeInput placeholder="Time" />
+              <Switch
+  label="Delay restart"
+  checked={entrySettings.delay_restart.enabled}
+  onChange={(e) =>
+    setEntrySettings((prev) => ({
+      ...prev,
+      delay_restart: {
+        ...prev.delay_restart,
+        enabled: e.currentTarget.checked
+      }
+    }))
+  }
+/>
+              <TimeInput
+  placeholder="Time"
+  value={entrySettings.delay_restart.time || ""}
+  onChange={(e) =>
+    setEntrySettings((prev) => ({
+      ...prev,
+      delay_restart: {
+        ...prev.delay_restart,
+        time: e.currentTarget.value
+      }
+    }))
+  }
+/>
             </Group>
           </>
         )}
@@ -204,22 +436,50 @@ const atmValueOptions = [
               <Text>Position expiry on</Text>
 
               <Select
-                w={140}
-                data={[
-                  { label: "Weekly", value: "weekly" },
-                  { label: "Monthly", value: "monthly" }
-                ]}
-              />
+  w={140}
+  value={entrySettings.positional.expiry_type}
+  onChange={(val) =>
+    setEntrySettings((prev) => ({
+      ...prev,
+      positional: {
+        ...prev.positional,
+        expiry_type: val
+      }
+    }))
+  }
+  data={[
+    { label: "Weekly", value: "weekly" },
+    { label: "Monthly", value: "monthly" }
+  ]}
+/>
             </Group>
 
             <Grid mt="md">
 
               <Grid.Col span={6}>
-                <TimeInput label="Entry Time" />
+                <TimeInput
+  label="Entry Time"
+  value={entrySettings.entry_time || ""}
+  onChange={(e) =>
+    setEntrySettings((prev) => ({
+      ...prev,
+      entry_time: e.currentTarget.value
+    }))
+  }
+/>
               </Grid.Col>
 
               <Grid.Col span={6}>
-                <TimeInput label="Exit Time" />
+                <TimeInput
+  label="Exit Time"
+  value={entrySettings.exit_time || ""}
+  onChange={(e) =>
+    setEntrySettings((prev) => ({
+      ...prev,
+      exit_time: e.currentTarget.value
+    }))
+  }
+/>
               </Grid.Col>
 
             </Grid>
@@ -229,10 +489,19 @@ const atmValueOptions = [
               <Grid.Col span={6}>
                 <Group align="end">
                   <Select
-                    label="Entry"
-                    w={90}
-                    data={["0", "1", "2", "3", "4"]}
-                  />
+  label="Entry"
+  value={String(entrySettings.positional.entry_days_before_expiry)}
+  onChange={(val) =>
+    setEntrySettings((prev) => ({
+      ...prev,
+      positional: {
+        ...prev.positional,
+        entry_days_before_expiry: Number(val)
+      }
+    }))
+  }
+  data={["0","1","2","3","4"]}
+/>
                   <Text mb={6}>trading days before expiry</Text>
                 </Group>
               </Grid.Col>
@@ -240,10 +509,19 @@ const atmValueOptions = [
               <Grid.Col span={6}>
                 <Group align="end">
                   <Select
-                    label="Exit"
-                    w={90}
-                    data={["0", "1", "2", "3", "4"]}
-                  />
+  label="Exit"
+  value={String(entrySettings.positional.exit_days_before_expiry)}
+  onChange={(val) =>
+    setEntrySettings((prev) => ({
+      ...prev,
+      positional: {
+        ...prev.positional,
+        exit_days_before_expiry: Number(val)
+      }
+    }))
+  }
+  data={["0","1","2","3","4"]}
+/>
                   <Text mb={6}>trading days before expiry</Text>
                 </Group>
               </Grid.Col>
@@ -264,19 +542,49 @@ const atmValueOptions = [
 
         <Group justify="space-between">
           <Text>Overall Momentum</Text>
-          <Switch />
+          <Switch
+  checked={entrySettings.momentum.enabled}
+  onChange={(e) =>
+    setEntrySettings((prev) => ({
+      ...prev,
+      momentum: {
+        ...prev.momentum,
+        enabled: e.currentTarget.checked
+      }
+    }))
+  }
+/>
         </Group>
 
         <Group mt="sm">
           <Select
-            data={[
-              { label: "Points (Pts)", value: "points" },
-              { label: "Percentage", value: "percentage" }
-            ]}
-            defaultValue="points"
-          />
-
-          <NumberInput defaultValue={50} />
+  value={entrySettings.momentum.type}
+  onChange={(val) =>
+    setEntrySettings((prev) => ({
+      ...prev,
+      momentum: {
+        ...prev.momentum,
+        type: val
+      }
+    }))
+  }
+  data={[
+    { label: "Points (Pts)", value: "points" },
+    { label: "Percentage", value: "percentage" }
+  ]}
+/>
+          <NumberInput
+  value={entrySettings.momentum.value}
+  onChange={(val) =>
+    setEntrySettings((prev) => ({
+      ...prev,
+      momentum: {
+        ...prev.momentum,
+        value: val
+      }
+    }))
+  }
+/>
         </Group>
 
       </Card>
@@ -348,14 +656,8 @@ const atmValueOptions = [
                         </Group>
                     
                         <Createleg
-                          number={index + 1}
-                          segment={leg.segment}
-                          lots={leg.lots}
-                          position={leg.position}
-                          option_type={leg.option_type}
-                          strike_type={leg.strike_type}
-                          strike_value={leg.strike_value}
-                          expiry={leg.expiry}
+                          leg={leg}
+                          updateLeg={updateLeg}
                         />
                     
                         {/* Add Leg button only after first leg */}
@@ -376,7 +678,9 @@ const atmValueOptions = [
       {/* LOWER SECTION */}
 
           <Flex align={"center"} justify={"center"} >
-        <Button  bg={"#000"} >Create Startergy</Button>
+        <Button bg="#000" onClick={handleSaveSignal}>
+  Create Strategy
+</Button>
         </Flex>
     </Container>
   );
