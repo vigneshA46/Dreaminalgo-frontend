@@ -21,7 +21,8 @@ import {
   Menu,
   Divider,
   UnstyledButton,
-  Avatar
+  Avatar,
+  ScrollArea
 } from '@mantine/core';
 import { 
   IconCurrencyDollar, 
@@ -47,6 +48,7 @@ import {
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import { useUser } from '../context/UserContext';
 import { useNavigate } from 'react-router-dom';
+import { apiRequest } from '../utils/api';
 
 // Static data for portfolio performance
 const portfolioData = [
@@ -168,11 +170,212 @@ function RiskCard({ title, description, level, color }) {
   );
 }
 
+
+
+
+
 export default function Dashboard() {
    const [active, setActive] = useState("live"); 
    const {logout , fetchUser} = useUser();
      const ltpData = useMarketWebSocket();
      const navigation = useNavigate()
+     const [startergies , setstartergies] = useState([]);
+     const PaperUI = ()=>{
+  return(
+      <Box
+  style={{
+    backgroundColor: "white",
+    borderRadius: "12px",
+    padding: "20px",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+    width: "100%",
+  }}
+>
+  {/* Scrollable container */}
+  <ScrollArea w="100%" type="auto">
+            <Table
+              w={'100%'}
+              horizontalSpacing="md"
+              verticalSpacing="md"
+              style={{
+                minWidth: '100%',
+              }}
+            >
+              <Table.Thead>
+                <Table.Tr style={{ backgroundColor: '#ffffffff' }}>
+                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' }}>
+                    S.No
+                  </Table.Th>
+                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' }}>
+                    Strategy Name
+                  </Table.Th>
+                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' }}>
+                    O | T | M O
+                  </Table.Th>
+                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' }}>
+                    Status
+                  </Table.Th>
+                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' }}>
+                    PNL
+                  </Table.Th>
+                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' }}>
+                    Actions
+                  </Table.Th>
+                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' }}>
+                    Details
+                  </Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>
+  {startergies.length > 0 ? (
+    startergies.map((strategy, index) => (
+      <Table.Tr key={strategy.id}>
+        <Table.Td>{index + 1}</Table.Td>
+
+        <Table.Td>{strategy.name}</Table.Td>
+
+        <Table.Td>-</Table.Td>
+
+        <Table.Td>{strategy.status}</Table.Td>
+
+        <Table.Td>-</Table.Td>
+
+        <Table.Td>-</Table.Td>
+
+        <Table.Td>-</Table.Td>
+      </Table.Tr>
+    ))
+  ) : (
+    <Table.Tr>
+      <Table.Td
+        colSpan={7}
+        style={{ textAlign: "center", padding: "60px", color: "#adb5bd" }}
+      >
+        <Text size="sm">No strategies available</Text>
+      </Table.Td>
+    </Table.Tr>
+  )}
+</Table.Tbody>
+            </Table>
+            </ScrollArea>
+
+            {/* Pagination */}
+            <Group justify="flex-end" mt="xl">
+              <Pagination
+                total={1}
+                value={1}
+                onChange={() => {}}
+                size="sm"
+                styles={{
+                  control: {
+                    border: '1px solid #000',
+                    borderRadius: '6px',
+                    '&[data-active]': {
+                      backgroundColor: '#000',
+                      borderColor: '#000',
+                    },
+                  },
+                }}
+              />
+            </Group>
+          </Box>
+  )
+}
+
+const LiveUI = ()=>{
+  return(
+        <Box
+  style={{
+    backgroundColor: "white",
+    borderRadius: "12px",
+    padding: "20px",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+    width: "100%",
+  }}
+>
+  {/* Scrollable container */}
+  <ScrollArea w="100%" type="auto">
+            <Table
+              w={'100%'}
+              horizontalSpacing="md"
+              verticalSpacing="md"
+              style={{
+                minWidth: '100%',
+              }}
+            >
+              <Table.Thead>
+                <Table.Tr style={{ backgroundColor: '#ffffffff' }}>
+                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' }}>
+                    S.No
+                  </Table.Th>
+                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' }}>
+                    Strategy Name
+                  </Table.Th>
+                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' }}>
+                    O | T | M O
+                  </Table.Th>
+                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' }}>
+                    Status
+                  </Table.Th>
+                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' }}>
+                    PNL
+                  </Table.Th>
+                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' }}>
+                    Broker
+                  </Table.Th>
+                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' }}>
+                    Actions
+                  </Table.Th>
+                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' }}>
+                    Details
+                  </Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>
+                <Table.Tr>
+                  <Table.Td colSpan={8} style={{ textAlign: 'center', padding: '60px', color: '#adb5bd' }}>
+                    <Text size="sm">No strategies available</Text>
+                  </Table.Td>
+                </Table.Tr>
+              </Table.Tbody>
+            </Table>
+            </ScrollArea>
+
+            {/* Pagination */}
+            <Group justify="flex-end" mt="xl">
+              <Pagination
+                total={1}
+                value={1}
+                onChange={() => {}}
+                size="sm"
+                styles={{
+                  control: {
+                    border: '1px solid #000',
+                    borderRadius: '6px',
+                    '&[data-active]': {
+                      backgroundColor: '#000',
+                      borderColor: '#000',
+                    },
+                  },
+                }}
+              />
+            </Group>
+          </Box>
+  )
+}
+
+     useEffect(()=>{
+      const Fetchstartergies = async ()=>{
+        try {
+          const response = await apiRequest('GET','/api/stratergy')
+          await setstartergies(response)
+          console.log(response)
+        }catch(err){
+          console.log(err)
+        }
+      }
+      Fetchstartergies();
+     },[])
 
      const indices = [
     { name: "NIFTY", label: "NIFTY50" },
@@ -477,78 +680,15 @@ export default function Dashboard() {
           </Box>
 
           {/* Table Container */}
-          <Box
-            style={{
-              backgroundColor: 'white',
-              borderRadius: '12px',
-              padding: '20px',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-            }}
-          >
-            <Table
-              horizontalSpacing="md"
-              verticalSpacing="md"
-              style={{
-                minWidth: '100%',
-              }}
-            >
-              <Table.Thead>
-                <Table.Tr style={{ backgroundColor: '#ffffffff' }}>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' }}>
-                    S.No
-                  </Table.Th>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' }}>
-                    Strategy Name
-                  </Table.Th>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' }}>
-                    O | T | M O
-                  </Table.Th>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' }}>
-                    Status
-                  </Table.Th>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' }}>
-                    PNL
-                  </Table.Th>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' }}>
-                    Broker
-                  </Table.Th>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' }}>
-                    Actions
-                  </Table.Th>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' }}>
-                    Details
-                  </Table.Th>
-                </Table.Tr>
-              </Table.Thead>
-              <Table.Tbody>
-                <Table.Tr>
-                  <Table.Td colSpan={8} style={{ textAlign: 'center', padding: '60px', color: '#adb5bd' }}>
-                    <Text size="sm">No strategies available</Text>
-                  </Table.Td>
-                </Table.Tr>
-              </Table.Tbody>
-            </Table>
-
-            {/* Pagination */}
-            <Group justify="flex-end" mt="xl">
-              <Pagination
-                total={1}
-                value={1}
-                onChange={() => {}}
-                size="sm"
-                styles={{
-                  control: {
-                    border: '1px solid #000',
-                    borderRadius: '6px',
-                    '&[data-active]': {
-                      backgroundColor: '#000',
-                      borderColor: '#000',
-                    },
-                  },
-                }}
-              />
-            </Group>
-          </Box>
+          {
+            active == 'pt' ? (
+              <>
+              <PaperUI />
+              </>
+            ) : (
+              <><LiveUI /></>
+            )
+          }
         </Box>
 
 

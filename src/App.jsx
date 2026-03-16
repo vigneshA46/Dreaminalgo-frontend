@@ -20,6 +20,7 @@ import Login from './auth/Login.jsx';
 import Signup from './auth/Signup.jsx';
 import Brokers from './components/Brokers.jsx';
 import Createtradersignal from './components/Createtradersignal.jsx';
+import StrategyLive from './components/StrategyLive.jsx';
 
 function App() {
   return (
@@ -60,6 +61,7 @@ function App() {
             <Route path="plans" element={<Planandpricing />} />
             <Route path="tutorials" element={<Tutorials />} />
             <Route path="broker" element={<Brokers />} />
+            <Route path="websocket" element={<StrategyLive />} />
           </Route>
 
         </Routes>
