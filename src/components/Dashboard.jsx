@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useMarketWebSocket } from "../hooks/useMarketWebSocket";
+import { io } from "socket.io-client";
+
 import { 
   Box, 
   Text, 
@@ -49,6 +51,7 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Area, Area
 import { useUser } from '../context/UserContext';
 import { useNavigate } from 'react-router-dom';
 import { apiRequest } from '../utils/api';
+import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
 
 // Static data for portfolio performance
 const portfolioData = [
@@ -177,9 +180,62 @@ function RiskCard({ title, description, level, color }) {
 export default function Dashboard() {
    const [active, setActive] = useState("live"); 
    const {logout , fetchUser} = useUser();
-     const ltpData = useMarketWebSocket();
-     const navigation = useNavigate()
-     const [startergies , setstartergies] = useState([]);
+   const ltpData = useMarketWebSocket();
+   const navigation = useNavigate()
+   const [startergies , setstartergies] = useState([]);
+   const [openedRow, setOpenedRow] = useState(null);
+   const [legs, setLegs] = useState({});
+   const [liveData, setLiveData] = useState({});
+
+   useEffect(() => {
+  const socket = io("https://dreaminalgo-backend-production.up.railway.app");
+
+  socket.on("connect", () => {
+    console.log("✅ Connected:", socket.id);
+  });
+
+  socket.on("strategy_update", (incoming) => {
+    console.log("🔥 Live Data:", incoming);
+
+    setLiveData((prev) => ({
+      ...prev,
+      [incoming.strategy_id]: incoming
+    }));
+  });
+
+  socket.on("disconnect", () => {
+    console.log("❌ Disconnected");
+  });
+
+  return () => {
+    socket.disconnect();
+  };
+}, []);
+   const handleRowToggle = (strategyId) => {
+  if (openedRow === strategyId) {
+    setOpenedRow(null);
+  } else {
+    setOpenedRow(strategyId);
+    fetchLatestLegs(strategyId);
+  }
+};
+   const fetchLatestLegs = async (strategyId) => {
+  try {
+    const res = await apiRequest('GET',
+      `/api/tradelegs/latest/${strategyId}`
+    );
+
+    const data = res;
+
+    setLegs((prev) => ({
+      ...prev,
+      [strategyId]: data.data
+    }));
+
+  } catch (err) {
+    console.error(err);
+  }
+};
      const PaperUI = ()=>{
   return(
       <Box
@@ -229,22 +285,134 @@ export default function Dashboard() {
               <Table.Tbody>
   {startergies.length > 0 ? (
     startergies.map((strategy, index) => (
-      <Table.Tr key={strategy.id}>
-        <Table.Td>{index + 1}</Table.Td>
+  <React.Fragment key={strategy.id}>
+    <Table.Tr>
+      <Table.Td>{index + 1}</Table.Td>
 
-        <Table.Td>{strategy.name}</Table.Td>
+      <Table.Td>{strategy.name}</Table.Td>
 
-        <Table.Td>-</Table.Td>
+      <Table.Td>-</Table.Td>
 
-        <Table.Td>{strategy.status}</Table.Td>
+      <Table.Td>
+  {liveData[strategy.id]?.status || strategy.status}
+</Table.Td>
 
-        <Table.Td>-</Table.Td>
+      <Table.Td
+  style={{
+    color: liveData[strategy.id]?.pnl >= 0 ? "#16a34a" : "#dc2626",
+    fontWeight: 600
+  }}
+>
+  {liveData[strategy.id]?.pnl ?? "-"}
+</Table.Td>
 
-        <Table.Td>-</Table.Td>
+      {/* ACTION COLUMN */}
+      <Table.Td>
+        <ActionIcon
+          variant="subtle"
+          onClick={() => handleRowToggle(strategy.id)}
+        >
+          {openedRow === strategy.id ? (
+            <IconChevronUp size={18} />
+          ) : (
+            <IconChevronDown size={18} />
+          )}
+        </ActionIcon>
+      </Table.Td>
 
-        <Table.Td>-</Table.Td>
-      </Table.Tr>
-    ))
+      <Table.Td>-</Table.Td>
+    </Table.Tr>
+
+    {/* EXPANDED ROW */}
+    {openedRow === strategy.id && (
+  <Table.Tr>
+    <Table.Td colSpan={7}>
+      <Box  style={{ background: "#f8f9fa", borderRadius: "8px" }}>
+        
+        <Table
+          horizontalSpacing="md"
+          verticalSpacing="sm"
+          style={{ width: "100%" }}
+        >
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th>#</Table.Th>
+              <Table.Th>Symbol</Table.Th>
+              <Table.Th>QTY</Table.Th>
+              <Table.Th>LTP ₹</Table.Th>
+              <Table.Th>P&L ₹</Table.Th>
+              <Table.Th>Val ₹</Table.Th>
+            </Table.Tr>
+          </Table.Thead>
+
+          <Table.Tbody>
+  {legs[strategy.id]?.length > 0 ? (
+    legs[strategy.id].map((leg, i) => {
+
+      const ltp =
+  leg.leg === "CE"
+    ? liveData[strategy.id]?.ce_ltp
+    : liveData[strategy.id]?.pe_ltp;
+
+    const pnl =
+  leg.leg === "CE"
+    ? liveData[strategy.id]?.ce_pnl
+    : liveData[strategy.id]?.pe_pnl;
+
+    const qty = 0;
+
+    const val = qty * (ltp || 0);
+
+      return (
+        <Table.Tr key={leg.leg}>
+          <Table.Td>{i + 1}</Table.Td>
+
+          <Table.Td>
+            <Text fw={500}>{leg.symbol}</Text>
+            <Text size="xs" c="dimmed">
+              {leg.leg}
+            </Text>
+          </Table.Td>
+
+          <Table.Td>{qty}</Table.Td>
+
+<Table.Td>{ltp ?? "-"}</Table.Td>
+
+<Table.Td
+  style={{
+    color: pnl >= 0 ? "#16a34a" : "#dc2626",
+    fontWeight: 500
+  }}
+>
+  {pnl ?? "-"}
+</Table.Td>
+
+<Table.Td>{val.toFixed(2)}</Table.Td>
+        </Table.Tr>
+      );
+    })
+  ) : (
+    <Table.Tr>
+      <Table.Td
+        colSpan={6}
+        style={{
+          textAlign: "center",
+          padding: "30px",
+          color: "#868e96"
+        }}
+      >
+        No Legs found
+      </Table.Td>
+    </Table.Tr>
+  )}
+</Table.Tbody>
+        </Table>
+      </Box>
+    </Table.Td>
+  </Table.Tr>
+)}
+  </React.Fragment>
+))
   ) : (
     <Table.Tr>
       <Table.Td
