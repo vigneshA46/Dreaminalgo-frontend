@@ -24,7 +24,8 @@ import {
   Divider,
   UnstyledButton,
   Avatar,
-  ScrollArea
+  ScrollArea,
+  Modal
 } from '@mantine/core';
 import { 
   IconCurrencyDollar, 
@@ -186,6 +187,12 @@ export default function Dashboard() {
    const [openedRow, setOpenedRow] = useState(null);
    const [legs, setLegs] = useState({});
    const [liveData, setLiveData] = useState({});
+   const [dates, setDates] = useState({});
+  const [selectedDate, setSelectedDate] = useState({});
+  const [dropdownOpened, setDropdownOpened] = useState(false);
+  const [tradesModalOpen, setTradesModalOpen] = useState(false);
+const [tradesData, setTradesData] = useState([]);
+const [selectedLegInfo, setSelectedLegInfo] = useState(null);
 
    useEffect(() => {
   const socket = io("https://dreaminalgo-backend-production.up.railway.app");
@@ -211,18 +218,55 @@ export default function Dashboard() {
     socket.disconnect();
   };
 }, []);
-   const handleRowToggle = (strategyId) => {
+const handleRowToggle = async (strategyId) => {
   if (openedRow === strategyId) {
     setOpenedRow(null);
   } else {
     setOpenedRow(strategyId);
-    fetchLatestLegs(strategyId);
+
+    // fetch dates when opening
+    await fetchDates(strategyId);
   }
 };
-   const fetchLatestLegs = async (strategyId) => {
+
+const fetchDates = async (strategyId) => {
   try {
-    const res = await apiRequest('GET',
-      `/api/tradelegs/latest/${strategyId}`
+    const res = await apiRequest(
+      "GET",
+      `/api/tradelegs/dates/${strategyId}`
+    );
+
+    const data = res;
+
+    setDates((prev) => ({
+      ...prev,
+      [strategyId]: data.dates
+    }));
+
+    // set latest date as default
+    if (data.dates.length > 0) {
+      const latestDate = data.dates[0];
+
+      setSelectedDate((prev) => ({
+        ...prev,
+        [strategyId]: latestDate
+      }));
+
+      // fetch legs for latest date
+      fetchLegsByDate(strategyId, latestDate);
+    }
+
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+
+const fetchLegsByDate = async (strategyId, date) => {
+  try {
+    const res = await apiRequest(
+      "GET",
+      `/api/tradelegs?strategy_id=${strategyId}&date=${date}`
     );
 
     const data = res;
@@ -236,6 +280,24 @@ export default function Dashboard() {
     console.error(err);
   }
 };
+
+const fetchTradesByToken = async (strategyId, date, token) => {
+  try {
+    const res = await apiRequest(
+      "GET",
+      `/api/paperlogger/by-token?date=${date}&token=${token}&strategy_id=${strategyId}`
+    );
+
+    setTradesData(res.data);
+    setTradesModalOpen(true);
+
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+
+
      const PaperUI = ()=>{
   return(
       <Box
@@ -325,6 +387,36 @@ export default function Dashboard() {
 
     {/* EXPANDED ROW */}
     {openedRow === strategy.id && (
+      <>
+      <Select
+  label="Select Date"
+  placeholder="Pick date"
+  value={selectedDate[strategy.id] || null}
+  data={(dates[strategy.id] || []).map((d) => ({
+    value: d,
+    label: d,
+  }))}
+
+
+  onChange={(value) => {
+    setSelectedDate((prev) => ({
+      ...prev,
+      [strategy.id]: value,
+    }));
+
+    fetchLegsByDate(strategy.id, value);
+  }}
+
+  opened={dropdownOpened}
+  onDropdownOpen={() => setDropdownOpened(true)}
+  onDropdownClose={() => setDropdownOpened(false)}
+
+  comboboxProps={{
+  withinPortal: true,
+  keepMounted: true
+}}
+  mb="md"
+/>
   <Table.Tr>
     <Table.Td colSpan={7}>
       <Box  style={{ background: "#f8f9fa", borderRadius: "8px" }}>
@@ -348,7 +440,7 @@ export default function Dashboard() {
           <Table.Tbody>
   {legs[strategy.id]?.length > 0 ? (
     legs[strategy.id].map((leg, i) => {
-
+      
       const ltp =
   leg.leg === "CE"
     ? liveData[strategy.id]?.ce_ltp
@@ -368,7 +460,26 @@ export default function Dashboard() {
           <Table.Td>{i + 1}</Table.Td>
 
           <Table.Td>
-            <Text fw={500}>{leg.symbol}</Text>
+            <Text
+    fw={500}
+    style={{ cursor: "pointer", color: "#228be6" }}
+    onClick={() => {
+
+      const token = leg.token; // ✅ FIXED
+      const date = selectedDate[strategy.id];
+
+      setSelectedLegInfo({
+        strategyId: strategy.id,
+        token,
+        date,
+        leg: leg.leg
+      });
+
+      fetchTradesByToken(strategy.id, date, token);
+    }}
+  >
+    {leg.symbol}
+  </Text>
             <Text size="xs" c="dimmed">
               {leg.leg}
             </Text>
@@ -410,6 +521,7 @@ export default function Dashboard() {
       </Box>
     </Table.Td>
   </Table.Tr>
+  </>
 )}
   </React.Fragment>
 ))
@@ -1037,6 +1149,66 @@ const LiveUI = ()=>{
       </SimpleGrid> */}
 
       {/* Main Content Grid */}
+      <Modal
+  opened={tradesModalOpen}
+  onClose={() => setTradesModalOpen(false)}
+  title={`Trades - ${selectedLegInfo?.leg || ""}`}
+  size="xl"
+>
+  <ScrollArea h={400}>
+    <Table striped highlightOnHover>
+      <Table.Thead>
+        <Table.Tr>
+          <Table.Th>#</Table.Th>
+          <Table.Th>Side</Table.Th>
+          <Table.Th>Qty</Table.Th>
+          <Table.Th>Entry</Table.Th>
+          <Table.Th>Exit</Table.Th>
+          <Table.Th>PnL</Table.Th>
+          <Table.Th>Status</Table.Th>
+        </Table.Tr>
+      </Table.Thead>
+
+      <Table.Tbody>
+        {tradesData.length > 0 ? (
+          tradesData.map((trade, i) => (
+            <Table.Tr key={trade.id}>
+              <Table.Td>{i + 1}</Table.Td>
+
+              <Table.Td>{trade.side}</Table.Td>
+
+              <Table.Td>{trade.quantity}</Table.Td>
+
+              <Table.Td>{trade.entry_price}</Table.Td>
+
+              <Table.Td>{trade.exit_price}</Table.Td>
+
+              <Table.Td
+                style={{
+                  color:
+                    parseFloat(trade.pnl) >= 0
+                      ? "#16a34a"
+                      : "#dc2626",
+                  fontWeight: 500
+                }}
+              >
+                {parseFloat(trade.pnl).toFixed(2)}
+              </Table.Td>
+
+              <Table.Td>{trade.trade_status}</Table.Td>
+            </Table.Tr>
+          ))
+        ) : (
+          <Table.Tr>
+            <Table.Td colSpan={7} style={{ textAlign: "center" }}>
+              No trades found
+            </Table.Td>
+          </Table.Tr>
+        )}
+      </Table.Tbody>
+    </Table>
+  </ScrollArea>
+</Modal>
      </Box>
   );
 }
