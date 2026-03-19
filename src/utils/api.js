@@ -4,8 +4,8 @@ const localurl = `http://localhost:5000`
 const cloudurl = `https://dreaminalgo-backend-production.up.railway.app`
 
 const api = axios.create({
-  baseURL: `${cloudurl}`,
-  withCredentials: true, // 🍪 cookies auto sent
+  baseURL: `/api`, // ✅ now goes through Cloudflare
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
