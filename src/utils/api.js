@@ -4,12 +4,12 @@ const localurl = `http://localhost:5000`
 const cloudurl = `https://dreaminalgo-backend-production.up.railway.app`
 
 const api = axios.create({
-  baseURL: `/api`, // ✅ now goes through Cloudflare
-  withCredentials: true,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+   baseURL: `https://dreaminalgo-backend-production.up.railway.app`,
+    withCredentials: true, // 🍪 cookies auto sent 
+    headers: { 
+      'Content-Type': 'application/json',
+     },
+   });
 
 /* =========================== 
    REFRESH ACCESS TOKEN 
