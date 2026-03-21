@@ -199,6 +199,7 @@ const [selectedLegInfo, setSelectedLegInfo] = useState(null);
 
   socket.on("connect", () => {
     console.log("✅ Connected:", socket.id);
+    console.log("🔥 Live Data:", incoming);
   });
 
   socket.on("strategy_update", (incoming) => {
@@ -285,11 +286,12 @@ const fetchTradesByToken = async (strategyId, date, token) => {
   try {
     const res = await apiRequest(
       "GET",
-      `/api/paperlogger/by-token?date=${date}&token=${token}&strategy_id=${strategyId}`
+      `/api/paperlogger/event/by-token?date=${date}&token=${token}&strategy_id=${strategyId}`
     );
 
     setTradesData(res.data);
-    setTradesModalOpen(true);
+    console.log(res.data)
+    setTradesModalOpen(true); 
 
   } catch (err) {
     console.error(err);
