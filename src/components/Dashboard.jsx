@@ -198,12 +198,12 @@ const [selectedLegInfo, setSelectedLegInfo] = useState(null);
   const socket = io("https://dreaminalgo-backend-production.up.railway.app");
 
   socket.on("connect", () => {
-    console.log("✅ Connected:", socket.id);
-    console.log("🔥 Live Data:", incoming);
+/*     console.log("✅ Connected:", socket.id);
+    console.log("🔥 Live Data:", incoming); */
   });
 
   socket.on("strategy_update", (incoming) => {
-    console.log("🔥 Live Data:", incoming);
+   /*  console.log("🔥 Live Data:", incoming); */
 
     setLiveData((prev) => ({
       ...prev,
@@ -284,11 +284,11 @@ const fetchLegsByDate = async (strategyId, date) => {
 
 const fetchTradesByToken = async (strategyId, date, token) => {
   try {
+    console.log("date",date , "token", token, "strategy id", strategyId)
     const res = await apiRequest(
       "GET",
       `/api/paperlogger/event/by-token?date=${date}&token=${token}&strategy_id=${strategyId}`
     );
-
     setTradesData(res.data);
     console.log(res.data)
     setTradesModalOpen(true); 
@@ -1163,11 +1163,13 @@ const LiveUI = ()=>{
         <Table.Tr>
           <Table.Th>#</Table.Th>
           <Table.Th>Side</Table.Th>
+          <Table.Th>Timestamp</Table.Th>
+          <Table.Th>event_type</Table.Th>
+          <Table.Th>symbol</Table.Th>
           <Table.Th>Qty</Table.Th>
-          <Table.Th>Entry</Table.Th>
-          <Table.Th>Exit</Table.Th>
+          <Table.Th>Price</Table.Th>
           <Table.Th>PnL</Table.Th>
-          <Table.Th>Status</Table.Th>
+          <Table.Th>Cum PnL</Table.Th>
         </Table.Tr>
       </Table.Thead>
 
@@ -1177,14 +1179,19 @@ const LiveUI = ()=>{
             <Table.Tr key={trade.id}>
               <Table.Td>{i + 1}</Table.Td>
 
-              <Table.Td>{trade.side}</Table.Td>
+              <Table.Td>{trade.leg_name}</Table.Td>
 
+              <Table.Td>
+            {new Date(trade.timestamp).toLocaleString("en-IN", {
+            timeZone: "Asia/Kolkata",
+            })}
+            </Table.Td>
+
+              <Table.Td>{trade.event_type}</Table.Td>
+
+              <Table.Td>{trade.symbol}</Table.Td>
               <Table.Td>{trade.quantity}</Table.Td>
-
-              <Table.Td>{trade.entry_price}</Table.Td>
-
-              <Table.Td>{trade.exit_price}</Table.Td>
-
+              <Table.Td>{trade.price}</Table.Td>
               <Table.Td
                 style={{
                   color:
@@ -1196,8 +1203,18 @@ const LiveUI = ()=>{
               >
                 {parseFloat(trade.pnl).toFixed(2)}
               </Table.Td>
+              <Table.Td
+                style={{
+                  color:
+                    parseFloat(trade.cum_pnl) >= 0
+                      ? "#16a34a"
+                      : "#dc2626",
+                  fontWeight: 500
+                }}
+              >
+                {parseFloat(trade.cum_pnl).toFixed(2)}
+              </Table.Td>
 
-              <Table.Td>{trade.trade_status}</Table.Td>
             </Table.Tr>
           ))
         ) : (

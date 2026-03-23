@@ -9,8 +9,13 @@ import {
   Group,
   Stack
 } from "@mantine/core";
+import { apiRequest } from "../utils/api";
 
 export default function Brokers() {
+
+  const normalizeBrokerName = (name) => {
+  return name.toLowerCase().replace(" ", "");
+};
 
   const [opened, setOpened] = useState(false);
   const [selectedBroker, setSelectedBroker] = useState(null);
@@ -22,25 +27,63 @@ export default function Brokers() {
     setForm({ ...form, [field]: value });
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+  try {
 
-    const newBroker = {
-      name: selectedBroker,
-      data: form
+    const payload = {
+      brokerName: normalizeBrokerName(selectedBroker),
+      credentials: form
     };
 
-    setBrokers([...brokers, newBroker]);
+    console.log(payload)
+
+    const response = await apiRequest(
+      "POST",
+      "/api/broker",
+      payload
+    );
+
+    // ✅ Update UI from backend response
+    setBrokers((prev) => [...prev, response.broker]);
 
     setOpened(false);
     setSelectedBroker(null);
     setForm({});
-  };
 
+  } catch (err) {
+    console.error(err);
+    alert(err?.response?.data?.error || "Connection failed");
+  }
+};
   const renderForm = () => {
 
     switch (selectedBroker) {
 
       case "Angelone":
+        return (
+          <Stack>
+           <TextInput
+  label="Client Code"
+  onChange={(e) => handleChange("clientCode", e.target.value)}
+/>
+
+<PasswordInput
+  label="PIN"
+  onChange={(e) => handleChange("pin", e.target.value)}
+/>
+
+<TextInput
+  label="API Key"
+  onChange={(e) => handleChange("apiKey", e.target.value)}
+/>
+
+<TextInput
+  label="TOTP"
+  onChange={(e) => handleChange("totp", e.target.value)}
+/>
+          </Stack>
+        );
+      case "Zebu":
         return (
           <Stack>
             <TextInput
@@ -54,13 +97,13 @@ export default function Brokers() {
             />
 
             <TextInput
-              label="API Key"
-              onChange={(e) => handleChange("apikey", e.target.value)}
+              label="TOTP"
+              onChange={(e) => handleChange("totp", e.target.value)}
             />
 
             <TextInput
-              label="TOTP"
-              onChange={(e) => handleChange("totp", e.target.value)}
+              label="Api key"
+              onChange={(e) => handleChange("apikey", e.target.value)}
             />
           </Stack>
         );
@@ -68,25 +111,35 @@ export default function Brokers() {
       case "Dhan":
         return (
           <Stack>
-            <TextInput
-              label="API Key"
-              onChange={(e) => handleChange("apikey", e.target.value)}
-            />
+           <TextInput
+  label="Client ID"
+  onChange={(e) => handleChange("clientId", e.target.value)}
+/>
 
-            <TextInput
-              label="API Secret"
-              onChange={(e) => handleChange("apisecret", e.target.value)}
-            />
+<PasswordInput
+  label="PIN"
+  onChange={(e) => handleChange("pin", e.target.value)}
+/>
+
+<TextInput
+  label="TOTP"
+  onChange={(e) => handleChange("totp", e.target.value)}
+/>
           </Stack>
         );
 
       case "Alice Blue":
         return (
           <Stack>
-            <TextInput
-              label="User ID"
-              onChange={(e) => handleChange("userid", e.target.value)}
-            />
+           <TextInput
+  label="User ID"
+  onChange={(e) => handleChange("userId", e.target.value)}
+/>
+
+<TextInput
+  label="API Key"
+  onChange={(e) => handleChange("apiKey", e.target.value)}
+/>
           </Stack>
         );
 
@@ -164,7 +217,8 @@ export default function Brokers() {
               "Angelone",
               "Dhan",
               "Alice Blue",
-              "Zerodha"
+              "Zerodha",
+              "Zebu"
             ]}
             value={selectedBroker}
             onChange={setSelectedBroker}
