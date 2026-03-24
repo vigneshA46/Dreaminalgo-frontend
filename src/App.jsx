@@ -2,8 +2,7 @@ import '@mantine/core/styles.css';
 import { MantineProvider } from '@mantine/core';
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-
-
+import { Notifications } from '@mantine/notifications';
 
 import Home from './modules/Home';
 import Dashboard from './components/Dashboard';
@@ -21,10 +20,12 @@ import Signup from './auth/Signup.jsx';
 import Brokers from './components/Brokers.jsx';
 import Createtradersignal from './components/Createtradersignal.jsx';
 import StrategyLive from './components/StrategyLive.jsx';
+import Verifymail from './auth/Verifymail.jsx';
 
 function App() {
   return (
     <MantineProvider>
+        <Notifications />
       <Router>
         <Routes>
 
@@ -40,6 +41,13 @@ function App() {
             path="/auth/signup"
             element={
                 <Signup />
+            }
+          />
+
+          <Route
+            path="/verify-email/:token"
+            element={
+                <Verifymail />
             }
           />
 
