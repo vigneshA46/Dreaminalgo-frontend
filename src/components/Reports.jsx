@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { MantineProvider, Box, Container, Group, Button, Select, TextInput, Table, Text } from '@mantine/core';
+import { MantineProvider, Box, Container, Group, Button, Select, TextInput, Table, Text, ScrollArea } from '@mantine/core';
 import { IconSearch } from '@tabler/icons-react';
+import { useMediaQuery } from '@mantine/hooks';
 
 const Reports = () => {
 
   const [activeTab, setActiveTab] = useState('reports');
+  const isMobile = useMediaQuery('(max-width: 768px)');
 
   const strategies = [
     {
@@ -182,6 +184,7 @@ const Reports = () => {
 
           {/* Table */}
           <Box
+          w={"100%"}
             style={{
               backgroundColor: 'white',
               borderRadius: '12px',
@@ -189,38 +192,43 @@ const Reports = () => {
               boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
             }}
           >
+            <ScrollArea  w={isMobile? '100vw':'100%'}
+              type="auto"
+              scrollbarSize={6}
+              offsetScrollbars>
             <Table
               horizontalSpacing="md"
               verticalSpacing="lg"
+              w={isMobile? '100vw':'100%'}
               style={{
                 minWidth: '100%',
               }}
             >
               <Table.Thead>
                 <Table.Tr style={{ backgroundColor: '#f8f9fa' }}>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px', width: '80px' }}>
+                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px', width: '80px',whiteSpace: "nowrap" }}>
                     S.No
                   </Table.Th>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' }}>
+                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px',whiteSpace: "nowrap" }}>
                     Strategy
                   </Table.Th>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px', width: '150px' }}>
+                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px', width: '150px',whiteSpace: "nowrap" }}>
                     PNL
                   </Table.Th>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px', width: '120px' }}>
+                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px', width: '120px',whiteSpace: "nowrap" }}>
                   </Table.Th>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
                 {strategies.map((strategy) => (
                   <Table.Tr key={strategy.id} style={{ borderBottom: '1px solid #e9ecef' }}>
-                    <Table.Td style={{ padding: '20px 16px', color: '#495057', fontSize: '15px' }}>
+                    <Table.Td style={{ padding: '20px 16px', color: '#495057', fontSize: '15px',whiteSpace: "nowrap" }}>
                       {strategy.id}
                     </Table.Td>
-                    <Table.Td style={{ padding: '20px 16px', color: '#212529', fontSize: '15px' }}>
+                    <Table.Td style={{ padding: '20px 16px', color: '#212529', fontSize: '15px',whiteSpace: "nowrap" }}>
                       {strategy.name}
                     </Table.Td>
-                    <Table.Td style={{ padding: '20px 16px' }}>
+                    <Table.Td style={{ padding: '20px 16px',whiteSpace: "nowrap" }}>
                       <Text
                         size="md"
                         fw={600}
@@ -231,7 +239,7 @@ const Reports = () => {
                         ₹ {strategy.isProfit ? '' : '-'}{Math.abs(strategy.pnl).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </Text>
                     </Table.Td>
-                    <Table.Td style={{ padding: '20px 16px' }}>
+                    <Table.Td style={{ padding: '20px 16px',whiteSpace: "nowrap" }}>
                       <Button
                         size="sm"
                         style={{
@@ -249,6 +257,7 @@ const Reports = () => {
                 ))}
               </Table.Tbody>
             </Table>
+            </ScrollArea>
           </Box>
 
           {/* Footer */}

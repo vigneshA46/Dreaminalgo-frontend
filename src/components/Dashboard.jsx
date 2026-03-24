@@ -317,8 +317,6 @@ const fetchTradesByToken = async (strategyId, date, token) => {
   }
 };
 
-
-
 const PaperUI = ()=>{
   return(
       <Box
@@ -334,7 +332,7 @@ const PaperUI = ()=>{
   <ScrollArea  w={isMobile? '100vw':'100%'}
   type="auto"
   scrollbarSize={6}
-  /* offsetScrollbars */>
+  offsetScrollbars>
             <Table
               w={isMobile? '100vw': '100%'}
               horizontalSpacing="md"
@@ -813,7 +811,7 @@ useEffect(()=>{
 </Flex>
 
 </Flex>
-      <Grid gutter="lg" mb="xl">
+   {/*    <Grid gutter="lg" mb="xl">
       {indices.map((item) => (
         <Grid.Col span="auto" key={item.name}>
           <Stack
@@ -837,9 +835,9 @@ useEffect(()=>{
         </Grid.Col>
       ))}
     </Grid>
-
-<Grid gutter="lg" mb="xl">
-  <Grid.Col  span={3}>
+ */}
+<Grid gutter="lg"  mb="xl">
+  <Grid.Col   span={{ base: 6, sm: 6, md: 4, lg: 3 }}>
     <StatCard
       icon={IconCurrencyDollar}
       title="Portfolio Value"
@@ -848,7 +846,7 @@ useEffect(()=>{
     />
   </Grid.Col>
 
-  <Grid.Col span={3}>
+  <Grid.Col span={{ base: 6, sm: 6, md: 4, lg: 3 }}>
     <StatCard
       icon={IconActivity}
       title="Active Strategies"
@@ -857,7 +855,7 @@ useEffect(()=>{
     />
   </Grid.Col>
 
-  <Grid.Col span={3}>
+  <Grid.Col span={{ base: 6, sm: 6, md: 4, lg: 3 }}>
     <StatCard
       icon={IconChartBar}
       title="Total Trades"
@@ -866,7 +864,7 @@ useEffect(()=>{
     />
   </Grid.Col>
 
-  <Grid.Col span={3}>
+  <Grid.Col span={{ base: 6, sm: 6, md: 4, lg: 3 }}>
     <Paper
       p="md"
       radius="md"
@@ -890,8 +888,6 @@ useEffect(()=>{
     </Paper>
   </Grid.Col>
 </Grid>
-
-
         <Box style={{ maxWidth: '100%' }}>
           {/* Top Bar */}
           <Box
@@ -944,12 +940,12 @@ useEffect(()=>{
                 <Box>
                   <Text size="xs" c="dimmed" fw={500}>Capital</Text>
                   <Text size="md" fw={600}>0</Text>
-                </Box>
-                <Button bg={"#000"} radius={"0.5rem"} > Exit all</Button>
+                </Box>                
               </Group>
 
  <Group gap="sm">
       {/* PT Button */}
+      
       <Button
         variant="subtle"
         onClick={() => setActive("pt")}
@@ -983,6 +979,9 @@ useEffect(()=>{
       <ActionIcon variant="subtle" size="lg" style={{ color: "#495057" }}>
         <IconFilter size={20} />
       </ActionIcon>
+      {
+          active== 'live' ?  <Button bg={"#000"} radius={"0.5rem"} > Exit all</Button> : <> </>
+      }
     </Group>
             </Group>
           </Box>

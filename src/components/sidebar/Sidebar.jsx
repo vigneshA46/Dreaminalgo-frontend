@@ -84,7 +84,7 @@ const toggleSidebar = () => {
           }}
         >
           <item.icon size={22} />
-          {!collapsed && <Text ml="sm">{item.label}</Text>}
+          {!collapsed && <Text size="1rem" ml="sm">{item.label}</Text>}
         </Box>
       ))}
     </Box>
