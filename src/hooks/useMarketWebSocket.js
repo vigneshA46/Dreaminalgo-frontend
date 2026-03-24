@@ -1,10 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { io } from "socket.io-client";
 
-const WS_URL = "wss://dhanwebsocketservice-production-7979.up.railway.app";
+const SOCKET_URL = "https://dreaminalgo-backend-production.up.railway.app";
 
 export const useMarketWebSocket = () => {
-  const wsRef = useRef(null);
-
   const [ltpData, setLtpData] = useState({
     NIFTY: null,
     BANKNIFTY: null,
@@ -14,38 +13,27 @@ export const useMarketWebSocket = () => {
   });
 
   useEffect(() => {
-    wsRef.current = new WebSocket(WS_URL);
+    const socket = io(SOCKET_URL);
 
-    wsRef.current.onopen = () => {
-      console.log("✅ WebSocket connected");
-    };
+    socket.on("connect", () => {
+      console.log("✅ Market socket connected");
+    });
 
-    wsRef.current.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-
-        if (data.index && data.ltp) {
-          setLtpData((prev) => ({
-            ...prev,
-            [data.index]: parseFloat(data.ltp),
-          }));
-        }
-      } catch (err) {
-        console.error("WebSocket parse error:", err);
+    socket.on("telemetry", (data) => {
+      // 👇 filter only stock data
+      if (data.type === "stock" && data.index && data.ltp) {
+        setLtpData((prev) => ({
+          ...prev,
+          [data.index]: parseFloat(data.ltp),
+        }));
       }
-    };
+    });
 
-    wsRef.current.onerror = (err) => {
-      console.error("❌ WebSocket error", err);
-    };
+    socket.on("disconnect", () => {
+      console.log("❌ Market socket disconnected");
+    });
 
-    wsRef.current.onclose = () => {
-      console.log("🔌 WebSocket disconnected");
-    };
-
-    return () => {
-      wsRef.current?.close();
-    };
+    return () => socket.disconnect();
   }, []);
 
   return ltpData;

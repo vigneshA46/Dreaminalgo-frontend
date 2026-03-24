@@ -50,6 +50,8 @@ export default function StrategyLive() {
           <h3>Strategy: {data.strategy_id}</h3>
           <p>Run ID: {data.run_id}</p>
           <p>Status: {data.status}</p>
+          <p>ltp: {data.ltp}</p>
+          <p>index: {data.index}</p>
 
           <hr />
 

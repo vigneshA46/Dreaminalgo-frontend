@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useMarketWebSocket } from "../hooks/useMarketWebSocket";
 import { io } from "socket.io-client";
+import { useMediaQuery } from '@mantine/hooks';
+
 
 import { 
   Box, 
@@ -180,6 +182,7 @@ function RiskCard({ title, description, level, color }) {
 
 export default function Dashboard() {
    const [active, setActive] = useState("live"); 
+   const isMobile = useMediaQuery('(max-width: 768px)');
    const {logout , fetchUser} = useUser();
    const ltpData = useMarketWebSocket();
    const navigation = useNavigate()
@@ -193,22 +196,38 @@ export default function Dashboard() {
   const [tradesModalOpen, setTradesModalOpen] = useState(false);
 const [tradesData, setTradesData] = useState([]);
 const [selectedLegInfo, setSelectedLegInfo] = useState(null);
+const [Livestock, setLivestock] = useState({
+  NIFTY: null,
+  BANKNIFTY: null,
+  FINNIFTY: null,
+  SENSEX: null,
+  MIDCAP: null,
+});
 
    useEffect(() => {
   const socket = io("https://dreaminalgo-backend-production.up.railway.app");
 
   socket.on("connect", () => {
-/*     console.log("✅ Connected:", socket.id);
-    console.log("🔥 Live Data:", incoming); */
+    console.log("✅ Connected:", socket.id);
+    /* console.log("🔥 Live Data:", socket); */
   });
 
   socket.on("strategy_update", (incoming) => {
-   /*  console.log("🔥 Live Data:", incoming); */
+    /* console.log("🔥 Live Data:", incoming); */
 
     setLiveData((prev) => ({
       ...prev,
       [incoming.strategy_id]: incoming
     }));
+    
+    if (incoming.strategy_id === "123" && incoming.index && incoming.ltp) {
+    setLivestock((prev) => ({
+      ...prev,
+      [incoming.index]: parseFloat(incoming.ltp),
+    }));
+  }
+    /* console.log(incoming) */
+    
   });
 
   socket.on("disconnect", () => {
@@ -300,7 +319,7 @@ const fetchTradesByToken = async (strategyId, date, token) => {
 
 
 
-     const PaperUI = ()=>{
+const PaperUI = ()=>{
   return(
       <Box
   style={{
@@ -312,36 +331,41 @@ const fetchTradesByToken = async (strategyId, date, token) => {
   }}
 >
   {/* Scrollable container */}
-  <ScrollArea w="100%" type="auto">
+  <ScrollArea  w={isMobile? '100vw':'100%'}
+  type="auto"
+  scrollbarSize={6}
+  /* offsetScrollbars */>
             <Table
-              w={'100%'}
+              w={isMobile? '100vw': '100%'}
               horizontalSpacing="md"
               verticalSpacing="md"
+          /*     stickyHeader 
+              stickyHeaderOffset={0} */
               style={{
-                minWidth: '100%',
+                minWidth: '900px',
               }}
             >
               <Table.Thead>
                 <Table.Tr style={{ backgroundColor: '#ffffffff' }}>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' }}>
+                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' ,whiteSpace: "nowrap" }}>
                     S.No
                   </Table.Th>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' }}>
+                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px',whiteSpace: "nowrap"  }}>
                     Strategy Name
                   </Table.Th>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' }}>
+                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px',whiteSpace: "nowrap"  }}>
                     O | T | M O
                   </Table.Th>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' }}>
+                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' ,whiteSpace: "nowrap" }}>
                     Status
                   </Table.Th>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' }}>
+                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px',whiteSpace: "nowrap"  }}>
                     PNL
                   </Table.Th>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' }}>
+                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' ,whiteSpace: "nowrap" }}>
                     Actions
                   </Table.Th>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' }}>
+                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px',whiteSpace: "nowrap"  }}>
                     Details
                   </Table.Th>
                 </Table.Tr>
@@ -567,18 +591,19 @@ const fetchTradesByToken = async (strategyId, date, token) => {
 const LiveUI = ()=>{
   return(
         <Box
+        w={isMobile? '100vw': '100%'}
   style={{
     backgroundColor: "white",
     borderRadius: "12px",
     padding: "20px",
     boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-    width: "100%",
+    
   }}
 >
   {/* Scrollable container */}
-  <ScrollArea w="100%" type="auto">
+  <ScrollArea w={isMobile? '100vw': '100%'} type="auto">
             <Table
-              w={'100%'}
+              w={isMobile? '100vw': '100%'}
               horizontalSpacing="md"
               verticalSpacing="md"
               style={{
@@ -646,7 +671,7 @@ const LiveUI = ()=>{
   )
 }
 
-     useEffect(()=>{
+useEffect(()=>{
       const Fetchstartergies = async ()=>{
         try {
           const response = await apiRequest('GET','/api/stratergy')
@@ -787,7 +812,7 @@ const LiveUI = ()=>{
 
 </Flex>
 
-      </Flex>
+</Flex>
       <Grid gutter="lg" mb="xl">
       {indices.map((item) => (
         <Grid.Col span="auto" key={item.name}>
@@ -805,15 +830,14 @@ const LiveUI = ()=>{
 
             <Flex gap="0.4rem">
               <Text size="0.9rem" fw={600}>
-                {ltpData[item.name] !== null
-                  ? ltpData[item.name].toFixed(2)
-                  : "—"}
+                {Livestock[item.name] ?? "-"}
               </Text>
             </Flex>
           </Stack>
         </Grid.Col>
       ))}
     </Grid>
+
 <Grid gutter="lg" mb="xl">
   <Grid.Col  span={3}>
     <StatCard
@@ -866,6 +890,8 @@ const LiveUI = ()=>{
     </Paper>
   </Grid.Col>
 </Grid>
+
+
         <Box style={{ maxWidth: '100%' }}>
           {/* Top Bar */}
           <Box
