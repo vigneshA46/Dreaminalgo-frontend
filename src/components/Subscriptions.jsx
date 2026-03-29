@@ -45,12 +45,13 @@ const Subscriptions = () => {
               </Group>
 
               <Box
+              w={isMobile? '100vw':'100%'}
                 style={{
                   backgroundColor: "white",
                   borderRadius: "12px",
                   padding: "20px",
                   boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-                  width: "100vw",
+                  
                 }}
               >
                   <ScrollArea  w={isMobile? '100vw':'100%'}

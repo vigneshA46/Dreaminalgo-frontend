@@ -1,8 +1,8 @@
-
 import React, { useEffect, useState } from 'react';
 import { MantineProvider, Box, Container, Group, Button, TextInput, Radio, Text, Card, Badge, Anchor, Grid, Stack } from '@mantine/core';
 import { IconSearch, IconCurrencyRupee } from '@tabler/icons-react';
 import { apiRequest } from '../utils/api';
+import DeployStrategyModal from './atoms/DeployStrategyModal';
 
 
 const Stratergies = () => {
@@ -11,6 +11,15 @@ const Stratergies = () => {
   const [selectedSort, setSelectedSort] = useState('');
   const [strategies , setstrategies] = useState([])
   const [mystartergieslist , setmystartergieslist] = useState([]);
+  const [opened, setOpened] = useState(false);
+  const [selectedStrategy, setSelectedStrategy] = useState("");
+  const [strategyid , setstrategyid] = useState('')
+
+  const openModal = (strategyName,strategy_id) => {
+    setSelectedStrategy(strategyName);
+    setstrategyid(strategy_id)
+    setOpened(true);
+  };
 
   const SingleTraderSignal = ({
     startergyname,
@@ -70,7 +79,6 @@ const Stratergies = () => {
                 color: "#fff",
               },
             }}
-            onClick={onDeploy}
           >
             Deploy
           </Button>
@@ -337,6 +345,9 @@ const Stratergies = () => {
                       size="md"
                       radius="md"
                       variant="outline"
+                      onClick={() =>
+                      openModal(strategy.name , strategy.id)
+                      }
                       style={{
                         borderColor: '#dc3545',
                         color: '#dc3545',
@@ -387,6 +398,12 @@ const Stratergies = () => {
             </Text>
           </Group> */}
         </Container>
+        <DeployStrategyModal
+        opened={opened}
+        onClose={() => setOpened(false)}
+        strategyName={selectedStrategy}
+        strategy_id={strategyid}
+      />
       </Box>
   )
 }
