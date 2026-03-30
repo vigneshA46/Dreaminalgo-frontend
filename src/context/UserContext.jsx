@@ -23,8 +23,6 @@ export const UserProvider = ({ children }) => {
         setLoading(false);
       }
     };
-
-    
   }, []);
 
   /* ================= FETCH USER AFTER LOGIN ================= */

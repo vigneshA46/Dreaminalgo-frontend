@@ -176,14 +176,11 @@ function RiskCard({ title, description, level, color }) {
   );
 }
 
-
-
-
-
 export default function Dashboard() {
    const [active, setActive] = useState("live"); 
+   const [user , setUser] = useState([]);
    const isMobile = useMediaQuery('(max-width: 768px)');
-   const {logout , fetchUser} = useUser();
+   const {logout } = useUser();
    const ltpData = useMarketWebSocket();
    const navigation = useNavigate()
    const [startergies , setstartergies] = useState([]);
@@ -238,6 +235,19 @@ const [Livestock, setLivestock] = useState({
     socket.disconnect();
   };
 }, []);
+
+useEffect(()=>{
+  const fetchuser = async ()=>{
+    try{
+      const res = await apiRequest('POST','/api/users/me')
+      setUser(res)
+    }catch(err){
+      console.log(err)
+    }  
+  }
+  fetchuser();
+},[])
+
 const handleRowToggle = async (strategyId) => {
   if (openedRow === strategyId) {
     setOpenedRow(null);
@@ -248,6 +258,7 @@ const handleRowToggle = async (strategyId) => {
     await fetchDates(strategyId);
   }
 };
+
 
 const fetchDates = async (strategyId) => {
   try {
@@ -690,24 +701,22 @@ useEffect(()=>{
     { name: "MIDCAP", label: "MIDCAP" },
   ];
 
-
-   useEffect(()=>{
-    fetchUser()
-   },[])
   return (
     <Box>
       {/* Header */}
-      <Flex justify="space-between" mb="xl">
+      <Flex align={'center'} justify="space-between" mb="xl">
         <Box>
           <Text size="1.3rem" fw={600}>
-            Welcome back, Vignesh!
+            Welcome back, {user.fullname}!
           </Text>
           <Text size="sm" color="dimmed" mt={4}>
             Track your algorithmic trading performance
           </Text>
         </Box>
 <Flex gap="2rem" align="center" justify="center">
-  
+    <Badge p={'1rem'} bg={'#000'} >
+      <Text fw={'500'} >{user.tokens} Tokens</Text>
+    </Badge>
   {/* 🔔 Notification icon */}
   <Menu width={310} position="bottom-end" shadow="md">
     <Menu.Target>
@@ -761,15 +770,15 @@ useEffect(()=>{
   <Group wrap="nowrap" p="md">
     <Avatar radius="xl" color="black">V</Avatar>
     <div>
-      <Text fw={600}>Vignesh Arumugam</Text>
-      <Text size="sm" c="dimmed">vignesh2024a@gmail.com</Text>
+      <Text fw={600}>{user.fullname}</Text>
+      <Text size="sm" c="dimmed">{user.email}</Text>
     </div>
   </Group>
 
   <Divider />
 
   {/* About */}
-  <Menu.Item leftSection={<IconInfoCircle size={18} />}>
+  <Menu.Item onClick={()=>navigation('/about')} leftSection={<IconInfoCircle size={18} />}>
     About
   </Menu.Item>
 
@@ -782,7 +791,7 @@ useEffect(()=>{
     Wallet
   </Menu.Item>
 
-    <Menu.Item leftSection={<IconBuildingBank size={18} />}>
+    <Menu.Item onClick={()=>navigation('/demat')} leftSection={<IconBuildingBank size={18} />}>
     Demat Account
   </Menu.Item>
 
@@ -790,8 +799,12 @@ useEffect(()=>{
     Invoices
   </Menu.Item>
 
-    <Menu.Item leftSection={<IconHelpCircle size={18} />}>
-    Support & Policy
+    <Menu.Item onClick={()=>navigation('/privacy')} leftSection={<IconHelpCircle size={18} />}>
+    Privacy Policy
+  </Menu.Item>
+
+  <Menu.Item onClick={()=>navigation('/terms')} leftSection={<IconHelpCircle size={18} />}>
+     Terms and Conditions
   </Menu.Item>
 
   <Menu.Item leftSection={<IconKey size={18} />}>
@@ -864,7 +877,7 @@ useEffect(()=>{
     />
   </Grid.Col>
 
-  <Grid.Col span={{ base: 6, sm: 6, md: 4, lg: 3 }}>
+  {/* <Grid.Col span={{ base: 6, sm: 6, md: 4, lg: 3 }}>
     <Paper
       p="md"
       radius="md"
@@ -886,7 +899,7 @@ useEffect(()=>{
         Portfolio diversity: 85%
       </Text>
     </Paper>
-  </Grid.Col>
+  </Grid.Col> */}
 </Grid>
         <Box style={{ maxWidth: '100%' }}>
           {/* Top Bar */}

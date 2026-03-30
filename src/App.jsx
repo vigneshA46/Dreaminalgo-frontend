@@ -21,6 +21,10 @@ import Brokers from './components/Brokers.jsx';
 import Createtradersignal from './components/Createtradersignal.jsx';
 import StrategyLive from './components/StrategyLive.jsx';
 import Verifymail from './auth/Verifymail.jsx';
+import About from './components/About.jsx';
+import TermsPage from './components/Termspage.jsx';
+import PrivacyPolicyPage from './components/Privacypolicypage.jsx';
+import Demataccount from './components/Demataccount.jsx';
 
 function App() {
   return (
@@ -50,6 +54,10 @@ function App() {
                 <Verifymail />
             }
           />
+          
+          <Route path="/about" element={<About />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/privacy" element={<PrivacyPolicyPage />} />
 
           {/* ================= USER ROUTES ================= */}
           <Route
@@ -65,11 +73,13 @@ function App() {
             <Route path="create-strategy" element={<Createstratergy />} />
             <Route path="create-signal" element={<Tradersignal />} />
             <Route path="trader-signal" element={<Createtradersignal />} />
-            <Route path="profile" element={<Profile />} />
+            {/* <Route path="profile" element={<Profile />} /> */}
             <Route path="plans" element={<Planandpricing />} />
             <Route path="tutorials" element={<Tutorials />} />
             <Route path="broker" element={<Brokers />} />
             <Route path="websocket" element={<StrategyLive />} />
+            <Route path="demat" element={<Demataccount />} />
+
           </Route>
 
         </Routes>
