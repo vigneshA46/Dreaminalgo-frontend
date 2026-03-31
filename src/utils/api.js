@@ -2,9 +2,10 @@ import axios from 'axios';
 
 const localurl = `http://localhost:5000`
 const cloudurl = `https://dreaminalgo-backend-production.up.railway.app`
+const domainurl = `https://algoapi.dreamintraders.in`
 
 const api = axios.create({
-   baseURL: `https://dreaminalgo-backend-production.up.railway.app`,
+   baseURL: `${domainurl}`,
     withCredentials: true, // 🍪 cookies auto sent 
     headers: { 
       'Content-Type': 'application/json',
