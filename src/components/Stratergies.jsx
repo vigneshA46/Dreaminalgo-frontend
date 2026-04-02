@@ -14,6 +14,21 @@ const Stratergies = () => {
   const [opened, setOpened] = useState(false);
   const [selectedStrategy, setSelectedStrategy] = useState("");
   const [strategyid , setstrategyid] = useState('')
+  const [todaydeployment , settodaydeployment] = useState([])
+
+  useState(()=>{
+    const fetchtodaydeployment = async () =>{
+      const res = await apiRequest('GET','/api/deployments/user/today')
+      await settodaydeployment(res)
+      console.log(res)
+    }
+
+    fetchtodaydeployment();
+  }, [])
+
+  const deployedStrategyIds = new Set(
+  todaydeployment.map(d => d.strategy_id)
+)
 
   const openModal = (strategyName,strategy_id) => {
     setSelectedStrategy(strategyName);
@@ -331,38 +346,32 @@ const Stratergies = () => {
                           </Text>
                         </Group>
                       </Box>
-                     {/*  <Box>
-                        <Text size="xs" c="#868e96" mb={4}>
-                          DD
-                        </Text>
-                        <Text size="lg" fw={700} c="#1864ab">
-                          {strategy.dd}
-                        </Text>
-                      </Box> */}
+                    
                     </Group>
 
                     <Button
-                      size="md"
-                      radius="md"
-                      variant="outline"
-                      onClick={() =>
-                      openModal(strategy.name , strategy.id)
-                      }
-                      style={{
-                        borderColor: '#dc3545',
-                        color: '#dc3545',
-                        fontWeight: 600,
-                        paddingLeft: '32px',
-                        paddingRight: '32px',
-                      }}
-                    >
-                      DEPLOY
-                    </Button>
+  size="md"
+  radius="md"
+  variant="outline"
+  disabled={deployedStrategyIds.has(strategy.id)}
+  onClick={() => openModal(strategy.name, strategy.id)}
+  style={{
+    borderColor: deployedStrategyIds.has(strategy.id) ? '#adb5bd' : '#dc3545',
+    color: deployedStrategyIds.has(strategy.id) ? '#adb5bd' : '#dc3545',
+    fontWeight: 600,
+    paddingLeft: '32px',
+    paddingRight: '32px',
+  }}
+>
+  {deployedStrategyIds.has(strategy.id) ? "DEPLOYED" : "DEPLOY"}
+</Button>
                   </Group>
                 </Card> 
               ))}
             </Grid.Col>
           </Grid>
+
+
             ) : (
               <Grid>
                     {mystartergieslist.map((signal) => (
@@ -383,20 +392,7 @@ const Stratergies = () => {
             )
           }
 
-          
-
-          {/* Footer */}
-{/*           <Group justify="space-between" mt="xl" pt="xl" style={{ borderTop: '1px solid #e9ecef' }}>
-            <Text size="sm" c="#495057">
-              Contact Us
-            </Text>
-            <Text size="sm" c="#495057">
-              Terms and Conditions
-            </Text>
-            <Text size="sm" c="#495057">
-              Privacy policy
-            </Text>
-          </Group> */}
+        
         </Container>
         <DeployStrategyModal
         opened={opened}

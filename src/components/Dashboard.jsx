@@ -48,7 +48,8 @@ import {
   IconKey,
   IconBook,
   IconBuildingBank,
-  IconHelpCircle
+  IconHelpCircle,
+  IconCoinFilled
 } from '@tabler/icons-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import { useUser } from '../context/UserContext';
@@ -193,6 +194,7 @@ export default function Dashboard() {
   const [tradesModalOpen, setTradesModalOpen] = useState(false);
 const [tradesData, setTradesData] = useState([]);
 const [selectedLegInfo, setSelectedLegInfo] = useState(null);
+const [todaydeployment , settodaydeployment] = useState([])
 const [Livestock, setLivestock] = useState({
   NIFTY: null,
   BANKNIFTY: null,
@@ -200,6 +202,34 @@ const [Livestock, setLivestock] = useState({
   SENSEX: null,
   MIDCAP: null,
 });
+
+
+  useState(()=>{
+    const fetchtodaydeployment = async () =>{
+      const res = await apiRequest('GET','/api/deployments/user/today')
+      await settodaydeployment(res)
+      console.log(res)
+    }
+
+    fetchtodaydeployment();
+  }, [])
+
+  const deploymentMap = {};
+
+todaydeployment.forEach((d) => {
+  if (!deploymentMap[d.strategy_id]) {
+    deploymentMap[d.strategy_id] = [];
+  }
+  deploymentMap[d.strategy_id].push(d.type);
+});
+
+  const deployedStrategyIds = new Set(
+  todaydeployment.map(d => d.strategy_id)
+)
+
+const deployedStrategies = startergies.filter(strategy =>
+  deployedStrategyIds.has(strategy.id)
+)
 
    useEffect(() => {
   const socket = io("https://dreaminalgo-backend-production.up.railway.app");
@@ -597,63 +627,256 @@ const PaperUI = ()=>{
   )
 }
 
+
 const LiveUI = ()=>{
   return(
-        <Box
-        w={isMobile? '100vw': '100%'}
+      <Box
   style={{
     backgroundColor: "white",
     borderRadius: "12px",
     padding: "20px",
     boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-    
+    width: "100%",
   }}
 >
   {/* Scrollable container */}
-  <ScrollArea w={isMobile? '100vw': '100%'} type="auto">
+  <ScrollArea  w={isMobile? '100vw':'100%'}
+  type="auto"
+  scrollbarSize={6}
+  offsetScrollbars>
             <Table
               w={isMobile? '100vw': '100%'}
               horizontalSpacing="md"
               verticalSpacing="md"
+          /*     stickyHeader 
+              stickyHeaderOffset={0} */
               style={{
-                minWidth: '100%',
+                minWidth: '900px',
               }}
             >
               <Table.Thead>
                 <Table.Tr style={{ backgroundColor: '#ffffffff' }}>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' }}>
+                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' ,whiteSpace: "nowrap" }}>
                     S.No
                   </Table.Th>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' }}>
+                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px',whiteSpace: "nowrap"  }}>
                     Strategy Name
                   </Table.Th>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' }}>
+                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px',whiteSpace: "nowrap"  }}>
                     O | T | M O
                   </Table.Th>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' }}>
+                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' ,whiteSpace: "nowrap" }}>
                     Status
                   </Table.Th>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' }}>
+                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px',whiteSpace: "nowrap"  }}>
                     PNL
                   </Table.Th>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' }}>
+                   <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px',whiteSpace: "nowrap"  }}>
                     Broker
                   </Table.Th>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' }}>
+                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' ,whiteSpace: "nowrap" }}>
                     Actions
                   </Table.Th>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' }}>
+                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px',whiteSpace: "nowrap"  }}>
                     Details
                   </Table.Th>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
-                <Table.Tr>
-                  <Table.Td colSpan={8} style={{ textAlign: 'center', padding: '60px', color: '#adb5bd' }}>
-                    <Text size="sm">No strategies available</Text>
-                  </Table.Td>
-                </Table.Tr>
-              </Table.Tbody>
+  {deployedStrategies.length > 0 ? (
+    deployedStrategies.map((strategy, index) => (
+  <React.Fragment key={strategy.id}>
+    <Table.Tr>
+      <Table.Td>{index + 1}</Table.Td>
+
+      <Table.Td>{strategy.name}</Table.Td>
+
+      <Table.Td>-</Table.Td>
+
+      <Table.Td>
+  {liveData[strategy.id]?.status || strategy.status}
+</Table.Td>
+
+      <Table.Td
+  style={{
+    color: liveData[strategy.id]?.pnl >= 0 ? "#16a34a" : "#dc2626",
+    fontWeight: 600
+  }}
+>
+  {liveData[strategy.id]?.pnl ?? "-"}
+</Table.Td>
+  <Table.Td>
+  {deploymentMap[strategy.id]?.join(", ") || "-"}
+</Table.Td>
+
+      {/* ACTION COLUMN */}
+      <Table.Td>
+        <ActionIcon
+          variant="subtle"
+          onClick={() => handleRowToggle(strategy.id)}
+        >
+          {openedRow === strategy.id ? (
+            <IconChevronUp size={18} />
+          ) : (
+            <IconChevronDown size={18} />
+          )}
+        </ActionIcon>
+      </Table.Td>
+
+      <Table.Td>-</Table.Td>
+    </Table.Tr>
+
+    {/* EXPANDED ROW */}
+    {openedRow === strategy.id && (
+      <>
+      <Select
+  label="Select Date"
+  placeholder="Pick date"
+  value={selectedDate[strategy.id] || null}
+  data={(dates[strategy.id] || []).map((d) => ({
+    value: d,
+    label: d,
+  }))}
+
+
+  onChange={(value) => {
+    setSelectedDate((prev) => ({
+      ...prev,
+      [strategy.id]: value,
+    }));
+
+    fetchLegsByDate(strategy.id, value);
+  }}
+
+  opened={dropdownOpened}
+  onDropdownOpen={() => setDropdownOpened(true)}
+  onDropdownClose={() => setDropdownOpened(false)}
+
+  comboboxProps={{
+  withinPortal: true,
+  keepMounted: true
+}}
+  mb="md"
+/>
+  <Table.Tr>
+    <Table.Td colSpan={7}>
+      <Box  style={{ background: "#f8f9fa", borderRadius: "8px" }}>
+        
+        <Table
+          horizontalSpacing="md"
+          verticalSpacing="sm"
+          style={{ width: "100%" }}
+        >
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th>#</Table.Th>
+              <Table.Th>Symbol</Table.Th>
+              <Table.Th>QTY</Table.Th>
+              <Table.Th>LTP ₹</Table.Th>
+              <Table.Th>P&L ₹</Table.Th>
+              <Table.Th>Val ₹</Table.Th>
+            </Table.Tr>
+          </Table.Thead>
+
+          <Table.Tbody>
+  {legs[strategy.id]?.length > 0 ? (
+    legs[strategy.id].map((leg, i) => {
+      
+      const ltp =
+  leg.leg === "CE"
+    ? liveData[strategy.id]?.ce_ltp
+    : liveData[strategy.id]?.pe_ltp;
+
+    const pnl =
+  leg.leg === "CE"
+    ? liveData[strategy.id]?.ce_pnl
+    : liveData[strategy.id]?.pe_pnl;
+
+    const qty = 0;
+
+    const val = qty * (ltp || 0);
+
+      return (
+        <Table.Tr key={leg.leg}>
+          <Table.Td>{i + 1}</Table.Td>
+
+          <Table.Td>
+            <Text
+    fw={500}
+    style={{ cursor: "pointer", color: "#228be6" }}
+    onClick={() => {
+
+      const token = leg.token; // ✅ FIXED
+      const date = selectedDate[strategy.id];
+
+      setSelectedLegInfo({
+        strategyId: strategy.id,
+        token,
+        date,
+        leg: leg.leg
+      });
+
+      fetchTradesByToken(strategy.id, date, token);
+    }}
+  >
+    {leg.symbol}
+  </Text>
+            <Text size="xs" c="dimmed">
+              {leg.leg}
+            </Text>
+          </Table.Td>
+
+          <Table.Td>{qty}</Table.Td>
+
+<Table.Td>{ltp ?? "-"}</Table.Td>
+
+<Table.Td
+  style={{
+    color: pnl >= 0 ? "#16a34a" : "#dc2626",
+    fontWeight: 500
+  }}
+>
+  {pnl ?? "-"}
+</Table.Td>
+
+<Table.Td>{val.toFixed(2)}</Table.Td>
+        </Table.Tr>
+      );
+    })
+  ) : (
+    <Table.Tr>
+      <Table.Td
+        colSpan={6}
+        style={{
+          textAlign: "center",
+          padding: "30px",
+          color: "#868e96"
+        }}
+      >
+        No Legs found
+      </Table.Td>
+    </Table.Tr>
+  )}
+</Table.Tbody>
+        </Table>
+      </Box>
+    </Table.Td>
+  </Table.Tr>
+  </>
+)}
+  </React.Fragment>
+))
+  ) : (
+    <Table.Tr>
+      <Table.Td
+        colSpan={7}
+        style={{ textAlign: "center", padding: "60px", color: "#adb5bd" }}
+      >
+        <Text size="sm">No strategies available</Text>
+      </Table.Td>
+    </Table.Tr>
+  )}
+</Table.Tbody>
             </Table>
             </ScrollArea>
 
@@ -679,6 +902,8 @@ const LiveUI = ()=>{
           </Box>
   )
 }
+
+
 
 useEffect(()=>{
       const Fetchstartergies = async ()=>{
@@ -714,9 +939,10 @@ useEffect(()=>{
           </Text>
         </Box>
 <Flex gap="2rem" align="center" justify="center">
-    <Badge p={'1rem'} bg={'#000'} >
-      <Text fw={'500'} >{user.tokens} Tokens</Text>
-    </Badge>
+  <Flex gap={2} align={'center'} >
+  <IconCoinFilled size={40} color='#FFD900' style={{backgroundColor:'#fff'}} />
+      <Text fw={'500'} size='1.2rem' >{user.tokens}</Text>
+      </Flex>
   {/* 🔔 Notification icon */}
   <Menu width={310} position="bottom-end" shadow="md">
     <Menu.Target>
@@ -877,29 +1103,7 @@ useEffect(()=>{
     />
   </Grid.Col>
 
-  {/* <Grid.Col span={{ base: 6, sm: 6, md: 4, lg: 3 }}>
-    <Paper
-      p="md"
-      radius="md"
-      style={{ border: "1.5px solid #d6d6d6ff", borderRadius: "10px" }}
-    >
-      <Flex align="center" gap="1rem">
-        <ThemeIcon size="lg" variant="light" color="gray">
-          <IconAlertTriangle size={20} stroke={1.5} />
-        </ThemeIcon>
-        <Text size="sm" color="dimmed" fw={500}>
-          Risk Score
-        </Text>
-      </Flex>
-
-      <Text size="xl" fw={700} mt="xs" color="orange">
-        Medium
-      </Text>
-      <Text size="xs" color="dimmed" mt={4}>
-        Portfolio diversity: 85%
-      </Text>
-    </Paper>
-  </Grid.Col> */}
+  
 </Grid>
         <Box style={{ maxWidth: '100%' }}>
           {/* Top Bar */}

@@ -11,6 +11,14 @@ import {
   IconCoinRupee,
   IconBook,
   IconLogout,
+  IconHome,
+  IconChartHistogram,
+  IconFileDescription,
+  IconReportAnalytics,
+  IconSquareRoundedPlus,
+  IconPresentationAnalytics,
+  IconBrandParsinta,
+  IconDeviceImacPlus
 } from "@tabler/icons-react";
 import classes from "./Sidebar.module.css";
 import logowhite from "../../assets/logowhite.png"
@@ -19,15 +27,15 @@ import { useState } from "react";
 
 
 const menu = [
-  { label: "Dashboard", icon: IconGauge },
-  { label: "Create Signal", icon: IconAntenna },
-  { label: "Trader Signal", icon: IconAntenna },
-  { label: "Strategies", icon: IconChartLine },
-  { label: "Subscriptions", icon: IconCreditCard },
-  { label: "Reports", icon: IconFileText },
-  { label: "Create Strategy", icon: IconPlus },
+  { label: "Dashboard", icon: IconHome },
+  { label: "Create Signal", icon: IconDeviceImacPlus },
+  { label: "Trader Signal", icon: IconPresentationAnalytics },
+  { label: "Strategies", icon: IconChartHistogram },
+  { label: "Subscriptions", icon: IconFileDescription },
+  { label: "Reports", icon: IconReportAnalytics },
+  { label: "Create Strategy", icon: IconSquareRoundedPlus },
   { label: "Plans & Pricing", icon: IconCoinRupee},
-  { label: "Tutorials", icon: IconBook},
+  { label: "Tutorials", icon: IconBrandParsinta},
 ];
 
 export default function Sidebar({ active, onSelect, mobileOpen, setMobileOpen, collapsed, setCollapsed }) {
