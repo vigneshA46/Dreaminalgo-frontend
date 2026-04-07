@@ -232,7 +232,7 @@ const deployedStrategies = startergies.filter(strategy =>
 )
 
    useEffect(() => {
-  const socket = io("https://dreaminalgo-backend-production.up.railway.app");
+  const socket = io("https://algoapi.dreamintraders.in");
 
   socket.on("connect", () => {
     console.log("✅ Connected:", socket.id);
@@ -402,10 +402,10 @@ const PaperUI = ()=>{
                     PNL
                   </Table.Th>
                   <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' ,whiteSpace: "nowrap" }}>
-                    Actions
+                    Details
                   </Table.Th>
                   <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px',whiteSpace: "nowrap"  }}>
-                    Details
+                    Actions
                   </Table.Th>
                 </Table.Tr>
               </Table.Thead>
@@ -421,7 +421,7 @@ const PaperUI = ()=>{
       <Table.Td>-</Table.Td>
 
       <Table.Td>
-  {liveData[strategy.id]?.status || strategy.status}
+  {liveData[strategy.id]?.status || "CLOSED"}
 </Table.Td>
 
       <Table.Td
@@ -675,10 +675,10 @@ const LiveUI = ()=>{
                     Broker
                   </Table.Th>
                   <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' ,whiteSpace: "nowrap" }}>
-                    Actions
+                    Details
                   </Table.Th>
                   <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px',whiteSpace: "nowrap"  }}>
-                    Details
+                    Actions
                   </Table.Th>
                 </Table.Tr>
               </Table.Thead>
@@ -694,7 +694,7 @@ const LiveUI = ()=>{
       <Table.Td>-</Table.Td>
 
       <Table.Td>
-  {liveData[strategy.id]?.status || strategy.status}
+  {liveData[strategy.id]?.status || "CLOSED"}
 </Table.Td>
 
       <Table.Td
@@ -939,9 +939,9 @@ useEffect(()=>{
           </Text>
         </Box>
 <Flex gap="2rem" align="center" justify="center">
-  <Flex gap={2} align={'center'} >
+  <Flex gap={2} align={'center'} py={'0.1rem'}>
   <IconCoinFilled size={40} color='#FFD900' style={{backgroundColor:'#fff'}} />
-      <Text fw={'500'} size='1.2rem' >{user.tokens}</Text>
+      <Text py={'0.5rem'} px={'1rem'} style={{borderRadius:'1rem'}} c={"#fff"} bg={'#000000'} fw={'500'} size='1.2rem' >{user.tokens} TOKENS </Text>
       </Flex>
   {/* 🔔 Notification icon */}
   <Menu width={310} position="bottom-end" shadow="md">
@@ -1033,7 +1033,7 @@ useEffect(()=>{
      Terms and Conditions
   </Menu.Item>
 
-  <Menu.Item leftSection={<IconKey size={18} />}>
+  <Menu.Item onClick={()=>navigation('/changepassword')} leftSection={<IconKey size={18} />}>
     Change Password
   </Menu.Item>
 

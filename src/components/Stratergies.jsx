@@ -41,7 +41,8 @@ const Stratergies = () => {
     timestamp,
     description,
     onDeploy,
-    onView
+    onView,
+    strategyid
   }) => {
     return (
       <Card
@@ -87,15 +88,20 @@ const Stratergies = () => {
             View
           </Button>
           <Button
+            disabled={deployedStrategyIds.has(strategyid)}
+
           radius={"0.4rem"}
-            styles={{
-              root: {
-                backgroundColor: "#000",
-                color: "#fff",
-              },
-            }}
+            
+            style={{
+              borderColor:'#000',
+                  backgroundColor: deployedStrategyIds.has(strategyid) ? '#dbdbdb' : '#000000',
+                color: deployedStrategyIds.has(strategyid) ? '#000000' : '#ffffff',
+            }}  
+            
+              onClick={() => openModal(startergyname, strategyid)}
+
           >
-            Deploy
+            {deployedStrategyIds.has(strategyid) ? "DEPLOYED" : "DEPLOY"}
           </Button>
         </Group>
       </Card>
@@ -372,6 +378,7 @@ const Stratergies = () => {
           </Grid>
 
 
+
             ) : (
               <Grid>
                     {mystartergieslist.map((signal) => (
@@ -383,8 +390,8 @@ const Stratergies = () => {
                           startergyname={signal.startergy_name}
                           description={signal.description}
                           timestamp={signal.created_at}
+                          strategyid={signal.id}
                           onView={() => console.log("view", signal.id)}
-                          onDeploy={() => console.log("deploy", signal.id)}
                         />
                       </Grid.Col>
                     ))}

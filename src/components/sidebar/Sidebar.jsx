@@ -1,4 +1,4 @@
-import { ActionIcon, Box, Flex, Group, Image, Text, ThemeIcon } from "@mantine/core";
+import { ActionIcon, Box, Card, Flex, Group, Image, Text, ThemeIcon } from "@mantine/core";
 import {
   IconGauge,
   IconChartLine,
@@ -21,7 +21,7 @@ import {
   IconDeviceImacPlus
 } from "@tabler/icons-react";
 import classes from "./Sidebar.module.css";
-import logowhite from "../../assets/logowhite.png"
+import dreaminbg from "../../assets/dreaminbg.png"
 import logo from "../../assets/logo.jpeg"
 import { useState } from "react";
 
@@ -72,7 +72,9 @@ const toggleSidebar = () => {
         gap="sm"
         direction={collapsed ? "column" : "row"}
       >
-        <Image src={logo} alt="loading logo" w="2.8rem" radius="1rem" />
+        
+        <Image  bg={'#000'} src={dreaminbg} alt="loading logo" w="3rem" radius="1.5rem" />
+        
 
         <ActionIcon onClick={toggleSidebar} variant="subtle" className={classes.hamburgerInside}>
   <IconMenu2 size={22} color="black" />

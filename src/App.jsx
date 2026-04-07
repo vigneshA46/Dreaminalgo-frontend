@@ -25,6 +25,7 @@ import About from './components/About.jsx';
 import TermsPage from './components/Termspage.jsx';
 import PrivacyPolicyPage from './components/Privacypolicypage.jsx';
 import Demataccount from './components/Demataccount.jsx';
+import ChangePassword from './components/changepassword.jsx';
 
 function App() {
   return (
@@ -79,6 +80,7 @@ function App() {
             <Route path="broker" element={<Brokers />} />
             <Route path="websocket" element={<StrategyLive />} />
             <Route path="demat" element={<Demataccount />} />
+            <Route path="changepassword" element={<ChangePassword />} />
 
           </Route>
 
