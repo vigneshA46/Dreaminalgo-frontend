@@ -89,7 +89,7 @@ const Createtradersignal = () => {
   
        const Fetchsignals = async ()=>{
         setActiveTab('Trader Signals')
-      const response = await apiRequest('GET','/api/trader-signal/status/active')
+      const response = await apiRequest('GET','/api/trader-signal/status/true')
       await setSignals(response.data)
       /* console.log(response.data) */
     }

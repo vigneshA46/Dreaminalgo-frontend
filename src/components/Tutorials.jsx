@@ -1,123 +1,136 @@
-import React from 'react'
-import { MantineProvider, Box, Container, Text, Grid, Card, AspectRatio } from '@mantine/core';
+import {
+  Box,
+  Button,
+  Card,
+  Grid,
+  Group,
+  Modal,
+  Stack,
+  Text,
+  TextInput,
+  Title
+} from "@mantine/core";
+import React, { useEffect, useState } from "react";
+import { apiRequest } from "./utils/api";
 
 const Tutorials = () => {
-     const tutorials = [
-    {
-      id: 1,
-      title: 'How to log in to your Broker account',
-      videoId: 'dQw4w9WgXcQ', // Replace with actual YouTube video ID
-      thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg',
-    },
-    {
-      id: 2,
-      title: 'How to Deploy a Trading Strategy',
-      videoId: 'dQw4w9WgXcQ', // Replace with actual YouTube video ID
-      thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg',
-    },
-    {
-      id: 3,
-      title: 'Angel One Broker Account Login & API key',
-      videoId: 'dQw4w9WgXcQ', // Replace with actual YouTube video ID
-      thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg',
-    },
-    {
-      id: 4,
-      title: 'Zebull Broker Account Login & APP key',
-      videoId: 'dQw4w9WgXcQ', // Replace with actual YouTube video ID
-      thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg',
-    },
-    {
-      id: 5,
-      title: 'Finvasia (Shoonya) Broker Account Login',
-      videoId: 'dQw4w9WgXcQ', // Replace with actual YouTube video ID
-      thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg',
-    },
-    {
-      id: 6,
-      title: 'Alice Blue Broker Account Login & API key',
-      videoId: 'dQw4w9WgXcQ', // Replace with actual YouTube video ID
-      thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg',
-    },
-  ];
-  return (
-          <Box style={{ backgroundColor: '#ffffffff', minHeight: '100vh', padding: '20px' }}>
-        <Container size="xl" style={{ maxWidth: '1400px' }}>
-          {/* Page Title */}
-         <Text size='1.5rem' fw={"600"} pb={"1rem"} >Tutorials</Text>
+  const [tutorials, setTutorials] = useState([]);
+  const [opened, setOpened] = useState(false);
+  const [videoOpen, setVideoOpen] = useState(false);
+const [currentVideo, setCurrentVideo] = useState("");
 
-          {/* Tutorial Grid */}
-          <Grid gutter="lg">
-            {tutorials.map((tutorial) => (
-              <Grid.Col key={tutorial.id} span={{ base: 12, sm: 6, md: 4, lg: 3 }}>
-                <Card
-                  shadow="sm"
-                  padding="0"
-                  radius="md"
+  const [title, setTitle] = useState("");
+  const [url, setUrl] = useState("");
+
+  // ✅ Fetch all tutorials
+  const fetchTutorials = async () => {
+    try {
+      const res = await apiRequest("GET", "/api/tutorials");
+      setTutorials(res);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchTutorials();
+  }, []);
+  
+
+  // ✅ Convert YouTube URL → embed
+ const getEmbedUrl = (url) => {
+  try {
+    const videoId = new URL(url).searchParams.get("v");
+    return `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+  } catch {
+    return "";
+  }
+};
+
+  return (
+    <Box p="lg">
+      {/* HEADER */}
+      <Group justify="space-between" mb="lg">
+        <Title order={3}>Tutorials</Title>
+      </Group>
+
+      {/* LIST */}
+      <Grid>
+        {tutorials.map((tut) => (
+          <Grid.Col key={tut.id} span={{ base: 12, sm: 6, md: 4 }}>
+            <Card
+              radius="lg"
+              withBorder
+              p="md"
+              style={{
+                borderColor: "#e5e5e5",
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+              }}
+            >
+              <Stack>
+                <Text fw={600}>{tut.title}</Text>
+
+                {/* YouTube Embed */}
+                <Box
                   style={{
-                    backgroundColor: 'white',
-                    border: '1px solid #e9ecef',
-                    overflow: 'hidden',
-                    cursor: 'pointer',
-                    transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-4px)';
-                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+                    borderRadius: "10px",
+                    overflow: "hidden",
                   }}
                 >
-                  {/* Video Thumbnail */}
-                  <AspectRatio ratio={16 / 9}>
-                    <Box
-                      style={{
-                        position: 'relative',
-                        width: '100%',
-                        height: '100%',
-                        backgroundColor: '#000',
-                      }}
-                    >
-                      <iframe
-                        src={`https://www.youtube.com/embed/${tutorial.videoId}`}
-                        title={tutorial.title}
-                        style={{
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          width: '100%',
-                          height: '100%',
-                          border: 'none',
-                        }}
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                      />
-                    </Box>
-                  </AspectRatio>
+                  <Box
+  onClick={() => {
+    setCurrentVideo(getEmbedUrl(tut.url));
+    setVideoOpen(true);
+  }}
+  style={{
+    borderRadius: "10px",
+    overflow: "hidden",
+    cursor: "pointer",
+    background: "#000",
+    height: "180px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "#fff"
+  }}
+>
+  ▶ Play Video
+</Box>
+                </Box>
+              </Stack>
+            </Card>
+          </Grid.Col>
+        ))}
+      </Grid>
 
-                  {/* Video Title */}
-                  <Box p="md">
-                    <Text
-                      size="md"
-                      fw={500}
-                      c="#212529"
-                      style={{
-                        lineHeight: '1.4',
-                        minHeight: '44px',
-                      }}
-                    >
-                      {tutorial.title}
-                    </Text>
-                  </Box>
-                </Card>
-              </Grid.Col>
-            ))}
-          </Grid>
-        </Container>
-      </Box>
-  )
-}
+      <Modal
+  opened={videoOpen}
+  onClose={() => {
+  setVideoOpen(false);
+  setCurrentVideo(""); // ✅ stops playback
+}}
+  fullScreen   // ✅ THIS makes it real fullscreen
+  withCloseButton
+  padding={0}
+>
+  <Box style={{ width: "100vw", height: "100vh", background: "black" }}>
 
-export default Tutorials
+  <iframe
+    width="100%"
+    height="100%"
+    src={currentVideo}
+    title="YouTube video player"
+    allow="autoplay; encrypted-media"
+    allowFullScreen
+    style={{ border: "none" }}
+  />
+</Box>
+</Modal>
+    </Box>
+  );
+};
+
+export default Tutorials;
