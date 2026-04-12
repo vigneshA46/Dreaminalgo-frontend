@@ -25,7 +25,7 @@ import About from './components/About.jsx';
 import TermsPage from './components/Termspage.jsx';
 import PrivacyPolicyPage from './components/Privacypolicypage.jsx';
 import Demataccount from './components/Demataccount.jsx';
-import ChangePassword from './components/changepassword.jsx';
+import ChangePassword from './components/Changepassword.jsx';
 import AliceCallback from './components/Alicecallback.jsx';
 import UpstoxCallback from './components/UpstoxCallback.jsx';
 
