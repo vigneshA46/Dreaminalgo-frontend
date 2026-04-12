@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { MantineProvider, Box, Container, Text, TextInput, PasswordInput, Button, Group, Avatar, Paper, Flex } from '@mantine/core';
-import { IconMail, IconLock, IconBrandGoogle, IconArrowRight, IconWand, IconPencil, IconTrendingUp } from '@tabler/icons-react';
+import { IconMail, IconLock, IconBrandGoogle, IconArrowRight, IconWand, IconPencil, IconTrendingUp, IconPhone } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
 import { notifications } from '@mantine/notifications';
 import { apiRequest } from '../utils/api';
@@ -10,9 +10,12 @@ function Signup() {
   const [loading, setLoading] = useState(false);
   const [password, setPassword] = useState('');
   const [fullname, setfullname] = useState('');
+  const [mobile_number , setmobile_number] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('');
+const [signupSuccess, setSignupSuccess] = useState(false);
   const navigation = useNavigate();
 
-  const SignupHandler = async () => {
+const SignupHandler = async () => {
   if (!email.trim() || !password.trim() || !fullname.trim()) {
     notifications.show({
       title: 'Missing fields',
@@ -22,18 +25,30 @@ function Signup() {
     return;
   }
 
+  if (password !== confirmPassword) {
+    notifications.show({
+      title: 'Password mismatch',
+      message: 'Passwords do not match',
+      color: 'red',
+    });
+    return;
+  }
+
   try {
-    setLoading(true); // 🔄 start loader
+    setLoading(true);
 
     const response = await apiRequest(
       'POST',
       '/api/auth/signup',
-      { email, password, fullname }
+      { email, password, fullname, mobile_number }
     );
+
+    // 👇 instead of only notification → switch UI
+    setSignupSuccess(true);
 
     notifications.show({
       title: 'Success',
-      message: response.message || 'Verification Email sent',
+      message: response.message || 'Contact admin for Verification',
       color: 'green',
     });
 
@@ -44,7 +59,7 @@ function Signup() {
       color: 'red',
     });
   } finally {
-    setLoading(false); // ✅ stop loader
+    setLoading(false);
   }
 };
   return (
@@ -112,6 +127,8 @@ function Signup() {
              Master the skills that move the world: Trading & Coding.
             </Text>
             {/* fullname Input */}
+
+            {!signupSuccess ? (<>
             <TextInput
               placeholder="Jhon Doe"
               icon={<IconMail size={18} color="#17a2b8" />}
@@ -150,6 +167,25 @@ function Signup() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
+            {/* Mobile number Input */}
+            <TextInput
+              placeholder="+91 987..."
+              icon={<IconPhone size={18} color="#17a2b8" />}
+              size="md"
+              styles={{
+                root: { marginBottom: '16px' },
+                input: {
+                  backgroundColor: 'white',
+                  border: '1px solid #e9ecef',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  padding: '12px 16px',
+                  height: '48px'
+                }
+              }}
+              value={mobile_number}
+              onChange={(e) => setmobile_number(e.target.value)}
+            />
 
             {/* Password Input */}
             <PasswordInput
@@ -174,6 +210,25 @@ function Signup() {
               onChange={(e) => setPassword(e.target.value)}
             />
 
+            <PasswordInput
+  placeholder="Confirm Password"
+  icon={<IconLock size={18} color="#adb5bd" />}
+  size="md"
+  styles={{
+    root: { marginBottom: '20px' },
+    input: {
+      backgroundColor: 'white',
+      border: '1px solid #e9ecef',
+      borderRadius: '8px',
+      fontSize: '14px',
+      padding: '12px 16px',
+      height: '48px'
+    }
+  }}
+  value={confirmPassword}
+  onChange={(e) => setConfirmPassword(e.target.value)}
+/>  
+
             {/* Sign up Button */}
             <Button
   fullWidth
@@ -194,6 +249,49 @@ function Signup() {
 >
   Sign up
 </Button>
+</>) : (
+  <Paper
+    radius="md"
+    p="xl"
+    style={{
+      backgroundColor: 'white',
+      textAlign: 'center',
+      border: '1px solid #e9ecef'
+    }}
+  >
+    <Flex direction="column" align="center" gap="md">
+      
+      <Avatar color="teal" radius="xl" size={60}>
+        <IconWand size={30} />
+      </Avatar>
+
+      <Text size="lg" fw={600} color="#212529">
+        Verification Required
+      </Text>
+
+      <Text size="sm" color="#868e96" style={{ lineHeight: 1.6 }}>
+        Your account has been created successfully.
+        <br />
+        Please contact admin for verification.
+      </Text>
+
+      <Group mt="md">
+        <Flex align="center" gap="xs">
+          <IconPhone size={18} color="#17a2b8" />
+          <Text size="sm">+91 9080058704</Text>
+        </Flex>
+      </Group>
+
+      <Group>
+        <Flex align="center" gap="xs">
+          <IconMail size={18} color="#17a2b8" />
+          <Text size="sm">dreaminalgodevelopmement@gmail.com</Text>
+        </Flex>
+      </Group>
+
+    </Flex>
+  </Paper>
+)}
 
             {/* Divider */}
             <Text
