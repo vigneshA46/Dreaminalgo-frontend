@@ -14,7 +14,6 @@ import Tradersignal from './components/Tradersignal';
 import Profile from './components/Profile';
 import Planandpricing from './components/Planandpricing';
 import Tutorials from './components/Tutorials';
-
 import Login from './auth/Login.jsx';
 import Signup from './auth/Signup.jsx';
 import Brokers from './components/Brokers.jsx';

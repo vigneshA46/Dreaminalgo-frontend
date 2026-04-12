@@ -274,7 +274,7 @@ const deleteBroker = async (id) => {
 
 <TextInput
   label="TOTP"
-  onChange={(e) => handleChange("totp", e.target.value)}
+  onChange={(e) => handleChange("totpSecret", e.target.value)}
 />
           </Stack>
         );
