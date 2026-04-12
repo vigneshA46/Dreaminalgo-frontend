@@ -1,51 +1,29 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { MantineProvider, Box, Container, Group, Button, Select, TextInput, Table, Text, ScrollArea } from '@mantine/core';
 import { IconSearch } from '@tabler/icons-react';
 import { useMediaQuery } from '@mantine/hooks';
+import { apiRequest } from '../utils/api';
+import { Modal } from '@mantine/core';
 
 const Reports = () => {
 
   const [activeTab, setActiveTab] = useState('reports');
   const isMobile = useMediaQuery('(max-width: 768px)');
+  const [data, setData] = useState([]);
+  const [selectedStrategy, setSelectedStrategy] = useState(null);
+  const [opened, setOpened] = useState(false);
 
-  const strategies = [
-    {
-      id: 1,
-      name: 'Nifty Futures VWAP strategy (3X in PT) - ID: 7588597',
-      pnl: -11489.98,
-      isProfit: false,
-    },
-    {
-      id: 2,
-      name: 'Nifty 3 min Supertrend Strategy 20 points target - ID: 7935349',
-      pnl: 1578.75,
-      isProfit: true,
-    },
-    {
-      id: 3,
-      name: 'Nifty 1st 1 min close average price for 35 Points TGT - 8259679',
-      pnl: 40614.75,
-      isProfit: true,
-    },
-    {
-      id: 4,
-      name: 'Nifty 3 min Supertrend Strategy 20 points target Inamul Hasan 5k risk',
-      pnl: -547.5,
-      isProfit: false,
-    },
-    {
-      id: 5,
-      name: 'Nifty 3 min Supertrend Strategy 20 points target inamul hasan - ID. - 8290751',
-      pnl: -8726.25,
-      isProfit: false,
-    },
-    {
-      id: 6,
-      name: 'Banknifty option buying 1st 1 min candle average price open and close - ID - 8529033',
-      pnl: -22275.76,
-      isProfit: false,
-    },
-  ];
+  useEffect(() => {
+  const getalluserdeployments = async () => {
+    const res = await apiRequest('GET', '/api/deployments/userdep/all');
+
+    if (res?.success) {
+      setData(res.data);
+    }
+  };
+
+  getalluserdeployments();
+}, []);
 
 
   return (
@@ -219,60 +197,86 @@ const Reports = () => {
                   </Table.Th>
                 </Table.Tr>
               </Table.Thead>
-              <Table.Tbody>
-                {strategies.map((strategy) => (
-                  <Table.Tr key={strategy.id} style={{ borderBottom: '1px solid #e9ecef' }}>
-                    <Table.Td style={{ padding: '20px 16px', color: '#495057', fontSize: '15px',whiteSpace: "nowrap" }}>
-                      {strategy.id}
-                    </Table.Td>
-                    <Table.Td style={{ padding: '20px 16px', color: '#212529', fontSize: '15px',whiteSpace: "nowrap" }}>
-                      {strategy.name}
-                    </Table.Td>
-                    <Table.Td style={{ padding: '20px 16px',whiteSpace: "nowrap" }}>
-                      <Text
-                        size="md"
-                        fw={600}
-                        style={{
-                          color: strategy.isProfit ? '#2b8a3e' : '#dc3545',
-                        }}
-                      >
-                        ₹ {strategy.isProfit ? '' : '-'}{Math.abs(strategy.pnl).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </Text>
-                    </Table.Td>
-                    <Table.Td style={{ padding: '20px 16px',whiteSpace: "nowrap" }}>
-                      <Button
-                        size="sm"
-                        style={{
-                          backgroundColor: '#000000ff',
-                          borderRadius: '6px',
-                          fontWeight: 500,
-                          paddingLeft: '24px',
-                          paddingRight: '24px',
-                        }}
-                      >
-                        Details
-                      </Button>
-                    </Table.Td>
-                  </Table.Tr>
-                ))}
-              </Table.Tbody>
+             <Table.Tbody>
+  {data.map((strategy, index) => {
+    const pnl = parseFloat(strategy.overall_cumulative_pnl || 0);
+    const isProfit = pnl >= 0;
+
+    return (
+      <Table.Tr key={strategy.strategy_id}>
+        <Table.Td>{index + 1}</Table.Td>
+
+        <Table.Td>
+          {strategy.strategy_name}
+        </Table.Td>
+
+        <Table.Td>
+          <Text
+            fw={600}
+            style={{ color: isProfit ? '#2b8a3e' : '#dc3545' }}
+          >
+            ₹ {isProfit ? '' : '-'}
+            {Math.abs(pnl).toLocaleString('en-IN', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </Text>
+        </Table.Td>
+
+        <Table.Td>
+          <Button
+            size="sm"
+            style={{ backgroundColor: 'black' }}
+            onClick={() => {
+              setSelectedStrategy(strategy);
+              setOpened(true);
+            }}
+          >
+            Details
+          </Button>
+        </Table.Td>
+      </Table.Tr>
+    );
+  })}
+</Table.Tbody>
             </Table>
             </ScrollArea>
           </Box>
-
-          {/* Footer */}
-         {/*  <Group justify="space-between" mt="xl" pt="xl" style={{ borderTop: '1px solid #e9ecef' }}>
-            <Text size="sm" c="#495057">
-              Contact Us
-            </Text>
-            <Text size="sm" c="#495057">
-              Terms and Conditions
-            </Text>
-            <Text size="sm" c="#495057">
-              Privacy policy
-            </Text>
-          </Group> */}
         </Container>
+
+        <Modal
+  opened={opened}
+  onClose={() => setOpened(false)}
+  title={selectedStrategy?.strategy_name}
+  size="lg"
+  centered
+>
+  <ScrollArea>
+    <Table striped highlightOnHover>
+      <Table.Thead>
+        <Table.Tr>
+          <Table.Th>S.No</Table.Th>
+          <Table.Th>Type</Table.Th>
+          <Table.Th>Multiplier</Table.Th>
+          <Table.Th>Date</Table.Th>
+        </Table.Tr>
+      </Table.Thead>
+
+      <Table.Tbody>
+        {selectedStrategy?.deployments?.map((dep, i) => (
+          <Table.Tr key={dep.id}>
+            <Table.Td>{i + 1}</Table.Td>
+            <Table.Td>{dep.type}</Table.Td>
+            <Table.Td>{dep.multiplier}</Table.Td>
+            <Table.Td>
+              {new Date(dep.deployed_at).toLocaleString('en-IN')}
+            </Table.Td>
+          </Table.Tr>
+        ))}
+      </Table.Tbody>
+    </Table>
+  </ScrollArea>
+</Modal>
       </Box>
   )
 }

@@ -15,7 +15,7 @@ import {
   Box
 } from "@mantine/core";
 import { apiRequest } from "../utils/api";
-
+import { notifications } from '@mantine/notifications';
 
 
 
@@ -26,21 +26,53 @@ export default function Brokers() {
   const [opened, setOpened] = useState(false);
   const [selectedCreds, setSelectedCreds] = useState({});
 
+  const handleUpstoxLogin = (broker) => {
+  const { apiKey, redirectUri } = broker.credentials;
+
+  // store broker id for callback mapping
+  localStorage.setItem("upstox_broker_id", broker.id);
+
+  const url =
+    `https://api.upstox.com/v2/login/authorization/dialog` +
+    `?response_type=code` +
+    `&client_id=${apiKey}` +
+    `&redirect_uri=${encodeURIComponent(redirectUri)}`;
+
+  window.location.href = url;
+};
+
   const openCredentials = (creds) => {
     setSelectedCreds(creds || {});
     setOpened(true);
   };
   
-    const deleteBroker = async(id) =>{
-      try{
-        const res = await apiRequest('DELETE',`/api/broker/${id}`)
-        console.log(res)
-      }catch(err){
-        console.log(err)
-      }
-    }
+const handleGenerateToken = (broker) => {
+  const { appCode } = broker.credentials;
 
+  // store broker id
+  localStorage.setItem("alice_broker_id", broker.id);
 
+  // redirect to alice login
+  window.location.href = `https://ant.aliceblueonline.com/?appcode=${appCode}`;
+};
+
+const deleteBroker = async (id) => {
+  const confirmDelete = window.confirm("Are you sure you want to delete this broker?");
+  if (!confirmDelete) return;
+
+  try {
+    await apiRequest('DELETE', `/api/broker/${id}`);
+
+    // ✅ remove from UI instantly
+    setuserBroker((prev) => prev.filter((b) => b.id !== id));
+
+    alert("Broker deleted successfully");
+
+  } catch (err) {
+    console.log(err);
+    alert("Delete failed");
+  }
+};
   return (
     <>
       <Modal
@@ -85,8 +117,7 @@ export default function Brokers() {
                 <Table.Td>
                   <Text fw={500}>{broker.broker_name}</Text>
                 </Table.Td>
-
-
+                
                 <Table.Td>
                   <Badge
                     color={
@@ -95,6 +126,30 @@ export default function Brokers() {
                   >
                     {broker.status}
                   </Badge>
+                    <br/>
+                  {broker.broker_name === "aliceblue" && (
+  <Button
+    my={'0.5rem'}
+    radius={'0.5rem'}
+    size="xs"
+    bg="#000"
+    onClick={() => handleGenerateToken(broker)}
+  >
+    Generate Token
+  </Button>
+)}
+
+{broker.broker_name === "upstox" && (
+  <Button
+    my="0.5rem"
+    size="xs"
+    bg="#000"
+    onClick={() => handleUpstoxLogin(broker)}
+  >
+    Generate Token
+  </Button>
+)}
+
                 </Table.Td>
 
                 <Table.Td>
@@ -163,9 +218,8 @@ export default function Brokers() {
     setForm({ ...form, [field]: value });
   };
 
-  const handleSubmit = async () => {
+ const handleSubmit = async () => {
   try {
-
     const payload = {
       brokerName: normalizeBrokerName(selectedBroker),
       credentials: form
@@ -173,22 +227,27 @@ export default function Brokers() {
 
     console.log(payload)
 
-    const response = await apiRequest(
-      "POST",
-      "/api/broker",
-      payload
-    );
+    const response = await apiRequest("POST", "/api/broker", payload);
 
-    // ✅ Update UI from backend response
-    setBrokers((prev) => [...prev, response.broker]);
+    // ✅ update UI instantly
+    setuserBroker((prev) => [...prev, response.broker]);
+
+    notifications.show({
+      title: 'Success',
+      message: `${selectedBroker} connected successfully`,
+      color: 'green'
+    });
 
     setOpened(false);
     setSelectedBroker(null);
     setForm({});
 
   } catch (err) {
-    console.error(err);
-    alert(err?.response?.data?.error || "Connection failed");
+    notifications.show({
+      title: 'Error',
+      message: err?.response?.data?.error || "Connection failed",
+      color: 'red'
+    });
   }
 };
   const renderForm = () => {
@@ -219,12 +278,12 @@ export default function Brokers() {
 />
           </Stack>
         );
-      case "Zebu":
+      case "zebumynt":
         return (
           <Stack>
             <TextInput
               label="User ID"
-              onChange={(e) => handleChange("userid", e.target.value)}
+              onChange={(e) => handleChange("uid", e.target.value)}
             />
 
             <PasswordInput
@@ -233,13 +292,13 @@ export default function Brokers() {
             />
 
             <TextInput
-              label="TOTP"
-              onChange={(e) => handleChange("totp", e.target.value)}
+              label="TOTP / 2 factor"
+              onChange={(e) => handleChange("factor2", e.target.value)}
             />
 
             <TextInput
               label="Api key"
-              onChange={(e) => handleChange("apikey", e.target.value)}
+              onChange={(e) => handleChange("apiKey", e.target.value)}
             />
           </Stack>
         );
@@ -264,21 +323,25 @@ export default function Brokers() {
           </Stack>
         );
 
-      case "Alice Blue":
+      case "aliceblue":
         return (
-          <Stack>
-           <TextInput
-  label="User ID"
-  onChange={(e) => handleChange("userId", e.target.value)}
-/>
+        <Stack>
+        <TextInput
+        label="User ID"
+        onChange={(e) => handleChange("userId", e.target.value)}
+      />
 
-<TextInput
-  label="API Key"
-  onChange={(e) => handleChange("apiKey", e.target.value)}
-/>
-          </Stack>
-        );
+      <TextInput
+        label="API Key"
+        onChange={(e) => handleChange("apiKey", e.target.value)}
+      />
 
+      <TextInput
+        label="App Code"
+        onChange={(e) => handleChange("appCode", e.target.value)}
+      />
+    </Stack>
+  );
       case "Zerodha":
         return (
           <Stack>
@@ -298,7 +361,26 @@ export default function Brokers() {
             />
           </Stack>
         );
+      
+      case "upstox":
+          return (
+          <Stack>
+        <TextInput
+            label="API Key"
+            onChange={(e) => handleChange("apiKey", e.target.value)}
+          />
 
+          <TextInput
+            label="API Secret"
+            onChange={(e) => handleChange("apiSecret", e.target.value)}
+          />
+
+            <TextInput
+          label="Redirect URI"
+          onChange={(e) => handleChange("redirectUri", e.target.value)}
+        />
+        </Stack>
+        );
       default:
         return null;
     }
@@ -340,9 +422,10 @@ export default function Brokers() {
             data={[
               "Angelone",
               "Dhan",
-              "Alice Blue",
+              "aliceblue",
               "Zerodha",
-              "Zebu"
+              "zebumynt",
+              "upstox"
             ]}
             value={selectedBroker}
             onChange={setSelectedBroker}

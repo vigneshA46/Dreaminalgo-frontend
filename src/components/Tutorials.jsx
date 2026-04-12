@@ -11,7 +11,7 @@ import {
   Title
 } from "@mantine/core";
 import React, { useEffect, useState } from "react";
-import { apiRequest } from "./utils/api";
+import { apiRequest } from "../utils/api";
 
 const Tutorials = () => {
   const [tutorials, setTutorials] = useState([]);
@@ -112,7 +112,6 @@ const [currentVideo, setCurrentVideo] = useState("");
   setVideoOpen(false);
   setCurrentVideo(""); // ✅ stops playback
 }}
-  fullScreen   // ✅ THIS makes it real fullscreen
   withCloseButton
   padding={0}
 >

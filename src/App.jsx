@@ -26,11 +26,12 @@ import TermsPage from './components/Termspage.jsx';
 import PrivacyPolicyPage from './components/Privacypolicypage.jsx';
 import Demataccount from './components/Demataccount.jsx';
 import ChangePassword from './components/changepassword.jsx';
+import AliceCallback from './components/Alicecallback.jsx';
+import UpstoxCallback from './components/UpstoxCallback.jsx';
 
 function App() {
   return (
-    <MantineProvider>
-        <Notifications />
+        
       <Router>
         <Routes>
 
@@ -59,6 +60,8 @@ function App() {
           <Route path="/about" element={<About />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/privacy" element={<PrivacyPolicyPage />} />
+          <Route path="/broker/alice/callback" element={<AliceCallback />} />
+          <Route path="/broker/upstox/callback" element={<UpstoxCallback />} />
 
           {/* ================= USER ROUTES ================= */}
           <Route
@@ -86,7 +89,6 @@ function App() {
 
         </Routes>
       </Router>
-    </MantineProvider>
   );
 }
 

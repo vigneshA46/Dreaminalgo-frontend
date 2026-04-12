@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useMarketWebSocket } from "../hooks/useMarketWebSocket";
 import { io } from "socket.io-client";
 import { useMediaQuery } from '@mantine/hooks';
-
+import dayjs from "dayjs";
 
 import { 
   Box, 
@@ -195,6 +195,8 @@ export default function Dashboard() {
 const [tradesData, setTradesData] = useState([]);
 const [selectedLegInfo, setSelectedLegInfo] = useState(null);
 const [todaydeployment , settodaydeployment] = useState([])
+const [legPnls, setLegPnls] = useState({});
+const [cumulativePnl, setCumulativePnl] = useState({});
 const [Livestock, setLivestock] = useState({
   NIFTY: null,
   BANKNIFTY: null,
@@ -322,26 +324,37 @@ const fetchDates = async (strategyId) => {
   }
 };
 
-
 const fetchLegsByDate = async (strategyId, date) => {
   try {
     const res = await apiRequest(
-      "GET",
-      `/api/tradelegs?strategy_id=${strategyId}&date=${date}`
+      "POST",
+      `/api/tradelegs/stratergy/detailled/?strategy_id=${strategyId}&date=${date}`
     );
 
     const data = res;
 
+    // ✅ LEGS
     setLegs((prev) => ({
       ...prev,
-      [strategyId]: data.data
+      [strategyId]: data.legs
+    }));
+
+    // ✅ LEG PNLs (IMPORTANT)
+    setLegPnls((prev) => ({
+      ...prev,
+      [strategyId]: data.leg_pnls
+    }));
+
+    // ✅ CUMULATIVE PNL (IMPORTANT)
+    setCumulativePnl((prev) => ({
+      ...prev,
+      [strategyId]: data.cumulative_pnl
     }));
 
   } catch (err) {
     console.error(err);
   }
 };
-
 const fetchTradesByToken = async (strategyId, date, token) => {
   try {
     console.log("date",date , "token", token, "strategy id", strategyId)
@@ -359,6 +372,9 @@ const fetchTradesByToken = async (strategyId, date, token) => {
 };
 
 const PaperUI = ()=>{
+
+        
+
   return(
       <Box
   style={{
@@ -411,8 +427,14 @@ const PaperUI = ()=>{
               </Table.Thead>
               <Table.Tbody>
   {startergies.length > 0 ? (
-    startergies.map((strategy, index) => (
-  <React.Fragment key={strategy.id}>
+    
+    startergies.map((strategy, index) => {
+      const isToday = selectedDate[strategy.id] === dayjs().format("YYYY-MM-DD");
+
+      const displayPnl = liveData[strategy.id]?.pnl ? liveData[strategy.id]?.pnl
+      : cumulativePnl[strategy.id];
+      return(
+      <React.Fragment key={strategy.id}>
     <Table.Tr>
       <Table.Td>{index + 1}</Table.Td>
 
@@ -424,15 +446,17 @@ const PaperUI = ()=>{
   {liveData[strategy.id]?.status || "CLOSED"}
 </Table.Td>
 
-      <Table.Td
+
+    
+
+<Table.Td
   style={{
-    color: liveData[strategy.id]?.pnl >= 0 ? "#16a34a" : "#dc2626",
+    color: displayPnl >= 0 ? "#16a34a" : "#dc2626",
     fontWeight: 600
   }}
 >
-  {liveData[strategy.id]?.pnl ?? "-"}
+  {displayPnl ?? "-"}
 </Table.Td>
-
       {/* ACTION COLUMN */}
       <Table.Td>
         <ActionIcon
@@ -505,16 +529,21 @@ const PaperUI = ()=>{
           <Table.Tbody>
   {legs[strategy.id]?.length > 0 ? (
     legs[strategy.id].map((leg, i) => {
-      
-      const ltp =
-  leg.leg === "CE"
-    ? liveData[strategy.id]?.ce_ltp
-    : liveData[strategy.id]?.pe_ltp;
 
-    const pnl =
-  leg.leg === "CE"
-    ? liveData[strategy.id]?.ce_pnl
-    : liveData[strategy.id]?.pe_pnl;
+      const isToday = selectedDate[strategy.id] === dayjs().format("YYYY-MM-DD");
+      
+    const ltp = isToday
+  ? (leg.leg === "CE"
+      ? liveData[strategy.id]?.ce_ltp
+      : liveData[strategy.id]?.pe_ltp)
+  : "-"; // or store historical LTP if needed
+
+
+    const pnl = isToday
+  ? (leg.leg === "CE"
+      ? liveData[strategy.id]?.ce_pnl
+      : liveData[strategy.id]?.pe_pnl)
+  : legPnls[strategy.id]?.[leg.token]?.pnl;
 
     const qty = 0;
 
@@ -589,7 +618,8 @@ const PaperUI = ()=>{
   </>
 )}
   </React.Fragment>
-))
+      )
+})
   ) : (
     <Table.Tr>
       <Table.Td
