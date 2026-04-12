@@ -10,7 +10,7 @@ import {
 import React, { useState } from "react";
 import { apiRequest } from "../utils/api";
 
-const ChangePassword = () => {
+export default function ChangePassword() {
   const [oldPassword, setOldPassword] = useState("");
   const [password, setNewPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -96,4 +96,3 @@ const ChangePassword = () => {
   );
 };
 
-export default ChangePassword;
