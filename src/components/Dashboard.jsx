@@ -178,6 +178,7 @@ function RiskCard({ title, description, level, color }) {
 }
 
 export default function Dashboard() {
+  const [totalPnl, setTotalPnl] = useState(0);
    const [active, setActive] = useState("live"); 
    const [user , setUser] = useState([]);
    const isMobile = useMediaQuery('(max-width: 768px)');
@@ -197,6 +198,20 @@ const [selectedLegInfo, setSelectedLegInfo] = useState(null);
 const [todaydeployment , settodaydeployment] = useState([])
 const [legPnls, setLegPnls] = useState({});
 const [cumulativePnl, setCumulativePnl] = useState({});
+
+useEffect(() => {
+  let total = 0;
+
+  Object.keys(liveData).forEach((id) => {
+    const pnl = liveData[id]?.pnl;
+
+    if (pnl !== undefined && pnl !== null) {
+      total += Number(pnl);
+    }
+  });
+
+  setTotalPnl(total);
+}, [liveData]);
 const [Livestock, setLivestock] = useState({
   NIFTY: null,
   BANKNIFTY: null,
@@ -370,6 +385,8 @@ const fetchTradesByToken = async (strategyId, date, token) => {
     console.error(err);
   }
 };
+
+
 
 const PaperUI = ()=>{
 
@@ -969,10 +986,46 @@ useEffect(()=>{
           </Text>
         </Box>
 <Flex gap="2rem" align="center" justify="center">
-  <Flex gap={2} align={'center'} py={'0.1rem'}>
-  <IconCoinFilled size={40} color='#FFD900' style={{backgroundColor:'#fff'}} />
-      <Text py={'0.5rem'} px={'1rem'} style={{borderRadius:'1rem'}} c={"#fff"} bg={'#000000'} fw={'500'} size='1.2rem' >{user.tokens} TOKENS </Text>
-      </Flex>
+    <Flex
+      align="center"
+      style={{
+        background: '#ffffff',
+        borderRadius: '999px',
+        padding: '4px',
+        width: 'fit-content',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+      }}
+    >
+      {/* Left Icon Section */}
+      <Box
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: '#ffffff',
+          borderRadius: '50%',
+          width: 36,
+          height: 36,
+          border: '2px solid #000',
+        }}
+      >
+        <IconCoinFilled size={24} color="#FFD900" />
+      </Box>
+
+      {/* Right Curved Text Section */}
+      <Text
+        ml={10}
+        mr={14}
+        fw={600}
+        size="sm"
+        c="#000"
+        style={{
+          letterSpacing: '0.5px',
+        }}
+      >
+        {user.tokens} TOKENS
+      </Text>
+    </Flex>
   {/* 🔔 Notification icon */}
   <Menu width={310} position="bottom-end" shadow="md">
     <Menu.Target>
@@ -1180,7 +1233,14 @@ useEffect(()=>{
                   <Text size="xs" c="dimmed" fw={500}>PNL</Text>
                   <Group gap={4}>
                     
-                    <Text size="md" fw={600}>₹0</Text>
+                    <span
+      style={{
+        color: totalPnl >= 0 ? "#16a34a" : "#dc2626",
+        fontWeight:500
+      }}
+    >
+      ₹ {totalPnl.toFixed(2) || 0} 
+    </span>
                   </Group>
                 </Box>
 

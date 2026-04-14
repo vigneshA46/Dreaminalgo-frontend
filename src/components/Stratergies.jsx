@@ -16,6 +16,24 @@ const Stratergies = () => {
   const [strategyid , setstrategyid] = useState('')
   const [todaydeployment , settodaydeployment] = useState([])
 
+  const isTimeExceeded = (starting_time) => {
+  if (!starting_time) return false;
+
+  const now = new Date();
+
+  // Convert to IST
+  const istNow = new Date(
+    now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+  );
+
+  const [hours, minutes, seconds] = starting_time.split(":").map(Number);
+
+  const startTimeToday = new Date(istNow);
+  startTimeToday.setHours(hours, minutes, seconds || 0, 0);
+
+  return istNow > startTimeToday;
+};
+
   useState(()=>{
     const fetchtodaydeployment = async () =>{
       const res = await apiRequest('GET','/api/deployments/user/today')
@@ -359,17 +377,32 @@ const Stratergies = () => {
   size="md"
   radius="md"
   variant="outline"
-  disabled={deployedStrategyIds.has(strategy.id)}
+  disabled={
+    deployedStrategyIds.has(strategy.id) ||
+    isTimeExceeded(strategy.starting_time)
+  }
   onClick={() => openModal(strategy.name, strategy.id)}
   style={{
-    borderColor: deployedStrategyIds.has(strategy.id) ? '#adb5bd' : '#dc3545',
-    color: deployedStrategyIds.has(strategy.id) ? '#adb5bd' : '#dc3545',
+    borderColor:
+      deployedStrategyIds.has(strategy.id) ||
+      isTimeExceeded(strategy.starting_time)
+        ? '#adb5bd'
+        : '#dc3545',
+    color:
+      deployedStrategyIds.has(strategy.id) ||
+      isTimeExceeded(strategy.starting_time)
+        ? '#adb5bd'
+        : '#dc3545',
     fontWeight: 600,
     paddingLeft: '32px',
     paddingRight: '32px',
   }}
 >
-  {deployedStrategyIds.has(strategy.id) ? "DEPLOYED" : "DEPLOY"}
+  {deployedStrategyIds.has(strategy.id)
+    ? "DEPLOYED"
+    : isTimeExceeded(strategy.starting_time)
+    ? "TIME OVER"
+    : "DEPLOY"}
 </Button>
                   </Group>
                 </Card> 
