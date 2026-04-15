@@ -1006,10 +1006,10 @@ useEffect(()=>{
           borderRadius: '50%',
           width: 36,
           height: 36,
-          border: '2px solid #000',
+          border: '2px solid #ffffff',
         }}
       >
-        <IconCoinFilled size={24} color="#FFD900" />
+        <IconCoinFilled size={44} color="#FFD900" />
       </Box>
 
       {/* Right Curved Text Section */}
