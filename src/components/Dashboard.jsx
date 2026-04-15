@@ -1017,7 +1017,7 @@ useEffect(()=>{
         ml={10}
         mr={14}
         fw={600}
-        size="sm"
+        size="md"
         c="#000"
         style={{
           letterSpacing: '0.5px',

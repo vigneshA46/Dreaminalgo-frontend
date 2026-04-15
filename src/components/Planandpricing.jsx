@@ -14,69 +14,76 @@ import {
 import { IconCheck } from "@tabler/icons-react";
 
 const Planandpricing = () => {
+
+
   const plans = [
-    {
-      name: "Starter",
-      tokens: 7,
-      price: 499,
-      features: [
-        "7 Strategy Actions",
-        "Create / Deploy / Backtest",
-        "Basic Support",
-      ],
-      buttonText: "BUY NOW",
-      isDark: false,
-    },
-    {
-      name: "Trader Pack",
-      tokens: 30,
-      price: 1999,
-      features: [
-        "30 Strategy Actions",
-        "Create / Deploy / Backtest",
-        "Priority Support",
-      ],
-      buttonText: "BUY NOW",
-      isDark: false,
-    },
-    {
-      name: "Pro",
-      tokens: 50,
-      price: 3499,
-      features: [
-        "50 Strategy Actions",
-        "All Features Access",
-        "Priority Support",
-        "Faster Execution",
-      ],
-      buttonText: "BUY NOW",
-      isDark: true, // highlighted
-    },
-    {
-      name: "Advanced",
-      tokens: 100,
-      price: 6899,
-      features: [
-        "100 Strategy Actions",
-        "All Features Access",
-        "Priority Support",
-      ],
-      buttonText: "BUY NOW",
-      isDark: false,
-    },
-    {
-      name: "Enterprise",
-      tokens: 500,
-      price: 32999,
-      features: [
-        "500 Strategy Actions",
-        "All Features Access",
-        "Dedicated Support",
-      ],
-      buttonText: "BUY NOW",
-      isDark: false,
-    },
-  ];
+  {
+    name: "Starter",
+    tokens: 7,
+    originalPrice: 665,
+    price: 659,
+    discount: "1% OFF",
+    features: [
+      "7 Strategy Actions",
+      "Create / Deploy / Backtest",
+      "Basic Support",
+    ],
+    isDark: false,
+  },
+  {
+    name: "Trader Pack",
+    tokens: 30,
+    originalPrice: 2850,
+    price: 2749,
+    discount: "3.5% OFF",
+    features: [
+      "30 Strategy Actions",
+      "Create / Deploy / Backtest",
+      "Priority Support",
+    ],
+    isDark: false,
+  },
+  {
+    name: "Pro",
+    tokens: 50,
+    originalPrice: 4750,
+    price: 4399,
+    discount: "7.4% OFF",
+    features: [
+      "50 Strategy Actions",
+      "All Features Access",
+      "Priority Support",
+      "Faster Execution",
+    ],
+    isDark: true,
+  },
+  {
+    name: "Advanced",
+    tokens: 100,
+    originalPrice: 9500,
+    price: 8499,
+    discount: "10.5% OFF",
+    features: [
+      "100 Strategy Actions",
+      "All Features Access",
+      "Priority Support",
+    ],
+    isDark: false,
+  },
+  {
+    name: "Enterprise",
+    tokens: 500,
+    originalPrice: 47500,
+    price: 39999,
+    discount: "15.8% OFF",
+    features: [
+      "500 Strategy Actions",
+      "All Features Access",
+      "Dedicated Support",
+    ],
+    isDark: false,
+  },
+];
 
   return (
     <Box style={{ backgroundColor: "#ffffff", minHeight: "100vh", padding: "40px 0" }}>
@@ -139,15 +146,28 @@ const Planandpricing = () => {
                 </Group>
 
                 {/* Price */}
-                <Text
-                  size="lg"
-                  fw={700}
-                  ta="center"
-                  c={plan.isDark ? "white" : "#212529"}
-                >
-                  ₹{plan.price}
-                </Text>
+                <Group justify="center" gap={6}>
+  <Text
+    size="sm"
+    td="line-through"
+    c={plan.isDark ? "#b8c4d9" : "#adb5bd"}
+  >
+    ₹{plan.originalPrice}
+  </Text>
 
+  <Badge color="green" variant="light">
+    {plan.discount}
+  </Badge>
+</Group>
+
+<Text
+  size="lg"
+  fw={700}
+  ta="center"
+  c={plan.isDark ? "white" : "#212529"}
+>
+  ₹{plan.price}
+</Text>
                 {/* Price per token */}
                 <Text
                   size="xs"
