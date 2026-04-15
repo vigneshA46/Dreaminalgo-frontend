@@ -21,7 +21,7 @@ import {
   IconDeviceImacPlus
 } from "@tabler/icons-react";
 import classes from "./Sidebar.module.css";
-import dreaminbg from "../../assets/dreaminbg.png"
+import dreaminbg from "../../assets/dreaminbg.jpg"
 import logo from "../../assets/logo.jpeg"
 import { useState } from "react";
 
@@ -73,7 +73,7 @@ const toggleSidebar = () => {
         direction={collapsed ? "column" : "row"}
       >
         
-        <Image  bg={'#000'} src={dreaminbg} alt="loading logo" w="3rem" radius="1.5rem" />
+        <Image  bg={'#000'} src={dreaminbg} alt="loading logo" w="4rem" radius="1.5rem" />
         
 
         <ActionIcon onClick={toggleSidebar} variant="subtle" className={classes.hamburgerInside}>

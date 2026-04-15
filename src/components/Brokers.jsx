@@ -22,7 +22,7 @@ import { notifications } from '@mantine/notifications';
 export default function Brokers() {
   const [userBroker , setuserBroker] = useState([]);
 
-  const BrokerTable = ({ userBroker }) => {
+const BrokerTable = ({ userBroker }) => {
   const [opened, setOpened] = useState(false);
   const [selectedCreds, setSelectedCreds] = useState({});
 
@@ -39,7 +39,7 @@ export default function Brokers() {
     `&redirect_uri=${encodeURIComponent(redirectUri)}`;
 
   window.location.href = url;
-};
+ };
 
   const openCredentials = (creds) => {
     setSelectedCreds(creds || {});
@@ -117,41 +117,51 @@ const deleteBroker = async (id) => {
                 <Table.Td>
                   <Text fw={500}>{broker.broker_name}</Text>
                 </Table.Td>
-                
                 <Table.Td>
-                  <Badge
-                    color={
-                      broker.status === "connected" ? "green" : "red"
-                    }
-                  >
-                    {broker.status}
-                  </Badge>
-                    <br/>
-                  {broker.broker_name === "aliceblue" && (
-  <Button
-    my={'0.5rem'}
-    radius={'0.5rem'}
-    size="xs"
-    bg="#000"
-    onClick={() => handleGenerateToken(broker)}
+  <Badge
+    color={broker.status === "connected" ? "green" : "red"}
   >
-    Generate Token
-  </Button>
-)}
+    {broker.status}
+  </Badge>
 
-{broker.broker_name === "upstox" && (
-  <Button
-    my="0.5rem"
-    size="xs"
-    bg="#000"
-    onClick={() => handleUpstoxLogin(broker)}
-  >
-    Generate Token
-  </Button>
-)}
+  <br />
 
-                </Table.Td>
+  {/* ✅ Show last updated only for specific brokers */}
+  {(broker.broker_name === "aliceblue" || broker.broker_name === "upstox") && (
+    <Text size="xs" c="dimmed" mt={4}>
+      Last updated:{" "}
+      {broker.updated_at
+        ? new Date(broker.updated_at).toLocaleString("en-IN", {
+            timeZone: "Asia/Kolkata",
+          })
+        : "N/A"}
+    </Text>
+  )}
 
+  {/* Existing buttons */}
+  {broker.broker_name === "aliceblue" && (
+    <Button
+      my="0.5rem"
+      radius="0.5rem"
+      size="xs"
+      bg="#000"
+      onClick={() => handleGenerateToken(broker)}
+    >
+      Generate Token
+    </Button>
+  )}
+
+  {broker.broker_name === "upstox" && (
+    <Button
+      my="0.5rem"
+      size="xs"
+      bg="#000"
+      onClick={() => handleUpstoxLogin(broker)}
+    >
+      Generate Token
+    </Button>
+  )}
+</Table.Td> 
                 <Table.Td>
                   {new Date(broker.created_at).toLocaleString("en-IN", {
                     timeZone: "Asia/Kolkata",
