@@ -73,7 +73,26 @@ const toggleSidebar = () => {
         direction={collapsed ? "column" : "row"}
       >
         
-        <Image  bg={'#000'} src={dreaminbg} alt="loading logo" w="4rem" radius="1.5rem" />
+        <Box
+  w="4rem"
+  h="4rem"
+  style={{
+    overflow: "hidden",
+    borderRadius: "1.5rem",
+    background: "#000",
+  }}
+>
+  <Image
+    src={dreaminbg}
+    alt="logo"
+    w="100%"
+    h="100%"
+    fit="cover"
+    style={{
+      transform: "scale(1.2)", // 🔥 zoom INSIDE crop
+    }}
+  />
+</Box>
         
 
         <ActionIcon onClick={toggleSidebar} variant="subtle" className={classes.hamburgerInside}>
