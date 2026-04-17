@@ -22,9 +22,57 @@ import { notifications } from '@mantine/notifications';
 export default function Brokers() {
   const [userBroker , setuserBroker] = useState([]);
 
+
 const BrokerTable = ({ userBroker }) => {
   const [opened, setOpened] = useState(false);
   const [selectedCreds, setSelectedCreds] = useState({});
+  const [editMode, setEditMode] = useState(false);
+const [editedCreds, setEditedCreds] = useState({});
+const [selectedBrokerId, setSelectedBrokerId] = useState(null);
+
+const handleCredChange = (key, value) => {
+  setEditedCreds((prev) => ({
+    ...prev,
+    [key]: value,
+  }));
+};
+
+const handleUpdateCredentials = async () => {
+  try {
+    await apiRequest(
+      "PATCH",
+      `/api/broker/${selectedBrokerId}/credentials`,
+      {
+        credentials: editedCreds,
+      }
+    );
+
+    // ✅ update UI instantly
+    setuserBroker((prev) =>
+      prev.map((b) =>
+        b.id === selectedBrokerId
+          ? { ...b, credentials: editedCreds }
+          : b
+      )
+    );
+
+    notifications.show({
+      title: "Updated",
+      message: "Credentials updated successfully",
+      color: "green",
+    });
+
+    setEditMode(false);
+    setSelectedCreds(editedCreds);
+
+  } catch (err) {
+    notifications.show({
+      title: "Error",
+      message: err?.response?.data?.error || "Update failed",
+      color: "red",
+    });
+  }
+};
 
   const handleUpstoxLogin = (broker) => {
   const { apiKey, redirectUri } = broker.credentials;
@@ -41,10 +89,13 @@ const BrokerTable = ({ userBroker }) => {
   window.location.href = url;
  };
 
-  const openCredentials = (creds) => {
-    setSelectedCreds(creds || {});
-    setOpened(true);
-  };
+  const openCredentials = (broker) => {
+  setSelectedCreds(broker.credentials || {});
+  setEditedCreds(broker.credentials || {});
+  setSelectedBrokerId(broker.id);
+  setEditMode(false);
+  setOpened(true);
+};
   
 const handleGenerateToken = (broker) => {
   const { appCode } = broker.credentials;
@@ -76,23 +127,70 @@ const deleteBroker = async (id) => {
   return (
     <>
       <Modal
-        opened={opened}
-        onClose={() => setOpened(false)}
-        title="Broker Credentials"
-      >
-        {Object.keys(selectedCreds).length === 0 ? (
-          <Text>No credentials available</Text>
-        ) : (
-          Object.entries(selectedCreds).map(([key, value]) => (
-            <Box key={key} mb={10}>
-              <Text size="xs" c="dimmed">
-                {key}
-              </Text>
+  opened={opened}
+  onClose={() => setOpened(false)}
+  title="Broker Credentials"
+>
+  {Object.keys(selectedCreds).length === 0 ? (
+    <Text>No credentials available</Text>
+  ) : (
+    <Stack>
+      {Object.entries(editMode ? editedCreds : selectedCreds).map(
+        ([key, value]) => (
+          <Box key={key}>
+            <Text size="xs" c="dimmed">
+              {key}
+            </Text>
+
+            {editMode ? (
+              <TextInput
+                value={value}
+                onChange={(e) =>
+                  handleCredChange(key, e.target.value)
+                }
+              />
+            ) : (
               <Text size="sm">{value}</Text>
-            </Box>
-          ))
+            )}
+          </Box>
+        )
+      )}
+
+      <Group justify="space-between" mt="md">
+        {!editMode ? (
+          <Button
+            size="xs"
+            bg="#000"
+            onClick={() => setEditMode(true)}
+          >
+            Edit
+          </Button>
+        ) : (
+          <>
+            <Button
+              size="xs"
+              color="gray"
+              onClick={() => {
+                setEditMode(false);
+                setEditedCreds(selectedCreds); // reset
+              }}
+            >
+              Cancel
+            </Button>
+
+            <Button
+              size="xs"
+              bg="#000"
+              onClick={handleUpdateCredentials}
+            >
+              Update
+            </Button>
+          </>
         )}
-      </Modal>
+      </Group>
+    </Stack>
+  )}
+</Modal>
 
       <ScrollArea>
         <Table
@@ -127,7 +225,7 @@ const deleteBroker = async (id) => {
   <br />
 
   {/* ✅ Show last updated only for specific brokers */}
-  {(broker.broker_name === "aliceblue" || broker.broker_name === "upstox") && (
+  {(broker.broker_name === "aliceblue" || broker.broker_name === "upstox" || broker.broker_name === "dhan") && (
     <Text size="xs" c="dimmed" mt={4}>
       Last updated:{" "}
       {broker.updated_at
@@ -171,9 +269,7 @@ const deleteBroker = async (id) => {
                 <Table.Td>
                   <Button
                     size="xs"
-                    onClick={() =>
-                      openCredentials(broker.credentials)
-                    }
+                    onClick={() => openCredentials(broker)}
                     bg={'#000'}
                     radius={'0.3rem'}
                   >
@@ -322,14 +418,10 @@ const deleteBroker = async (id) => {
 />
 
 <PasswordInput
-  label="PIN"
-  onChange={(e) => handleChange("pin", e.target.value)}
+  label="ACCESS TOKEN"
+  onChange={(e) => handleChange("access_token", e.target.value)}
 />
 
-<TextInput
-  label="TOTP"
-  onChange={(e) => handleChange("totp", e.target.value)}
-/>
           </Stack>
         );
 

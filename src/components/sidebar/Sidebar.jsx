@@ -75,6 +75,7 @@ const toggleSidebar = () => {
         
         <Box
   w="4rem"
+
   h="4rem"
   style={{
     overflow: "hidden",
@@ -89,7 +90,8 @@ const toggleSidebar = () => {
     h="100%"
     fit="cover"
     style={{
-      transform: "scale(1.2)", // 🔥 zoom INSIDE crop
+      transform: "scale(1.2)", 
+      // 🔥 zoom INSIDE crop
     }}
   />
 </Box>

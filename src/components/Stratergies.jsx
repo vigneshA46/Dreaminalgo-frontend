@@ -341,7 +341,7 @@ const Stratergies = () => {
                         </Anchor>
                       </Text>
                     </Box>
-                    <Badge
+                    {/* <Badge
                       size="lg"
                       radius="md"
                       style={{
@@ -354,7 +354,7 @@ const Stratergies = () => {
                       }}
                     >
                       Subscribed
-                    </Badge>
+                    </Badge> */}
                   </Group>
 
                   <Group justify="space-between" align="center">

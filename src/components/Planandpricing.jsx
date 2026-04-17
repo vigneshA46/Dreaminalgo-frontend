@@ -29,6 +29,7 @@ const Planandpricing = () => {
       "Basic Support",
     ],
     isDark: false,
+    buttonText:"Buy Now"
   },
   {
     name: "Trader Pack",
@@ -42,6 +43,7 @@ const Planandpricing = () => {
       "Priority Support",
     ],
     isDark: false,
+    buttonText:"Buy Now"
   },
   {
     name: "Pro",
@@ -56,6 +58,7 @@ const Planandpricing = () => {
       "Faster Execution",
     ],
     isDark: true,
+    buttonText:"Buy Now"
   },
   {
     name: "Advanced",
@@ -69,6 +72,7 @@ const Planandpricing = () => {
       "Priority Support",
     ],
     isDark: false,
+    buttonText:"Buy Now"
   },
   {
     name: "Enterprise",
@@ -82,6 +86,7 @@ const Planandpricing = () => {
       "Dedicated Support",
     ],
     isDark: false,
+    buttonText:"Buy Now"
   },
 ];
 

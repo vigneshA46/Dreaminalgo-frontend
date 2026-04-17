@@ -1243,11 +1243,7 @@ useEffect(()=>{
     </span>
                   </Group>
                 </Box>
-
-                <Box>
-                  <Text size="xs" c="dimmed" fw={500}>Capital</Text>
-                  <Text size="md" fw={600}>0</Text>
-                </Box>                
+               
               </Group>
 
  <Group gap="sm">
