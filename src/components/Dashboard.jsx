@@ -198,6 +198,7 @@ const [selectedLegInfo, setSelectedLegInfo] = useState(null);
 const [todaydeployment , settodaydeployment] = useState([])
 const [legPnls, setLegPnls] = useState({});
 const [cumulativePnl, setCumulativePnl] = useState({});
+const [dateWisePnL, setDateWisePnL] = useState({});
 
 useEffect(() => {
   let total = 0;
@@ -316,10 +317,22 @@ const fetchDates = async (strategyId) => {
 
     const data = res;
 
-    setDates((prev) => ({
-      ...prev,
-      [strategyId]: data.dates
-    }));
+    const formattedDates = res.data.map(d => d.date);
+
+const pnlMap = {};
+res.data.forEach(d => {
+  pnlMap[d.date] = parseFloat(d.total_pnl || 0);
+});
+
+setDates(prev => ({
+  ...prev,
+  [strategyId]: formattedDates
+}));
+
+setDateWisePnL(prev => ({
+  ...prev,
+  [strategyId]: pnlMap
+}));
 
     // set latest date as default
     if (data.dates.length > 0) {
@@ -498,10 +511,14 @@ const PaperUI = ()=>{
   label="Select Date"
   placeholder="Pick date"
   value={selectedDate[strategy.id] || null}
-  data={(dates[strategy.id] || []).map((d) => ({
+  data={(dates[strategy.id] || []).map((d, i) => {
+  const pnl = dateWisePnL?.[strategy.id]?.[d] ?? 0;
+
+  return {
     value: d,
-    label: d,
-  }))}
+    label: `${i + 1} ${dayjs(d).format("DD-MM-YYYY")} (₹ ${pnl.toFixed(2)})`
+  };
+})}
 
 
   onChange={(value) => {
@@ -650,7 +667,6 @@ const PaperUI = ()=>{
 </Table.Tbody>
             </Table>
             </ScrollArea>
-
             {/* Pagination */}
             <Group justify="flex-end" mt="xl">
               <Pagination
