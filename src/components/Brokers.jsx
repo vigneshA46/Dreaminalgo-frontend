@@ -30,6 +30,17 @@ const BrokerTable = ({ userBroker }) => {
 const [editedCreds, setEditedCreds] = useState({});
 const [selectedBrokerId, setSelectedBrokerId] = useState(null);
 
+  const handleFlatTradeLogin = (broker) => {
+  const { apiKey } = broker.credentials;
+
+  // store broker id (important for callback mapping)
+  localStorage.setItem("flattrade_broker_id", broker.id);
+
+  const url = `https://auth.flattrade.in/?app_key=${apiKey}&state=${broker.id}`;
+
+  window.location.href = url;
+};
+
 const handleCredChange = (key, value) => {
   setEditedCreds((prev) => ({
     ...prev,
@@ -225,41 +236,53 @@ const deleteBroker = async (id) => {
   <br />
 
   {/* ✅ Show last updated only for specific brokers */}
-  {(broker.broker_name === "aliceblue" || broker.broker_name === "upstox" || broker.broker_name === "dhan") && (
-    <Text size="xs" c="dimmed" mt={4}>
-      Last updated:{" "}
-      {broker.updated_at
-        ? new Date(broker.updated_at).toLocaleString("en-IN", {
-            timeZone: "Asia/Kolkata",
-          })
-        : "N/A"}
-    </Text>
-  )}
+        {(broker.broker_name === "aliceblue" || broker.broker_name === "upstox" || broker.broker_name === "dhan"|| broker.broker_name === "flattrade") && (
+          <Text size="xs" c="dimmed" mt={4}>
+            Last updated:{" "}
+            {broker.updated_at
+              ? new Date(broker.updated_at).toLocaleString("en-IN", {
+                timeZone: "Asia/Kolkata",
+                })
+              : "N/A"}
+          </Text>
+        )}
 
   {/* Existing buttons */}
-  {broker.broker_name === "aliceblue" && (
-    <Button
-      my="0.5rem"
-      radius="0.5rem"
-      size="xs"
-      bg="#000"
-      onClick={() => handleGenerateToken(broker)}
-    >
-      Generate Token
-    </Button>
-  )}
+        {broker.broker_name === "aliceblue" && (
+          <Button
+            my="0.5rem"
+            radius="0.5rem"
+            size="xs"
+            bg="#000"
+            onClick={() => handleGenerateToken(broker)}
+          >
+          Generate Token
+        </Button>
+        )}
 
-  {broker.broker_name === "upstox" && (
-    <Button
-      my="0.5rem"
-      size="xs"
-      bg="#000"
-      onClick={() => handleUpstoxLogin(broker)}
-    >
-      Generate Token
-    </Button>
-  )}
-</Table.Td> 
+        {broker.broker_name === "upstox" && (
+        <Button
+            my="0.5rem"
+            size="xs"
+            bg="#000"
+            onClick={() => handleUpstoxLogin(broker)}
+          >
+          Generate Token
+        </Button>
+        )}
+
+        {broker.broker_name === "flattrade" && (
+        <Button
+          my="0.5rem"
+          size="xs"
+          bg="#000"
+          onClick={() => handleFlatTradeLogin(broker)}
+          >
+        Generate Token
+        </Button>
+          )}
+        </Table.Td>
+
                 <Table.Td>
                   {new Date(broker.created_at).toLocaleString("en-IN", {
                     timeZone: "Asia/Kolkata",
@@ -483,7 +506,27 @@ const deleteBroker = async (id) => {
         />
         </Stack>
         );
-      default:
+      case "flattrade":
+  return (
+    <Stack>
+      <TextInput
+        label="API Key"
+        onChange={(e) => handleChange("apiKey", e.target.value)}
+      />
+
+      <TextInput
+        label="API Secret"
+        onChange={(e) => handleChange("apiSecret", e.target.value)}
+      />
+
+      <TextInput
+        label="Redirect URI"
+        onChange={(e) => handleChange("redirectUri", e.target.value)}
+      />
+    </Stack>
+  );
+      
+        default:
         return null;
     }
   };
@@ -527,7 +570,8 @@ const deleteBroker = async (id) => {
               "aliceblue",
               "Zerodha",
               "zebumynt",
-              "upstox"
+              "upstox",
+              "flattrade"
             ]}
             value={selectedBroker}
             onChange={setSelectedBroker}

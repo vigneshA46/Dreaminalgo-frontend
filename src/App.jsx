@@ -27,6 +27,7 @@ import Demataccount from './components/Demataccount.jsx';
 import AliceCallback from './components/Alicecallback.jsx';
 import UpstoxCallback from './components/UpstoxCallback.jsx';
 import ChangePassword from './components/ChangePassword.jsx';
+import Flatradecallback from './components/Flartradecallback.jsx';
 
 
 function App() {
@@ -62,6 +63,7 @@ function App() {
           <Route path="/privacy" element={<PrivacyPolicyPage />} />
           <Route path="/broker/alice/callback" element={<AliceCallback />} />
           <Route path="/broker/upstox/callback" element={<UpstoxCallback />} />
+          <Route path="/broker/flatrade/callback" element={<Flatradecallback />} />
 
           {/* ================= USER ROUTES ================= */}
           <Route
