@@ -12,13 +12,38 @@ const Reports = () => {
   const [data, setData] = useState([]);
   const [selectedStrategy, setSelectedStrategy] = useState(null);
   const [opened, setOpened] = useState(false);
+  const [datewiseData, setDatewiseData] = useState([]);
+  const [loadingDetails, setLoadingDetails] = useState(false);
+
+  const fetchDatewisePnl = async (strategyId) => {
+  try {
+    setLoadingDetails(true);
+
+    const res = await apiRequest(
+      'GET',
+      `/api/reports/user/strategy/datewise-pnl/${strategyId}`,
+    );
+
+    if (res?.success) {
+      setDatewiseData(res.data);
+    } else {
+      setDatewiseData([]);
+    }
+
+  } catch (err) {
+    console.error("Error fetching datewise pnl:", err);
+    setDatewiseData([]);
+  } finally {
+    setLoadingDetails(false);
+  }
+};
 
   useEffect(() => {
   const getalluserdeployments = async () => {
-    const res = await apiRequest('GET', '/api/deployments/userdep/all');
+    const res = await apiRequest('GET', '/api/reports/strategies');
 
     if (res?.success) {
-      setData(res.data);
+      setData(res.strategies);
     }
   };
 
@@ -199,7 +224,7 @@ const Reports = () => {
               </Table.Thead>
              <Table.Tbody>
   {data.map((strategy, index) => {
-    const pnl = parseFloat(strategy.overall_cumulative_pnl || 0);
+    const pnl = parseFloat(strategy.overall_pnl || 0);
     const isProfit = pnl >= 0;
 
     return (
@@ -207,7 +232,7 @@ const Reports = () => {
         <Table.Td>{index + 1}</Table.Td>
 
         <Table.Td>
-          {strategy.strategy_name}
+          {strategy.name}
         </Table.Td>
 
         <Table.Td>
@@ -228,9 +253,10 @@ const Reports = () => {
             size="sm"
             style={{ backgroundColor: 'black' }}
             onClick={() => {
-              setSelectedStrategy(strategy);
-              setOpened(true);
-            }}
+  setSelectedStrategy(strategy);
+  setOpened(true);
+  fetchDatewisePnl(strategy.strategy_id); // 🔥 important
+}}
           >
             Details
           </Button>
@@ -247,7 +273,7 @@ const Reports = () => {
         <Modal
   opened={opened}
   onClose={() => setOpened(false)}
-  title={selectedStrategy?.strategy_name}
+  title={selectedStrategy?.name}
   size="lg"
   centered
 >
@@ -255,25 +281,49 @@ const Reports = () => {
     <Table striped highlightOnHover>
       <Table.Thead>
         <Table.Tr>
-          <Table.Th>S.No</Table.Th>
-          <Table.Th>Type</Table.Th>
-          <Table.Th>Multiplier</Table.Th>
           <Table.Th>Date</Table.Th>
+          <Table.Th>PNL</Table.Th>
         </Table.Tr>
       </Table.Thead>
+<Table.Tbody>
+  {loadingDetails ? (
+    <Table.Tr>
+      <Table.Td colSpan={3}>Loading...</Table.Td>
+    </Table.Tr>
+  ) : datewiseData.length === 0 ? (
+    <Table.Tr>
+      <Table.Td colSpan={3}>No data available</Table.Td>
+    </Table.Tr>
+  ) : (
+    datewiseData.map((row, index) => {
+      const pnl = parseFloat(row.pnl || 0);
+      const isProfit = pnl >= 0;
 
-      <Table.Tbody>
-        {selectedStrategy?.deployments?.map((dep, i) => (
-          <Table.Tr key={dep.id}>
-            <Table.Td>{i + 1}</Table.Td>
-            <Table.Td>{dep.type}</Table.Td>
-            <Table.Td>{dep.multiplier}</Table.Td>
-            <Table.Td>
-              {new Date(dep.deployed_at).toLocaleString('en-IN')}
-            </Table.Td>
-          </Table.Tr>
-        ))}
-      </Table.Tbody>
+      return (
+        <Table.Tr key={index}>
+          <Table.Td>{index + 1}</Table.Td>
+
+          <Table.Td>
+            {new Date(row.trade_date).toLocaleDateString('en-IN')}
+          </Table.Td>
+
+          <Table.Td>
+            <Text
+              fw={600}
+              style={{ color: isProfit ? '#2b8a3e' : '#dc3545' }}
+            >
+              ₹ {isProfit ? '' : '-'}
+              {Math.abs(pnl).toLocaleString('en-IN', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+            </Text>
+          </Table.Td>
+        </Table.Tr>
+      );
+    })
+  )}
+</Table.Tbody>
     </Table>
   </ScrollArea>
 </Modal>
