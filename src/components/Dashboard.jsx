@@ -213,6 +213,8 @@ useEffect(() => {
 
   setTotalPnl(total);
 }, [liveData]);
+
+
 const [Livestock, setLivestock] = useState({
   NIFTY: null,
   BANKNIFTY: null,
@@ -249,16 +251,18 @@ const deployedStrategies = startergies.filter(strategy =>
   deployedStrategyIds.has(strategy.id)
 )
 
+
+/* 
    useEffect(() => {
   const socket = io("https://algoapi.dreamintraders.in");
 
   socket.on("connect", () => {
     console.log("✅ Connected:", socket.id);
-    /* console.log("🔥 Live Data:", socket); */
+    
   });
 
-  socket.on("strategy_update", (incoming) => {
-    /* console.log("🔥 Live Data:", incoming); */
+    socket.on("strategy_update", (incoming) => {
+    
 
     setLiveData((prev) => ({
       ...prev,
@@ -271,19 +275,19 @@ const deployedStrategies = startergies.filter(strategy =>
       [incoming.index]: parseFloat(incoming.ltp),
     }));
   }
-    /* console.log(incoming) */
+    
     
   });
-
   socket.on("disconnect", () => {
     console.log("❌ Disconnected");
   });
-
+  
   return () => {
     socket.disconnect();
   };
 }, []);
 
+ */
 useEffect(()=>{
   const fetchuser = async ()=>{
     try{
@@ -351,6 +355,30 @@ setDateWisePnL(prev => ({
     console.error(err);
   }
 };
+
+
+useEffect(() => {
+  startergies.forEach((strategy) => {
+    const strategyDates = dates[strategy.id];
+
+    if (
+      strategyDates?.length > 0 &&
+      !selectedDate[strategy.id]
+    ) {
+      const latestDate = [...strategyDates].sort(
+  (a, b) => new Date(b) - new Date(a)
+)[0];
+
+      setSelectedDate((prev) => ({
+        ...prev,
+        [strategy.id]: latestDate,
+      }));
+
+      fetchLegsByDate(strategy.id, latestDate);
+    }
+  });
+}, [dates]);
+
 
 const fetchLegsByDate = async (strategyId, date) => {
   try {
@@ -477,7 +505,7 @@ const PaperUI = ()=>{
 </Table.Td>
 
 
-    
+
 
 <Table.Td
   style={{
