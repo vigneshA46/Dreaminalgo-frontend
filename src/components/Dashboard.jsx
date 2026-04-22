@@ -430,7 +430,10 @@ const fetchTradesByToken = async (strategyId, date, token) => {
 
 const PaperUI = ()=>{
 
-        
+        const formatPnl = (value) => {
+  if (value === null || value === undefined || value === "-") return "-";
+  return Number(value).toFixed(2);
+};
 
   return(
       <Box
@@ -512,7 +515,7 @@ const PaperUI = ()=>{
     fontWeight: 600
   }}
 >
-  {displayPnl ?? "-"}
+  {formatPnl(displayPnl)}
 </Table.Td>
       {/* ACTION COLUMN */}
       <Table.Td>
@@ -650,7 +653,7 @@ const PaperUI = ()=>{
     fontWeight: 500
   }}
 >
-  {pnl ?? "-"}
+  {formatPnl(pnl)}
 </Table.Td>
 
 <Table.Td>{val.toFixed(2)}</Table.Td>
