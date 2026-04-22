@@ -4,9 +4,12 @@ import {
   Select,
   Button,
   Stack,
+  Alert,
 } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { apiRequest } from "../../utils/api";
+
+
 
 const DeployStrategyModal = ({
   opened,
@@ -31,26 +34,32 @@ const DeployStrategyModal = ({
 
     fetchbasebroker();
   },[])
+const deployStrategy = async (strategy_id, type, broker_id, multipliervalue) => {
+  if (type === 'live' && broker_id === '') return;
 
-    const deployStrategy = async (strategy_id , type , broker_id ,multipliervalue) =>{
+  try {
+    const res = await apiRequest('POST', '/api/deployments', {
+      strategy_id: strategy_id,
+      type: type,
+      broker_account_id: broker_id,
+      multiplier: multipliervalue
+    });
+      
+    // 🔥 HANDLE RESPONSE
+    if (!res.success) {
+      Alert(res.message || "Something went wrong");
+      return; // ❗ stop here, don't close modal
+    }
 
-        if(type=='live' && broker_id=='')
-            return
+    // ✅ success case
+    alert("Strategy deployed successfully");
+    onClose();
 
-        try{
-            const res = await apiRequest('POST','/api/deployments',
-                {
-                    strategy_id:strategy_id,
-                    type:type,
-                    broker_account_id:broker_id,
-                    multiplier: multipliervalue
-                })
-            onClose()
-            console.log(res)
-        }catch(err){
-            console.log(err)
-        }
-    }   
+  } catch (err) {
+    console.log(err);
+    alert("Server error, try again");
+  }
+};
 
   return (
     <Modal

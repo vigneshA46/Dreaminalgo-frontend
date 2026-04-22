@@ -328,7 +328,7 @@ const Stratergies = () => {
                   <Group justify="space-between" align="flex-start" mb="md">
                     <Box style={{ flex: 1 }}>
                       <Text size="lg" fw={600} c="#212529" mb={8}>
-                        {strategy.name}
+                        {strategy.name} - {strategy.state_id}
                       </Text>
                       <Text size="sm" c="#495057" mb={8}>
                         {strategy.description}
@@ -341,20 +341,6 @@ const Stratergies = () => {
                         </Anchor>
                       </Text>
                     </Box>
-                    {/* <Badge
-                      size="lg"
-                      radius="md"
-                      style={{
-                        backgroundColor: '#d3f9d8',
-                        color: '#2b8a3e',
-                        fontWeight: 600,
-                        textTransform: 'none',
-                        padding: '8px 16px',
-                        fontSize: '13px',
-                      }}
-                    >
-                      Subscribed
-                    </Badge> */}
                   </Group>
 
                   <Group justify="space-between" align="center">

@@ -252,7 +252,6 @@ const deployedStrategies = startergies.filter(strategy =>
 )
 
 
-/* 
    useEffect(() => {
   const socket = io("https://algoapi.dreamintraders.in");
 
@@ -287,7 +286,7 @@ const deployedStrategies = startergies.filter(strategy =>
   };
 }, []);
 
- */
+
 useEffect(()=>{
   const fetchuser = async ()=>{
     try{
@@ -496,7 +495,7 @@ const PaperUI = ()=>{
     <Table.Tr>
       <Table.Td>{index + 1}</Table.Td>
 
-      <Table.Td>{strategy.name}</Table.Td>
+      <Table.Td fw={"500"} >{strategy.name} - {strategy.state_id}</Table.Td>
 
       <Table.Td>-</Table.Td>
 
@@ -780,7 +779,7 @@ const LiveUI = ()=>{
     <Table.Tr>
       <Table.Td>{index + 1}</Table.Td>
 
-      <Table.Td>{strategy.name}</Table.Td>
+      <Table.Td>{strategy.name} - {strategy.state_id}</Table.Td>
 
       <Table.Td>-</Table.Td>
 
