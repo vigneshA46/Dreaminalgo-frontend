@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Box,
   Container,
@@ -10,11 +10,16 @@ import {
   Button,
   List,
   ThemeIcon,
+  Modal,
+  Image,
 } from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";
+import qrcode from "../../src/assets/qrcode.jpeg"
 
 const Planandpricing = () => {
 
+  const [qrOpened, setQrOpened] = useState(false);
+  const [showMessage, setShowMessage] = useState(false);
 
   const plans = [
   {
@@ -210,18 +215,19 @@ const Planandpricing = () => {
 
                 {/* Button */}
                 <Button
-                  fullWidth
-                  size="md"
-                  radius="md"
-                  style={{
-                    backgroundColor: plan.isDark ? "#3d5a9e" : "#e9ecef",
-                    color: plan.isDark ? "white" : "#6c757d",
-                    fontWeight: 600,
-                    border: "none",
-                  }}
+                fullWidth
+                size="md"
+                radius="md"
+              style={{
+                backgroundColor: plan.isDark ? "#3d5a9e" : "#e9ecef",
+                color: plan.isDark ? "white" : "#6c757d",
+                fontWeight: 600,
+                border: "none",
+                }}
+                onClick={() => setQrOpened(true)}
                 >
-                  {plan.buttonText}
-                </Button>
+                {plan.buttonText}
+              </Button>
               </Card>
             </Grid.Col>
           ))}
@@ -235,6 +241,39 @@ const Planandpricing = () => {
           Tokens are deducted per strategy action. GST & payment gateway charges may apply.
         </Text>
       </Container>
+
+      <Modal
+  opened={qrOpened}
+  onClose={() => setQrOpened(false)}
+  title="Complete Your Payment"
+  centered
+>
+  <Text size="sm" mb="md" ta="center">
+    Scan the QR code using GPay / UPI to complete your payment.
+  </Text>
+
+  <Box style={{ display: "flex", justifyContent: "center", marginBottom: "20px" }}>
+    <Image
+      src={qrcode}
+      alt="GPay QR"
+      style={{ width: "200px", borderRadius: "8px" }}
+    />
+  </Box>
+
+  <Group justify="center">
+    <Button
+  onClick={() => setShowMessage(true)}
+>
+  Pay
+</Button>
+
+{showMessage && (
+  <Text mt="md" c="red" ta="center">
+    Contact admin to confirm payment and get tokens. Phone: +91 9503640531
+  </Text>
+)}
+  </Group>
+</Modal>
     </Box>
   );
 };
