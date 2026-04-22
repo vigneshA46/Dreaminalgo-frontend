@@ -269,7 +269,7 @@ const Planandpricing = () => {
 
 {showMessage && (
   <Text mt="md" c="red" ta="center">
-    Contact admin to confirm payment and get tokens. Phone: +91 9503640531
+    Contact admin Send screenshot in Whatsapp to confirm payment and get tokens.<br/><br/> Phone: +91 9787675597 /  +91 9080058704
   </Text>
 )}
   </Group>
