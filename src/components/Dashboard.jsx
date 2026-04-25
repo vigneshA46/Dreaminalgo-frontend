@@ -56,6 +56,7 @@ import { useUser } from '../context/UserContext';
 import { useNavigate } from 'react-router-dom';
 import { apiRequest } from '../utils/api';
 import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
+import { DateInput } from '@mantine/dates';
 
 // Static data for portfolio performance
 const portfolioData = [
@@ -102,44 +103,44 @@ const stocks = [
   { market: "MIDCAP", price: 13245.7, pnl: +19.10 },
 ];
 
+
 function StatCard({ icon: Icon, title, value, subtitle, change }) {
   return (
     <Paper
-      p="md"
+      p="xs"
       radius="md"
       style={{
-        border : '1.5px solid #d6d6d6ff',
-        borderRadius : '10px'
+        border: '1px solid #e0e0e0',
       }}
       sx={{
         backgroundColor: '#fff',
-        border: '1px solid #000',
         height: '100%',
       }}
     >
-        <Flex align="center" gap="1rem" >
-        <Group position="apart" mb="xs">
-        <ThemeIcon size="lg" variant="light" color="gray">
-          <Icon size={20} stroke={1.5} />
+      <Flex align="center" gap="0.5rem" mb={4}>
+        <ThemeIcon size="sm" variant="light" color="gray">
+          <Icon size={14} stroke={1.5} />
         </ThemeIcon>
-      </Group>
-      <Text size="sm" color="dimmed" weight={500}>
-        {title}
-      </Text>
-        </Flex>
-      
-      <Text size="xl" weight={700}>
+
+        <Text size="xs" color="dimmed" fw={500}>
+          {title}
+        </Text>
+      </Flex>
+
+      <Text size="lg" fw={400}>
         {value}
       </Text>
+
       {subtitle && (
-        <Text size="xs" color="dimmed" mt={4}>
+        <Text size="xs" color="dimmed" mt={2}>
           {subtitle}
         </Text>
       )}
+
       {change && (
-        <Group spacing={4} mt={4}>
-          <IconArrowUpRight size={12} color="#10b981" />
-          <Text size="xs" color="#10b981" weight={600}>
+        <Group gap={4} mt={4}>
+          <IconArrowUpRight size={10} color="#10b981" />
+          <Text size="xs" color="#10b981" fw={600}>
             {change}
           </Text>
         </Group>
@@ -1142,9 +1143,7 @@ useEffect(()=>{
     Broker & Exchanges
   </Menu.Item>
 
-  <Menu.Item leftSection={<IconWallet size={18} />}>
-    Wallet
-  </Menu.Item>
+
 
     <Menu.Item onClick={()=>navigation('/demat')} leftSection={<IconBuildingBank size={18} />}>
     Demat Account
@@ -1246,47 +1245,26 @@ useEffect(()=>{
           >
             <Group justify="space-between" align="center">
               <Group gap="2rem" wrap='true' > 
-                <Box
-                  style={{
-                    backgroundColor: '#000000ff',
-                    borderRadius: '8px',
-                    width: '48px',
-                    height: '48px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <IconCurrencyRupee size={28} color="white" stroke={2.5} />
-                </Box>
                 
-                <Select
-                  value="Expiry"
-                  data={['Expiry','Today']}
-                  styles={{
-                    input: {
-                      border: 'none',
-                      backgroundColor: '#f1f3f5',
-                      borderRadius: '8px',
-                      fontSize: '16px',
-                      fontWeight: 500,
-                      minWidth: '120px',
-                    },
-                  }}
-                />
+                <DateInput
+  label="Expiry Date"
+  placeholder="Select expiry date"
+  
+ 
+/>
 
                 <Box>
                   <Text size="xs" c="dimmed" fw={500}>PNL</Text>
                   <Group gap={4}>
                     
                     <span
-      style={{
-        color: totalPnl >= 0 ? "#16a34a" : "#dc2626",
-        fontWeight:500
-      }}
-    >
-      ₹ {totalPnl.toFixed(2) || 0} 
-    </span>
+                      style={{
+                      color: totalPnl >= 0 ? "#16a34a" : "#dc2626",
+                      fontWeight:500
+                      }}
+                      >
+                  ₹ {totalPnl.toFixed(2) || 0} 
+                </span>
                   </Group>
                 </Box>
                

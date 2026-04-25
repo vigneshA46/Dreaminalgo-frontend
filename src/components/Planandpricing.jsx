@@ -12,14 +12,45 @@ import {
   ThemeIcon,
   Modal,
   Image,
+  Flex,
+  Stack,
+  TextInput,
 } from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";
 import qrcode from "../../src/assets/qrcode.jpeg"
+import { apiRequest } from "../utils/api";
 
 const Planandpricing = () => {
 
   const [qrOpened, setQrOpened] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
+  const [coupon, setCoupon] = useState("");
+const [couponOpen, setCouponOpen] = useState(false);
+const [applying, setApplying] = useState(false);
+
+const handleApplyCoupon = async () => {
+  if (!coupon) return;
+
+  try {
+    setApplying(true);
+
+    const res = await apiRequest("POST", "/api/coupons/apply", {
+      code: coupon,
+    });
+
+    console.log(res);
+
+    // optional: refresh user tokens here
+
+    setCoupon("");
+    setCouponOpen(false);
+
+  } catch (err) {
+    console.log(err);
+  } finally {
+    setApplying(false);
+  }
+};
 
   const plans = [
   {
@@ -97,10 +128,17 @@ const Planandpricing = () => {
 
   return (
     <Box style={{ backgroundColor: "#ffffff", minHeight: "100vh", padding: "40px 0" }}>
+
+      <Flex align={"center"} justify={"flex-end"} >
+        <Button bg={"#000"} onClick={() => setCouponOpen(true)}>+ APPLY COUPON</Button>
+      </Flex>
       {/* Heading */}
       <Text size="1.8rem" fw={700} ta="center" mb="xs">
         Plans and Pricing
       </Text>
+      
+
+
 
       <Text size="sm" ta="center" c="#868e96" mb="xl">
         1 Token = 1 Strategy Action (Create / Deploy / Backtest / Signal)
@@ -273,6 +311,25 @@ const Planandpricing = () => {
   </Text>
 )}
   </Group>
+</Modal>
+<Modal
+  opened={couponOpen}
+  onClose={() => setCouponOpen(false)}
+  title="Apply Coupon"
+  centered
+>
+  <Stack>
+    <TextInput
+      label="Coupon Code"
+      placeholder="Enter coupon code"
+      value={coupon}
+      onChange={(e) => setCoupon(e.target.value)}
+    />
+
+    <Button loading={applying} bg={"#000"} onClick={handleApplyCoupon}>
+      Apply Coupon
+    </Button>
+  </Stack>
 </Modal>
     </Box>
   );

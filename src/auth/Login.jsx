@@ -219,8 +219,18 @@ function Login(){
                 Signup
               </Text>
             </Text>
+
+             <Text
+              align="center"
+              style={{
+                fontSize: '13px',
+                color: '#868e96'
+              }}
+            >In Case you forgot password Contact Admin at +91 9080058704</Text>
           </Container>
         </Box>
+
+
 
        
       </Flex>

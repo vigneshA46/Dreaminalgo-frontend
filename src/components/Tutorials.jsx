@@ -105,28 +105,40 @@ const [currentVideo, setCurrentVideo] = useState("");
           </Grid.Col>
         ))}
       </Grid>
-
-      <Modal
+<Modal
   opened={videoOpen}
   onClose={() => {
-  setVideoOpen(false);
-  setCurrentVideo(""); // ✅ stops playback
-}}
-  withCloseButton
+    setVideoOpen(false);
+    setCurrentVideo("");
+  }}
+  centered
+  size="lg"
   padding={0}
+  withCloseButton
 >
-  <Box style={{ width: "100vw", height: "100vh", background: "black" }}>
-
-  <iframe
-    width="100%"
-    height="100%"
-    src={currentVideo}
-    title="YouTube video player"
-    allow="autoplay; encrypted-media"
-    allowFullScreen
-    style={{ border: "none" }}
-  />
-</Box>
+  <Box
+    style={{
+      position: "relative",
+      width: "100%",
+      paddingBottom: "56.25%", // 16:9 ratio
+      background: "black",
+    }}
+  >
+    <iframe
+      src={currentVideo}
+      title="YouTube video player"
+      allow="autoplay; encrypted-media"
+      allowFullScreen
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
+        border: "none",
+      }}
+    />
+  </Box>
 </Modal>
     </Box>
   );
