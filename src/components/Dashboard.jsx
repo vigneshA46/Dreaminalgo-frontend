@@ -3,6 +3,7 @@ import { useMarketWebSocket } from "../hooks/useMarketWebSocket";
 import { io } from "socket.io-client";
 import { useMediaQuery } from '@mantine/hooks';
 import dayjs from "dayjs";
+import StrategyStatsModal from './StrategyStatsModal';
 
 import { 
   Box, 
@@ -70,6 +71,7 @@ const portfolioData = [
   { month: 'Dec', value: 12847 },
 ];
 
+
 const StockUi = (market , price , pnl ) =>{
    <Stack
       style={{
@@ -94,6 +96,7 @@ const StockUi = (market , price , pnl ) =>{
     </Stack>
   
 };
+
 
 const stocks = [
   { market: "NIFTY50", price: 22333.2, pnl: -12.34 },
@@ -200,6 +203,21 @@ const [todaydeployment , settodaydeployment] = useState([])
 const [legPnls, setLegPnls] = useState({});
 const [cumulativePnl, setCumulativePnl] = useState({});
 const [dateWisePnL, setDateWisePnL] = useState({});
+const [statistics , setstatistics ] = useState({});
+const [statisticsopened ,setstatisticsopened ] = useState(false)
+
+
+const fetchstatistics = async (strategy_id) =>{
+  try{
+    const res = await apiRequest("GET", `/api/statistics?strategy_id=${strategy_id}`)
+    console.log(res)
+    setstatistics(res)
+    setstatisticsopened(true)
+
+  }catch(err){
+    console.log(err)
+  }
+}
 
 useEffect(() => {
   let total = 0;
@@ -411,6 +429,7 @@ const fetchLegsByDate = async (strategyId, date) => {
     console.error(err);
   }
 };
+
 const fetchTradesByToken = async (strategyId, date, token) => {
   try {
     console.log("date",date , "token", token, "strategy id", strategyId)
@@ -431,20 +450,20 @@ const fetchTradesByToken = async (strategyId, date, token) => {
 
 const PaperUI = ()=>{
 
-        const formatPnl = (value) => {
-  if (value === null || value === undefined || value === "-") return "-";
-  return Number(value).toFixed(2);
-};
+  const formatPnl = (value) => {
+    if (value === null || value === undefined || value === "-") return "-";
+    return Number(value).toFixed(2);
+    };
 
   return(
       <Box
-  style={{
-    backgroundColor: "white",
-    borderRadius: "12px",
-    padding: "20px",
-    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-    width: "100%",
-  }}
+        style={{
+          backgroundColor: "white",
+          borderRadius: "12px",
+          padding: "20px",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+          width: "100%",
+  }}  
 >
   {/* Scrollable container */}
   <ScrollArea  w={isMobile? '100vw':'100%'}
@@ -532,7 +551,9 @@ const PaperUI = ()=>{
         </ActionIcon>
       </Table.Td>
 
-      <Table.Td>-</Table.Td>
+      <Table.Td>
+        <Button size='xs' radius={"1rem"} onClick={()=>fetchstatistics(strategy.id)} bg={"#000"} >Statistics</Button>
+      </Table.Td>
     </Table.Tr>
 
     {/* EXPANDED ROW */}
@@ -1581,6 +1602,12 @@ useEffect(()=>{
     </Table>
   </ScrollArea>
 </Modal>
+
+<StrategyStatsModal
+        opened={statisticsopened}
+        onClose={() => setstatisticsopened(false)}
+        statistics={statistics}
+      />
      </Box>
   );
 }

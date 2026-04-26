@@ -1,0 +1,21 @@
+.plan-btn-glow {
+  position: relative;
+  overflow: hidden;
+}
+
+.plan-btn-glow::before {
+  content: "";
+  position: absolute;
+  top: var(--y);
+  left: var(--x);
+  transform: translate(-50%, -50%);
+  width: 120px;
+  height: 120px;
+  background: radial-gradient(circle, rgba(0,123,255,0.4), transparent 60%);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.plan-btn-glow:hover::before {
+  opacity: 1;
+}

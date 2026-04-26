@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import "../components/global.css"
 import {
   Box,
   Container,
@@ -253,19 +254,28 @@ const handleApplyCoupon = async () => {
 
                 {/* Button */}
                 <Button
-                fullWidth
-                size="md"
-                radius="md"
-              style={{
-                backgroundColor: plan.isDark ? "#3d5a9e" : "#e9ecef",
-                color: plan.isDark ? "white" : "#6c757d",
-                fontWeight: 600,
-                border: "none",
-                }}
-                onClick={() => setQrOpened(true)}
-                >
-                {plan.buttonText}
-              </Button>
+  fullWidth
+  size="md"
+  radius="md"
+  className="plan-btn-glow"
+  onMouseMove={(e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    e.currentTarget.style.setProperty("--x", `${x}px`);
+    e.currentTarget.style.setProperty("--y", `${y}px`);
+  }}
+  style={{
+    backgroundColor: plan.isDark ? "#3d5a9e" : "#e9efea",
+    color: plan.isDark ? "white" : "#6c757d",
+    fontWeight: 600,
+    border: "none",
+  }}
+  onClick={() => setQrOpened(true)}
+>
+  {plan.buttonText}
+</Button>
               </Card>
             </Grid.Col>
           ))}
