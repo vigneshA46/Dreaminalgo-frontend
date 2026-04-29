@@ -9,6 +9,8 @@ import {
   Title
 } from "@mantine/core";
 
+import { Table } from "@mantine/core";
+
 const StrategyStatsModal = ({ opened, onClose, statistics }) => {
   if (!statistics) return null;
 
@@ -30,6 +32,49 @@ const dayPnls = daily.length
   const totalPnl = parseFloat(statistics.summary?.total_pnl || 0);
   const totalTrades = parseInt(statistics.summary?.total_trades || 0);
 
+  const strategy = statistics?.strategy || {};
+
+const profits = dayPnls.filter(p => p > 0);
+const losses = dayPnls.filter(p => p < 0);
+
+// ✅ Basic
+const avgDaily = totalDays ? totalPnl / totalDays : 0;
+const avgProfitDays = profits.length
+  ? profits.reduce((a, b) => a + b, 0) / profits.length
+  : 0;
+
+const avgLossDays = losses.length
+  ? losses.reduce((a, b) => a + b, 0) / losses.length
+  : 0;
+
+// ✅ Monthly Avg
+const avgMonthly =
+  monthly.length
+    ? monthly.reduce((a, m) => a + parseFloat(m.monthly_return), 0) / monthly.length
+    : 0;
+
+// ✅ Max Winning / Losing Streak
+let maxWinStreak = 0;
+let maxLossStreak = 0;
+let winStreak = 0;
+let lossStreak = 0;
+
+dayPnls.forEach(p => {
+  if (p > 0) {
+    winStreak++;
+    lossStreak = 0;
+  } else if (p < 0) {
+    lossStreak++;
+    winStreak = 0;
+  } else {
+    winStreak = 0;
+    lossStreak = 0;
+  }
+
+  if (winStreak > maxWinStreak) maxWinStreak = winStreak;
+  if (lossStreak > maxLossStreak) maxLossStreak = lossStreak;
+});
+
   return (
     <Modal
       opened={opened}
@@ -40,7 +85,98 @@ const dayPnls = daily.length
       radius="lg"
     >
       <Stack>
+        <Card radius="lg" p="md">
+  <Text fw={600} mb="sm">Strategy Overview</Text>
+<Table striped highlightOnHover withTableBorder>
+  <Table.Tbody>
 
+    <Table.Tr>
+      <Table.Td>Strategy Name</Table.Td>
+      <Table.Td>{strategy.name}</Table.Td>
+    </Table.Tr>
+
+    <Table.Tr>
+      <Table.Td>Capital Required</Table.Td>
+      <Table.Td>₹ {parseFloat(strategy.capital_required || 0)}</Table.Td>
+    </Table.Tr>
+
+    <Table.Tr>
+      <Table.Td>Total Trading Days</Table.Td>
+      <Table.Td>{totalDays}</Table.Td>
+    </Table.Tr>
+
+    <Table.Tr>
+      <Table.Td>Total Win Days</Table.Td>
+      <Table.Td>{winDays}</Table.Td>
+    </Table.Tr>
+
+    <Table.Tr>
+      <Table.Td>Total Loss Days</Table.Td>
+      <Table.Td>{lossDays}</Table.Td>
+    </Table.Tr>
+
+    <Table.Tr>
+      <Table.Td>Max Winning Streak</Table.Td>
+      <Table.Td>{maxWinStreak}</Table.Td>
+    </Table.Tr>
+
+    <Table.Tr>
+      <Table.Td>Max Losing Streak</Table.Td>
+      <Table.Td>{maxLossStreak}</Table.Td>
+    </Table.Tr>
+
+    <Table.Tr>
+      <Table.Td>Avg Monthly Profit</Table.Td>
+      <Table.Td c={avgMonthly >= 0 ? "green" : "red"}>
+        ₹ {avgMonthly.toFixed(2)}
+      </Table.Td>
+    </Table.Tr>
+
+    <Table.Tr>
+      <Table.Td>Total Profit</Table.Td>
+      <Table.Td c={totalPnl >= 0 ? "green" : "red"}>
+        ₹ {totalPnl.toFixed(2)}
+      </Table.Td>
+    </Table.Tr>
+
+    <Table.Tr>
+      <Table.Td>Max Profit (Day)</Table.Td>
+      <Table.Td c="green">
+        ₹ {maxProfit.toFixed(2)}
+      </Table.Td>
+    </Table.Tr>
+
+    <Table.Tr>
+      <Table.Td>Max Loss (Day)</Table.Td>
+      <Table.Td c="red">
+        ₹ {maxLoss.toFixed(2)}
+      </Table.Td>
+    </Table.Tr>
+
+    <Table.Tr>
+      <Table.Td>Avg Daily PnL</Table.Td>
+      <Table.Td c={avgDaily >= 0 ? "green" : "red"}>
+        ₹ {avgDaily.toFixed(2)}
+      </Table.Td>
+    </Table.Tr>
+
+    <Table.Tr>
+      <Table.Td>Avg Profit (Winning Days)</Table.Td>
+      <Table.Td c="green">
+        ₹ {avgProfitDays.toFixed(2)}
+      </Table.Td>
+    </Table.Tr>
+
+    <Table.Tr>
+      <Table.Td>Avg Loss (Losing Days)</Table.Td>
+      <Table.Td c="red">
+        ₹ {avgLossDays.toFixed(2)}
+      </Table.Td>
+    </Table.Tr>
+
+  </Table.Tbody>
+</Table>
+</Card>
         {/* 🔹 Summary */}
         <Grid>
           <Grid.Col span={6}>
