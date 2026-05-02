@@ -11,14 +11,20 @@ import React, { useState } from "react";
 import { apiRequest } from "../utils/api";
 
 export default function ChangePassword() {
-  const [oldPassword, setOldPassword] = useState("");
   const [password, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
   const handleChangePassword = async () => {
-    if (!password) {
+    // ✅ validation
+    if (!password || !confirmPassword) {
       setMessage("Please fill all fields");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setMessage("Passwords do not match");
       return;
     }
 
@@ -30,13 +36,16 @@ export default function ChangePassword() {
         password
       });
 
-      setMessage("Password updated successfully");
-      setOldPassword("");
+      // ✅ success message
+      setMessage("✅ Password updated successfully");
+
+      // reset fields
       setNewPassword("");
+      setConfirmPassword("");
 
     } catch (err) {
       console.log(err);
-      setMessage("Failed to update password");
+      setMessage("❌ Failed to update password");
     } finally {
       setLoading(false);
     }
@@ -73,8 +82,19 @@ export default function ChangePassword() {
             onChange={(e) => setNewPassword(e.currentTarget.value)}
           />
 
+          <PasswordInput
+            label="Confirm Password"
+            placeholder="Re-enter password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.currentTarget.value)}
+          />
+
           {message && (
-            <Text size="sm" c="dimmed" ta="center">
+            <Text
+              size="sm"
+              ta="center"
+              c={message.includes("success") ? "green" : "red"}
+            >
               {message}
             </Text>
           )}
@@ -94,5 +114,4 @@ export default function ChangePassword() {
       </Card>
     </Box>
   );
-};
-
+}

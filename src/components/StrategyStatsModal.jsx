@@ -8,14 +8,27 @@ import {
   Badge,
   Title
 } from "@mantine/core";
+import autoTable from "jspdf-autotable";
+
 
 import { Table } from "@mantine/core";
+import { Select } from "@mantine/core";
+import { useState } from "react";
+import { ActionIcon } from "@mantine/core";
+import { IconDownload } from "@tabler/icons-react";
+import { useRef } from "react";
+
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 const StrategyStatsModal = ({ opened, onClose, statistics }) => {
   if (!statistics) return null;
 
   const daily = statistics?.daily || [];
 const monthly = statistics?.monthly || [];
+
+
+  
 
   // ✅ Convert to numbers
 const dayPnls = daily.length
@@ -75,11 +88,193 @@ dayPnls.forEach(p => {
   if (lossStreak > maxLossStreak) maxLossStreak = lossStreak;
 });
 
+
+const getWeekStart = (date) => {
+  const d = new Date(date);
+  const day = d.getDay(); // 0 = Sunday
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Monday start
+  return new Date(d.setDate(diff));
+};
+
+
+
+const formatDate = (d) =>
+  new Date(d).toISOString().split("T")[0];
+
+// ✅ Build week map
+const weekMap = {};
+
+daily.forEach((d) => {
+  const dateObj = new Date(d.date);
+  const weekStart = formatDate(getWeekStart(dateObj));
+
+  if (!weekMap[weekStart]) {
+    weekMap[weekStart] = {};
+  }
+
+  const dayName = dateObj.toLocaleString("en-US", {
+    weekday: "short",
+  }); // Mon, Tue...
+
+  weekMap[weekStart][dayName] = {
+    pnl: parseFloat(d.day_pnl),
+    date: formatDate(dateObj),
+  };
+});
+
+
+const weekOptions = Object.keys(weekMap)
+  .sort((a, b) => new Date(b) - new Date(a)) // latest first
+  .map((w) => ({
+    value: w,
+    label: `Week of ${w}`,
+  }));
+
+const [selectedWeek, setSelectedWeek] = useState(
+  weekOptions[0]?.value
+);
+
+
+const daysOrder = ["Mon", "Tue", "Wed", "Thu", "Fri"];
+
+const selectedWeekData = weekMap[selectedWeek] || {};
+
+const allWeeks = Object.keys(weekMap).sort(
+  (a, b) => new Date(b) - new Date(a)
+);
+
+const capital = parseFloat(strategy.capital_required || 0);
+
+// 🔹 Day format → 2026 - May - 02
+const formatDayDate = (date) => {
+  const d = new Date(date);
+  const year = d.getFullYear();
+  const month = d.toLocaleString("en-US", { month: "long" });
+  const day = String(d.getDate()).padStart(2, "0");
+
+  return `${year} - ${month} - ${day}`;
+};
+
+// 🔹 Month format → 2026 - May
+const formatMonth = (monthStr) => {
+  const [year, month] = monthStr.split("-");
+  const monthName = new Date(`${year}-${month}-01`).toLocaleString(
+    "en-US",
+    { month: "long" }
+  );
+
+  return `${year} - ${monthName}`;
+};
+
+// 🔹 % calc
+const getPct = (pnl) => {
+  if (!capital) return 0;
+  return (pnl / capital) * 100;
+};
+
+
+const downloadStrategyReport = (statistics) => {
+  const { daily = [], monthly = [], strategy = {} } = statistics;
+
+  const capital = parseFloat(strategy.capital_required || 0);
+
+  // 🔹 Format Day → 2026 - May - 02
+  const formatDayDate = (date) => {
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = d.toLocaleString("en-US", { month: "long" });
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year} - ${month} - ${day}`;
+  };
+
+  // 🔹 Format Month → 2026 - May
+  const formatMonth = (monthStr) => {
+    const [year, month] = monthStr.split("-");
+    const monthName = new Date(`${year}-${month}-01`).toLocaleString(
+      "en-US",
+      { month: "long" }
+    );
+    return `${year} - ${monthName}`;
+  };
+
+  // 🔹 % calc
+  const getPct = (pnl) => {
+    if (!capital) return 0;
+    return (pnl / capital) * 100;
+  };
+
+  const doc = new jsPDF();
+
+  // 🔥 Title
+  doc.setFontSize(16);
+  doc.text("Strategy Report", 14, 15);
+
+  // 🔹 Strategy Name
+  doc.setFontSize(11);
+  doc.text(`Strategy: ${strategy.name || "-"}`, 14, 22);
+  doc.text(`Capital: ₹ ${capital}`, 14, 28);
+
+  // =========================
+  // 📅 DAY-WISE TABLE
+  // =========================
+  const dayRows = daily.map((d) => {
+    const val = parseFloat(d.day_pnl);
+    const pct = getPct(val);
+
+    return [
+      formatDayDate(d.date),
+      `₹ ${val.toFixed(2)}`,
+      `${pct.toFixed(2)}%`,
+    ];
+  });
+
+  autoTable(doc, {
+    startY: 35,
+    head: [["Date", "PnL", "Return %"]],
+    body: dayRows,
+  });
+
+  // =========================
+  // 📅 MONTH-WISE TABLE
+  // =========================
+  const monthRows = monthly.map((m) => {
+    const val = parseFloat(m.monthly_return);
+    const pct = getPct(val);
+
+    return [
+      formatMonth(m.month),
+      `₹ ${val.toFixed(2)}`,
+      `${pct.toFixed(2)}%`,
+    ];
+  });
+
+  autoTable(doc, {
+    startY: doc.lastAutoTable.finalY + 10,
+    head: [["Month", "PnL", "Return %"]],
+    body: monthRows,
+  });
+
+  // 🔥 Save
+  doc.save("strategy-report.pdf");
+};
+
   return (
     <Modal
       opened={opened}
       onClose={onClose}
-      title={<Title order={3}>Strategy Statistics</Title>}
+      title={
+  <Group justify="space-between" w="100%">
+    <Title order={3}>Strategy Statistics</Title>
+
+    <ActionIcon
+      variant="light"
+      color="blue"
+      onClick={()=>downloadStrategyReport(statistics)}
+    >
+      <IconDownload size={18} />
+    </ActionIcon>
+  </Group>
+}
       size="lg"
       centered
       radius="lg"
@@ -190,7 +385,7 @@ dayPnls.forEach(p => {
 
           <Grid.Col span={6}>
             <Card shadow="sm" radius="lg" p="md">
-              <Text size="sm" color="dimmed">Total Trades</Text>
+              <Text size="sm" color="dimmed">Total Trading Days</Text>
               <Text size="xl" fw={700}>
                 {totalTrades}
               </Text>
@@ -220,6 +415,8 @@ dayPnls.forEach(p => {
         </Grid>
 
         {/* 🔹 Win / Loss */}
+
+{/*         
         <Grid>
           <Grid.Col span={4}>
             <Card radius="lg" p="md">
@@ -242,30 +439,95 @@ dayPnls.forEach(p => {
             </Card>
           </Grid.Col>
         </Grid>
+ */}
+        <Card radius="lg" p="md">
+  <Group justify="space-between" mb="sm">
+    <Text fw={600}>Weekly Returns</Text>
+
+    <Select
+      data={weekOptions}
+      value={selectedWeek}
+      onChange={setSelectedWeek}
+      w={200}
+    />
+  </Group>
+
+  <Table striped highlightOnHover withTableBorder>
+    <Table.Thead>
+      <Table.Tr>
+        <Table.Th>Day</Table.Th>
+        <Table.Th>Date</Table.Th>
+        <Table.Th>PNL</Table.Th>
+      </Table.Tr>
+    </Table.Thead>
+
+    <Table.Tbody>
+      {daysOrder.map((day) => {
+        const d = selectedWeekData[day];
+
+        return (
+          <Table.Tr key={day}>
+            <Table.Td>{day}</Table.Td>
+
+            <Table.Td>
+              {d ? d.date : "-"}
+            </Table.Td>
+
+            <Table.Td
+            c={
+              d
+              ? d.pnl >= 0
+              ? "green"
+                : "red"
+                : "dimmed"
+              }
+              > 
+              {d
+                ? `₹ ${d.pnl.toFixed(2)} (${getPct(d.pnl).toFixed(2)}%)`
+                : "-"}
+            </Table.Td>
+          </Table.Tr>
+        );
+      })}
+    </Table.Tbody>
+  </Table>
+</Card>
 
         {/* 🔹 Monthly Returns */}
-        <Card radius="lg" p="md">
-          <Text fw={600} mb="sm">Monthly Returns</Text>
+    <Card radius="lg" p="md">
+      <Text fw={600} mb={"1rem"}>Monthly Retunrs</Text>
+      <Group justify="space-between" mb="sm">
+        <Text fw={600}>Month</Text>
+        <Text fw={600}>PNL</Text>
+      </Group>
 
-          <Stack gap="xs">
-            {monthly.map((m, index) => {
-              const val = parseFloat(m.monthly_return);
+    <Stack gap="xs">
+      {monthly.map((m, index) => {
+        const val = parseFloat(m.monthly_return);
 
-              return (
-                <Group key={index} justify="space-between">
-                  <Text>{m.month}</Text>
-                  <Text c={val >= 0 ? "green" : "red"} fw={600}>
-                    ₹ {val.toFixed(2)}
-                  </Text>
-                </Group>
-              );
-            })} 
-          </Stack>
-        </Card>
+        // ✅ Convert "2026-05" → "2026-May"
+        const [year, month] = m.month.split("-");
+        const monthName = new Date(`${year}-${month}-01`).toLocaleString("en-US", {
+          month: "short"
+        });
 
+        return (
+          <Group key={index} justify="space-between">
+            <Text>{`${year}-${monthName}`}</Text>
+
+            <Text c={val >= 0 ? "green" : "red"} fw={600}>
+            ₹ {val.toFixed(2)} ({getPct(val).toFixed(2)}%)
+            </Text>
+          </Group>
+          );
+        })}
       </Stack>
+    </Card>
+      </Stack>
+
     </Modal>
   );
 };
+
 
 export default StrategyStatsModal;

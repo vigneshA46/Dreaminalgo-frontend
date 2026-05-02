@@ -4,6 +4,10 @@ import { IconSearch } from '@tabler/icons-react';
 import { useMediaQuery } from '@mantine/hooks';
 import { apiRequest } from '../utils/api';
 import { Modal } from '@mantine/core';
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { ActionIcon } from "@mantine/core";
+import { IconDownload } from "@tabler/icons-react";
 
 const Reports = () => {
 
@@ -51,12 +55,69 @@ const Reports = () => {
 }, []);
 
 
+const downloadDatewiseReport = (strategy, datewiseData) => {
+  if (!strategy || !datewiseData?.length) return;
+
+  const capital = parseFloat(strategy.capital_required || 0);
+
+  // 🔹 Format date → 2026 - May - 02
+  const formatDayDate = (date) => {
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = d.toLocaleString("en-US", { month: "long" });
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year} - ${month} - ${day}`;
+  };
+
+  // 🔹 % calc
+  const getPct = (pnl) => {
+    if (!capital) return 0;
+    return (pnl / capital) * 100;
+  };
+
+  const doc = new jsPDF();
+
+  // 🔥 Title
+  doc.setFontSize(16);
+  doc.text("Strategy Report", 14, 15);
+
+  // 🔹 Strategy Info
+  doc.setFontSize(11);
+  doc.text(`Strategy: ${strategy.name || "-"}`, 14, 22);
+  doc.text(`Capital: ₹ ${capital.toLocaleString("en-IN")}`, 14, 28);
+
+  // 🔹 Build rows
+  const rows = datewiseData.map((row) => {
+    const pnl = parseFloat(row.pnl || 0);
+    const pct = getPct(pnl);
+
+    return [
+      formatDayDate(row.trade_date),
+      `₹ ${pnl.toLocaleString("en-IN", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })}`,
+      `${pct.toFixed(2)}%`,
+    ];
+  });
+
+  // 🔥 Table
+  autoTable(doc, {
+    startY: 35,
+    head: [["Date", "PnL", "Return %"]],
+    body: rows,
+  });
+
+  // 🔥 Save
+  doc.save(`${strategy.name || "strategy"}-report.pdf`);
+};
+
   return (
      <Box style={{ backgroundColor: '#ffffffff', minHeight: '100vh' }}>
       <Text size='1.5rem' fw={"600"} pb={"1rem"} >Reports</Text>
         <Container size="xl" style={{ maxWidth: '1400px' }}>
           {/* Tabs */}
-          <Group gap="md" mb="xl">
+{/*           <Group gap="md" mb="xl">
             <Button
               size="md"
               radius="xl"
@@ -105,7 +166,7 @@ const Reports = () => {
               Open Positions
             </Button>
           </Group>
-
+ */}
           {/* Filters */}
           <Group gap="md" mb="xl" align="flex-end" style={{ flexWrap: 'wrap' }}>
             <Box style={{ flex: '1 1 300px', minWidth: '250px' }}>
@@ -273,19 +334,34 @@ const Reports = () => {
         <Modal
   opened={opened}
   onClose={() => setOpened(false)}
-  title={selectedStrategy?.name}
+  title={
+  <Group justify="space-between" w="100%">
+    <Text fw={600}>{selectedStrategy?.name}</Text>
+
+    <ActionIcon
+      variant="light"
+      onClick={() =>
+        downloadDatewiseReport(selectedStrategy, datewiseData)
+      }
+      disabled={loadingDetails || datewiseData.length === 0}
+    >
+      <IconDownload size={18} />
+    </ActionIcon>
+  </Group>
+}
   size="lg"
   centered
 >
   <ScrollArea>
     <Table striped highlightOnHover>
       <Table.Thead>
-        <Table.Tr>
-          <Table.Th>Date</Table.Th>
-          <Table.Th>PNL</Table.Th>
-        </Table.Tr>
+      <Table.Tr>
+        <Table.Th>S.No</Table.Th>
+        <Table.Th>Date</Table.Th>
+        <Table.Th>PNL</Table.Th>
+      </Table.Tr>
       </Table.Thead>
-<Table.Tbody>
+  <Table.Tbody>
   {loadingDetails ? (
     <Table.Tr>
       <Table.Td colSpan={3}>Loading...</Table.Td>

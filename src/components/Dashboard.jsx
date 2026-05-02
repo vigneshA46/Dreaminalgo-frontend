@@ -182,7 +182,7 @@ function RiskCard({ title, description, level, color }) {
 }
 
 export default function Dashboard() {
-  const [totalPnl, setTotalPnl] = useState(0);
+   const [totalPnl, setTotalPnl] = useState(null);
    const [active, setActive] = useState("live"); 
    const [user , setUser] = useState([]);
    const isMobile = useMediaQuery('(max-width: 768px)');
@@ -194,17 +194,18 @@ export default function Dashboard() {
    const [legs, setLegs] = useState({});
    const [liveData, setLiveData] = useState({});
    const [dates, setDates] = useState({});
-  const [selectedDate, setSelectedDate] = useState({});
-  const [dropdownOpened, setDropdownOpened] = useState(false);
-  const [tradesModalOpen, setTradesModalOpen] = useState(false);
-const [tradesData, setTradesData] = useState([]);
-const [selectedLegInfo, setSelectedLegInfo] = useState(null);
-const [todaydeployment , settodaydeployment] = useState([])
-const [legPnls, setLegPnls] = useState({});
-const [cumulativePnl, setCumulativePnl] = useState({});
-const [dateWisePnL, setDateWisePnL] = useState({});
-const [statistics , setstatistics ] = useState({});
-const [statisticsopened ,setstatisticsopened ] = useState(false)
+   const [selectedDate, setSelectedDate] = useState({});
+   const [dropdownOpened, setDropdownOpened] = useState(false);
+   const [tradesModalOpen, setTradesModalOpen] = useState(false);
+   const [tradesData, setTradesData] = useState([]);
+   const [selectedLegInfo, setSelectedLegInfo] = useState(null);
+   const [todaydeployment , settodaydeployment] = useState([])
+   const [legPnls, setLegPnls] = useState({});
+   const [cumulativePnl, setCumulativePnl] = useState({});
+   const [dateWisePnL, setDateWisePnL] = useState({});
+   const [statistics , setstatistics ] = useState({});
+   const [statisticsopened ,setstatisticsopened ] = useState(false)
+   const [overallpnl , setoverallpnl] = useState(0)
 
 
 const fetchstatistics = async (strategy_id) =>{
@@ -488,9 +489,9 @@ const PaperUI = ()=>{
                   <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px',whiteSpace: "nowrap"  }}>
                     Strategy Name
                   </Table.Th>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px',whiteSpace: "nowrap"  }}>
+{/*                   <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px',whiteSpace: "nowrap"  }}>
                     O | T | M O
-                  </Table.Th>
+                  </Table.Th> */}
                   <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' ,whiteSpace: "nowrap" }}>
                     Status
                   </Table.Th>
@@ -512,7 +513,7 @@ const PaperUI = ()=>{
       const isToday = selectedDate[strategy.id] === dayjs().format("YYYY-MM-DD");
 
       const displayPnl = liveData[strategy.id]?.pnl ? liveData[strategy.id]?.pnl
-      : cumulativePnl[strategy.id];
+      : cumulativePnl[strategy.id] ? cumulativePnl[strategy.id] : strategy.latest_cum_pnl;
       return(
       <React.Fragment key={strategy.id}>
     <Table.Tr>
@@ -520,7 +521,7 @@ const PaperUI = ()=>{
 
       <Table.Td fw={"500"} >{strategy.name} - {strategy.state_id}</Table.Td>
 
-      <Table.Td>-</Table.Td>
+      {/* <Table.Td>-</Table.Td> */}
 
       <Table.Td>
   {liveData[strategy.id]?.status || "CLOSED"}
@@ -605,7 +606,7 @@ const PaperUI = ()=>{
             <Table.Tr>
               <Table.Th>#</Table.Th>
               <Table.Th>Symbol</Table.Th>
-              <Table.Th>QTY</Table.Th>
+              {/* <Table.Th>QTY</Table.Th> */}
               <Table.Th>LTP ₹</Table.Th>
               <Table.Th>P&L ₹</Table.Th>
               <Table.Th>Val ₹</Table.Th>
@@ -665,7 +666,7 @@ const PaperUI = ()=>{
             </Text>
           </Table.Td>
 
-          <Table.Td>{qty}</Table.Td>
+          {/* <Table.Td>{qty}</Table.Td> */}
 
 <Table.Td>{ltp ?? "-"}</Table.Td>
 
@@ -1024,7 +1025,8 @@ useEffect(()=>{
       const Fetchstartergies = async ()=>{
         try {
           const response = await apiRequest('GET','/api/stratergy')
-          await setstartergies(response)
+          await setstartergies(response.strategies)
+          await setoverallpnl(response.overall_pnl)
           console.log(response)
         }catch(err){
           console.log(err)
@@ -1225,7 +1227,7 @@ useEffect(()=>{
     </Grid>
  */}
 <Grid gutter="lg"  mb="xl">
-  <Grid.Col   span={{ base: 6, sm: 6, md: 4, lg: 3 }}>
+  <Grid.Col   span={{ base: 6, sm: 6, md: 4, lg: 2.3 }}>
     <StatCard
       icon={IconCurrencyDollar}
       title="Portfolio Value"
@@ -1234,7 +1236,7 @@ useEffect(()=>{
     />
   </Grid.Col>
 
-  <Grid.Col span={{ base: 6, sm: 6, md: 4, lg: 3 }}>
+  <Grid.Col span={{ base: 6, sm: 6, md: 4, lg: 2.3 }}>
     <StatCard
       icon={IconActivity}
       title="Active Strategies"
@@ -1243,7 +1245,7 @@ useEffect(()=>{
     />
   </Grid.Col>
 
-  <Grid.Col span={{ base: 6, sm: 6, md: 4, lg: 3 }}>
+{/*   <Grid.Col span={{ base: 6, sm: 6, md: 4, lg: 3 }}>
     <StatCard
       icon={IconChartBar}
       title="Total Trades"
@@ -1251,7 +1253,7 @@ useEffect(()=>{
       subtitle="48 wins, 25 losses"
     />
   </Grid.Col>
-
+ */}
 
 </Grid>
         <Box style={{ maxWidth: '100%' }}>
@@ -1284,7 +1286,7 @@ useEffect(()=>{
                       fontWeight:500
                       }}
                       >
-                  ₹ {totalPnl.toFixed(2) || 0} 
+                  ₹ {totalPnl? totalPnl?.toFixed(2) : parseFloat(overallpnl).toFixed(2)} 
                 </span>
                   </Group>
                 </Box>
@@ -1324,9 +1326,9 @@ useEffect(()=>{
         Live
       </Button>
 
-      <ActionIcon variant="subtle" size="lg" style={{ color: "#495057" }}>
+{/*       <ActionIcon variant="subtle" size="lg" style={{ color: "#495057" }}>
         <IconFilter size={20} />
-      </ActionIcon>
+      </ActionIcon> */}
       {
           active== 'live' ?  <Button bg={"#000"} radius={"0.5rem"} > Exit all</Button> : <> </>
       }
@@ -1556,10 +1558,28 @@ useEffect(()=>{
               <Table.Td>{trade.leg_name}</Table.Td>
 
               <Table.Td>
-            {new Date(trade.timestamp).toLocaleString("en-IN", {
+            {
+            
+            new Date(trade.timestamp).toLocaleString("en-IN", {
             timeZone: "Asia/Kolkata",
             })}
             </Table.Td>
+
+
+  {/*           <Table.Td>
+  {
+    new Intl.DateTimeFormat("en-IN", {
+      timeZone: "Asia/Kolkata",
+      day: "2-digit",
+      month: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "numeric",
+      second: "numeric",
+      hour12: true
+    }).format(new Date(trade.timestamp))
+  }
+</Table.Td> */}
 
               <Table.Td>{trade.event_type}</Table.Td>
 

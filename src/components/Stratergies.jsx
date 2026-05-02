@@ -16,6 +16,16 @@ const Stratergies = () => {
   const [strategyid , setstrategyid] = useState('')
   const [todaydeployment , settodaydeployment] = useState([])
 
+  const [expanded, setExpanded] = useState({});
+
+  const toggleExpand = (id) => {
+  setExpanded((prev) => ({
+    ...prev,
+    [id]: !prev[id],
+  }));
+};
+  const [search, setSearch] = useState("");
+
   const isTimeExceeded = (starting_time) => {
   if (!starting_time) return false;
 
@@ -54,6 +64,17 @@ const Stratergies = () => {
     setOpened(true);
   };
 
+  const filteredStrategies = strategies.filter((strategy) => {
+  if (!search) return true;
+
+  const query = search.toLowerCase();
+
+  return (
+    strategy.state_id?.toString().toLowerCase().includes(query) ||
+    strategy.name?.toLowerCase().includes(query) ||
+    strategy.description?.toLowerCase().includes(query)
+  );
+});
   const SingleTraderSignal = ({
     startergyname,
     timestamp,
@@ -130,7 +151,7 @@ const Stratergies = () => {
       try {
         const strategies = await apiRequest("GET","/api/stratergy")
         /* console.log(strategies) */
-        await setstrategies(strategies)
+        await setstrategies(strategies.strategies)
       }
       catch(err){
         console.log(err)
@@ -208,16 +229,13 @@ const Stratergies = () => {
               >
                 {/* Search */}
                 <TextInput
-                  placeholder="Search"
-                  leftSection={<IconSearch size={18} />}
-                  radius="md"
-                  mb="xl"
-                  styles={{
-                    input: {
-                      border: '1px solid #dee2e6',
-                    },
-                  }}
-                />
+  placeholder="Search by State ID"
+  value={search}
+  onChange={(e) => setSearch(e.currentTarget.value)}
+  leftSection={<IconSearch size={18} />}
+  radius="md"
+  mb="xl"
+/>
 
                 {/* Fixed Fee */}
                 <Box mb="xl">
@@ -313,7 +331,7 @@ const Stratergies = () => {
 
             {/* Right Content - Strategy Cards */}
             <Grid.Col span={{ base: 12, md: 9 }}>
-              {strategies.map((strategy) => (
+              {filteredStrategies.map((strategy) => (
                 <Card
                   key={strategy.id}
                   shadow="sm"
@@ -331,15 +349,24 @@ const Stratergies = () => {
                         {strategy.name} - {strategy.state_id}
                       </Text>
                       <Text size="sm" c="#495057" mb={8}>
-                        {strategy.description}
-                        <Anchor
-                          href="#"
-                          size="sm"
-                          style={{ color: '#1864ab', marginLeft: '4px' }}
-                        >
-                          ...read more.
-                        </Anchor>
-                      </Text>
+  {expanded[strategy.id]
+    ? strategy.description
+    : `${strategy.description.slice(0, 120)}${
+        strategy.description.length > 120 ? "..." : ""
+      }`}
+
+  {strategy.description.length > 120 && (
+    <Anchor
+      component="button"
+      size="sm"
+      ml={4}
+      onClick={() => toggleExpand(strategy.id)}
+      style={{ color: '#1864ab' }}
+    >
+      {expanded[strategy.id] ? "Show less" : "Read more"}
+    </Anchor>
+  )}
+</Text>
                     </Box>
                   </Group>
 
