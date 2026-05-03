@@ -1201,6 +1201,9 @@ useEffect(()=>{
 </Flex>
 
 </Flex>
+
+
+
    {/*    <Grid gutter="lg" mb="xl">
       {indices.map((item) => (
         <Grid.Col span="auto" key={item.name}>
@@ -1226,7 +1229,10 @@ useEffect(()=>{
       ))}
     </Grid>
  */}
-<Grid gutter="lg"  mb="xl">
+
+
+
+<Grid gutter="lg" align={"end"}  mb="xl">
   <Grid.Col   span={{ base: 6, sm: 6, md: 4, lg: 2.3 }}>
     <StatCard
       icon={IconCurrencyDollar}
@@ -1245,56 +1251,38 @@ useEffect(()=>{
     />
   </Grid.Col>
 
-{/*   <Grid.Col span={{ base: 6, sm: 6, md: 4, lg: 3 }}>
-    <StatCard
-      icon={IconChartBar}
-      title="Total Trades"
-      value="73"
-      subtitle="48 wins, 25 losses"
-    />
+    {/* LEFT SIDE (filters + pnl) */}
+  <Grid.Col span={{ base: 6, md: 7, lg: 4 }}>
+    <Group gap="2rem" wrap="wrap">
+      
+      <DateInput
+        label="Expiry Date"
+        placeholder="Select expiry date"
+      />
+
+      <Box>
+        <Text size="xs" c="dimmed" fw={500}>
+          PNL
+        </Text>
+        <span
+          style={{
+            color: totalPnl >= 0 ? "#16a34a" : "#dc2626",
+            fontWeight: 500,
+          }}
+        >
+          ₹{" "}
+          {totalPnl
+            ? totalPnl?.toFixed(2)
+            : parseFloat(overallpnl).toFixed(2)}
+        </span>
+      </Box>
+
+    </Group>
   </Grid.Col>
- */}
 
-</Grid>
-        <Box style={{ maxWidth: '100%' }}>
-          {/* Top Bar */}
-          <Box
-            style={{
-              backgroundColor: 'white',
-              borderRadius: '8px',
-              marginBottom: '20px',
-              
-            }}
-          >
-            <Group justify="space-between" align="center">
-              <Group gap="2rem" wrap='true' > 
-                
-                <DateInput
-  label="Expiry Date"
-  placeholder="Select expiry date"
-  
- 
-/>
-
-                <Box>
-                  <Text size="xs" c="dimmed" fw={500}>PNL</Text>
-                  <Group gap={4}>
-                    
-                    <span
-                      style={{
-                      color: totalPnl >= 0 ? "#16a34a" : "#dc2626",
-                      fontWeight:500
-                      }}
-                      >
-                  ₹ {totalPnl? totalPnl?.toFixed(2) : parseFloat(overallpnl).toFixed(2)} 
-                </span>
-                  </Group>
-                </Box>
-               
-              </Group>
-
- <Group gap="sm">
-      {/* PT Button */}
+  {/* RIGHT SIDE (buttons) */}
+  <Grid.Col span={{ base: 6, md: 5, lg: 3 }}>
+    <Group justify="flex-end" gap="sm" wrap="wrap">
 
       <Button
         variant="subtle"
@@ -1311,7 +1299,6 @@ useEffect(()=>{
         PT
       </Button>
 
-      {/* Live Button */}
       <Button
         onClick={() => setActive("live")}
         style={{
@@ -1326,16 +1313,29 @@ useEffect(()=>{
         Live
       </Button>
 
-{/*       <ActionIcon variant="subtle" size="lg" style={{ color: "#495057" }}>
-        <IconFilter size={20} />
-      </ActionIcon> */}
-      {
-          active== 'live' ?  <Button bg={"#000"} radius={"0.5rem"} > Exit all</Button> : <> </>
-      }
-    </Group>
-            </Group>
-          </Box>
+      {active === "live" && (
+        <Button bg="#000" radius="0.5rem">
+          Exit all
+        </Button>
+      )}
 
+    </Group>
+  </Grid.Col>
+
+
+{/*   <Grid.Col span={{ base: 6, sm: 6, md: 4, lg: 3 }}>
+    <StatCard
+      icon={IconChartBar}
+      title="Total Trades"
+      value="73"
+      subtitle="48 wins, 25 losses"
+    />
+  </Grid.Col>
+ */}
+
+</Grid>
+
+        <Box style={{ maxWidth: '100%' }}>
           {/* Table Container */}
           {
             active == 'pt' ? (

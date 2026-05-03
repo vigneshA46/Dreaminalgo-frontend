@@ -180,7 +180,8 @@ const Stratergies = () => {
         <Container size="xl" style={{ maxWidth: '1400px' }}>
       <Text size='1.5rem' fw={"600"} pb={"1rem"} >Stratergies</Text>
           {/* Tabs */}
-          <Group gap="md" mb="xl">
+          <Group gap="md" justify="space-between" mb="xl">
+            <Group>
             <Button
               size="md"
               radius="xl"
@@ -212,23 +213,8 @@ const Stratergies = () => {
             >
               My Strategies
             </Button>
-          </Group>
-          {
-            activeTab == 'marketplace' ? (
-                <Grid gutter="lg">
-            {/* Left Sidebar - Filters */}
-            <Grid.Col span={{ base: 12, md: 3 }}>
-              <Card
-                shadow="sm"
-                padding="lg"
-                radius="md"
-                style={{
-                  backgroundColor: 'white',
-                  border: '1px solid #e9ecef',
-                }}
-              >
-                {/* Search */}
-                <TextInput
+            </Group>
+                            <TextInput
   placeholder="Search by State ID"
   value={search}
   onChange={(e) => setSearch(e.currentTarget.value)}
@@ -236,101 +222,11 @@ const Stratergies = () => {
   radius="md"
   mb="xl"
 />
-
-                {/* Fixed Fee */}
-                <Box mb="xl">
-                  <Text size="sm" fw={600} mb="md" c="#212529">
-                    Fixed Fee
-                  </Text>
-                  <Radio.Group value={selectedFee} onChange={setSelectedFee}>
-                    <Radio
-                      value="free"
-                      label="Free"
-                      mb="sm"
-                      styles={{
-                        radio: { cursor: 'pointer' },
-                        label: { cursor: 'pointer', color: '#495057' },
-                      }}
-                    />
-                    <Radio
-                      value="paid"
-                      label="Paid"
-                      styles={{
-                        radio: { cursor: 'pointer' },
-                        label: { cursor: 'pointer', color: '#495057' },
-                      }}
-                    />
-                  </Radio.Group>
-                </Box>
-
-                {/* Sort By */}
-                <Box mb="xl">
-                  <Text size="sm" fw={600} mb="md" c="#212529">
-                    Sort By
-                  </Text>
-                  <Radio.Group value={selectedSort} onChange={setSelectedSort}>
-                    <Radio
-                      value="minCapital"
-                      label="Min Capital"
-                      mb="sm"
-                      styles={{
-                        radio: { cursor: 'pointer' },
-                        label: { cursor: 'pointer', color: '#495057' },
-                      }}
-                    />
-                    <Radio
-                      value="minFees"
-                      label="Min Fees"
-                      mb="sm"
-                      styles={{
-                        radio: { cursor: 'pointer' },
-                        label: { cursor: 'pointer', color: '#495057' },
-                      }}
-                    />
-                    <Radio
-                      value="latest"
-                      label="Latest"
-                      styles={{
-                        radio: { cursor: 'pointer' },
-                        label: { cursor: 'pointer', color: '#495057' },
-                      }}
-                    />
-                  </Radio.Group>
-                </Box>
-
-                {/* Filter Button */}
-                <Button
-                  fullWidth
-                  size="md"
-                  radius="md"
-                  mb="sm"
-                  style={{
-                    backgroundColor: '#000000ff',
-                    fontWeight: 500,
-                  }}
-                >
-                  FILTER
-                </Button>
-
-                {/* Reset Button */}
-                <Button
-                  fullWidth
-                  size="md"
-                  radius="md"
-                  variant="outline"
-                  style={{
-                    borderColor: '#dee2e6',
-                    color: '#495057',
-                    fontWeight: 500,
-                  }}
-                >
-                  RESET
-                </Button>
-              </Card>
-            </Grid.Col>
-
-            {/* Right Content - Strategy Cards */}
-            <Grid.Col span={{ base: 12, md: 9 }}>
+          </Group>
+          {
+            activeTab == 'marketplace' ? (
+<Stack>
+            
               {filteredStrategies.map((strategy) => (
                 <Card
                   key={strategy.id}
@@ -420,10 +316,8 @@ const Stratergies = () => {
                   </Group>
                 </Card> 
               ))}
-            </Grid.Col>
-          </Grid>
 
-
+</Stack>
 
             ) : (
               <Grid>
