@@ -452,7 +452,7 @@ const Planandpricing = () => {
               {plans.map((plan) => {
                 const t = tiers[plan.tier];
                 return (
-                  <Grid.Col key={plan.name} span={{ base: 6, sm: 6, md: 4, lg: 12 / 5 }}>
+                  <Grid.Col key={plan.name} span={{ base: 6, sm: 6, md: 4, lg: 4 }}>
                     <div className="plan-card-wrap" style={{ height: "100%" }}>
                       {/* outer glow border */}
                       <div
