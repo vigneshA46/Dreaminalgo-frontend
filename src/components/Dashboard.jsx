@@ -1,9 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useMarketWebSocket } from "../hooks/useMarketWebSocket";
 import { io } from "socket.io-client";
 import { useMediaQuery } from '@mantine/hooks';
 import dayjs from "dayjs";
 import StrategyStatsModal from './StrategyStatsModal';
+import StrategyRow from "./StrategyRow";
+import { useLiveStore } from "./liveStore";
+import { useSocket } from "./useSocket";
+
 
 import { 
   Box, 
@@ -182,18 +186,25 @@ function RiskCard({ title, description, level, color }) {
 }
 
 export default function Dashboard() {
-   const [totalPnl, setTotalPnl] = useState(null);
-   const [active, setActive] = useState("live"); 
-   const [user , setUser] = useState([]);
-   const isMobile = useMediaQuery('(max-width: 768px)');
-   const {logout } = useUser();
-   const ltpData = useMarketWebSocket();
-   const navigation = useNavigate()
-   const [startergies , setstartergies] = useState([]);
-   const [openedRow, setOpenedRow] = useState(null);
-   const [legs, setLegs] = useState({});
-   const [liveData, setLiveData] = useState({});
-   const [dates, setDates] = useState({});
+  //const [totalPnl, setTotalPnl] = useState(null);
+
+  const formatPnl = (value) => {
+  if (value === null || value === undefined || value === "-") return "-";
+  return Number(value).toFixed(2);
+};
+  
+  useSocket();
+  const [active, setActive] = useState("live"); 
+  const [user , setUser] = useState([]);
+  const isMobile = useMediaQuery('(max-width: 768px)');
+  const {logout } = useUser();
+  const ltpData = useMarketWebSocket();
+  const navigation = useNavigate()
+  const [startergies , setstartergies] = useState([]);
+  const [openedRow, setOpenedRow] = useState(null);
+  const [legs, setLegs] = useState({});
+  const [liveData, setLiveData] = useState({});
+  const [dates, setDates] = useState({});
    const [selectedDate, setSelectedDate] = useState({});
    const [dropdownOpened, setDropdownOpened] = useState(false);
    const [tradesModalOpen, setTradesModalOpen] = useState(false);
@@ -207,19 +218,44 @@ export default function Dashboard() {
    const [statisticsopened ,setstatisticsopened ] = useState(false)
    const [overallpnl , setoverallpnl] = useState(0)
 
+   const totalPnl = useLiveStore((state) => {
+  let total = 0;
+  Object.values(state.liveData).forEach((d) => {
+    if (d?.pnl) total += Number(d.pnl);
+  });
+  return total;
+});
 
-const fetchstatistics = async (strategy_id) =>{
+
+useEffect(()=>{
+      const Fetchstartergies = async ()=>{
+        try {
+          const response = await apiRequest('GET','/api/stratergy')
+          await setstartergies(response.strategies)
+          await setoverallpnl(response.overall_pnl)
+          console.log(response)
+        }catch(err){
+          console.log(err)
+        }
+      }
+      Fetchstartergies();
+    },[])
+
+
+    const fetchstatistics = async (strategy_id) =>{
   try{
     const res = await apiRequest("GET", `/api/statistics?strategy_id=${strategy_id}`)
     console.log(res)
     setstatistics(res)
     setstatisticsopened(true)
-
+    
   }catch(err){
     console.log(err)
   }
 }
 
+
+/* 
 useEffect(() => {
   let total = 0;
 
@@ -234,7 +270,7 @@ useEffect(() => {
   setTotalPnl(total);
 }, [liveData]);
 
-
+ */
 const [Livestock, setLivestock] = useState({
   NIFTY: null,
   BANKNIFTY: null,
@@ -244,7 +280,7 @@ const [Livestock, setLivestock] = useState({
 });
 
 
-  useState(()=>{
+  useEffect(()=>{
     const fetchtodaydeployment = async () =>{
       const res = await apiRequest('GET','/api/deployments/user/today')
       await settodaydeployment(res)
@@ -271,7 +307,7 @@ const deployedStrategies = startergies.filter(strategy =>
   deployedStrategyIds.has(strategy.id)
 )
 
-
+/* 
    useEffect(() => {
   const socket = io("https://algoapi.dreamintraders.in");
 
@@ -306,7 +342,7 @@ const deployedStrategies = startergies.filter(strategy =>
   };
 }, []);
 
-
+ */
 useEffect(()=>{
   const fetchuser = async ()=>{
     try{
@@ -319,18 +355,17 @@ useEffect(()=>{
   fetchuser();
 },[])
 
-const handleRowToggle = async (strategyId) => {
+/* const handleRowToggle = async (strategyId) => {
   if (openedRow === strategyId) {
     setOpenedRow(null);
   } else {
     setOpenedRow(strategyId);
 
-    // fetch dates when opening
+    
     await fetchDates(strategyId);
   }
 };
-
-
+ */
 const fetchDates = async (strategyId) => {
   try {
     const res = await apiRequest(
@@ -338,35 +373,33 @@ const fetchDates = async (strategyId) => {
       `/api/tradelegs/dates/${strategyId}`
     );
 
-    const data = res;
+    const data = res?.data || [];
 
-    const formattedDates = res.data.map(d => d.date);
+    const formattedDates = data.map(d => d.date);
 
-const pnlMap = {};
-res.data.forEach(d => {
-  pnlMap[d.date] = parseFloat(d.total_pnl || 0);
-});
+    const pnlMap = {};
+    data.forEach(d => {
+      pnlMap[d.date] = parseFloat(d.total_pnl || 0);
+    });
 
-setDates(prev => ({
-  ...prev,
-  [strategyId]: formattedDates
-}));
+    setDates(prev => ({
+      ...prev,
+      [strategyId]: formattedDates
+    }));
 
-setDateWisePnL(prev => ({
-  ...prev,
-  [strategyId]: pnlMap
-}));
+    setDateWisePnL(prev => ({
+      ...prev,
+      [strategyId]: pnlMap
+    }));
 
-    // set latest date as default
-    if (data.dates.length > 0) {
-      const latestDate = data.dates[0];
+    if (data.length > 0) {
+      const latestDate = data[0].date;
 
-      setSelectedDate((prev) => ({
+      setSelectedDate(prev => ({
         ...prev,
         [strategyId]: latestDate
       }));
 
-      // fetch legs for latest date
       fetchLegsByDate(strategyId, latestDate);
     }
 
@@ -374,8 +407,7 @@ setDateWisePnL(prev => ({
     console.error(err);
   }
 };
-
-
+/* 
 useEffect(() => {
   startergies.forEach((strategy) => {
     const strategyDates = dates[strategy.id];
@@ -397,7 +429,7 @@ useEffect(() => {
     }
   });
 }, [dates]);
-
+ */
 
 const fetchLegsByDate = async (strategyId, date) => {
   try {
@@ -449,153 +481,43 @@ const fetchTradesByToken = async (strategyId, date, token) => {
 
 
 
-const PaperUI = ()=>{
+const renderExpanded = useCallback((strategy, live) => {
+  return (
+    <>
+      <Table.Tr>
+        <Table.Td colSpan={7}>
+          <Select
+            label="Select Date"
+            placeholder="Pick date"
+            value={selectedDate[strategy.id] || null}
+            data={(dates[strategy.id] || []).map((d, i) => {
+              const pnl = dateWisePnL?.[strategy.id]?.[d] ?? 0;
 
-  const formatPnl = (value) => {
-    if (value === null || value === undefined || value === "-") return "-";
-    return Number(value).toFixed(2);
-    };
+              return {
+                value: d,
+                label: `${i + 1} ${dayjs(d).format("DD-MM-YYYY")} (₹ ${pnl.toFixed(2)})`
+              };
+            })}
+            onChange={(value) => {
+              setSelectedDate((prev) => ({
+                ...prev,
+                [strategy.id]: value,
+              }));
 
-  return(
-      <Box
-        style={{
-          backgroundColor: "white",
-          borderRadius: "12px",
-          padding: "20px",
-          boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-          width: "100%",
-  }}  
->
-  {/* Scrollable container */}
-  <ScrollArea  w={isMobile? '100vw':'100%'}
-  type="auto"
-  scrollbarSize={6}
-  offsetScrollbars>
-            <Table
-              w={isMobile? '100vw': '100%'}
-              horizontalSpacing="md"
-              verticalSpacing="md"
-          /*     stickyHeader 
-              stickyHeaderOffset={0} */
-              style={{
-                minWidth: '900px',
-              }}
-            >
-              <Table.Thead>
-                <Table.Tr style={{ backgroundColor: '#ffffffff' }}>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' ,whiteSpace: "nowrap" }}>
-                    S.No
-                  </Table.Th>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px',whiteSpace: "nowrap"  }}>
-                    Strategy Name
-                  </Table.Th>
-{/*                   <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px',whiteSpace: "nowrap"  }}>
-                    O | T | M O
-                  </Table.Th> */}
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' ,whiteSpace: "nowrap" }}>
-                    Status
-                  </Table.Th>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px',whiteSpace: "nowrap"  }}>
-                    PNL
-                  </Table.Th>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' ,whiteSpace: "nowrap" }}>
-                    Details
-                  </Table.Th>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px',whiteSpace: "nowrap"  }}>
-                    Actions
-                  </Table.Th>
-                </Table.Tr>
-              </Table.Thead>
-              <Table.Tbody>
-  {startergies.length > 0 ? (
-    
-    startergies.map((strategy, index) => {
-      const isToday = selectedDate[strategy.id] === dayjs().format("YYYY-MM-DD");
+              fetchLegsByDate(strategy.id, value);
+            }}
+            comboboxProps={{
+              withinPortal: true,
+              keepMounted: true
+            }}
+            mb="md"
+          />
+        </Table.Td>
+      </Table.Tr>
 
-      const displayPnl = liveData[strategy.id]?.pnl ? liveData[strategy.id]?.pnl
-      : cumulativePnl[strategy.id] ? cumulativePnl[strategy.id] : strategy.latest_cum_pnl;
-      return(
-      <React.Fragment key={strategy.id}>
-    <Table.Tr>
-      <Table.Td>{index + 1}</Table.Td>
-
-      <Table.Td fw={"500"} >{strategy.name} - {strategy.state_id}</Table.Td>
-
-      {/* <Table.Td>-</Table.Td> */}
-
-      <Table.Td>
-  {liveData[strategy.id]?.status || "CLOSED"}
-</Table.Td>
-
-
-
-
-<Table.Td
-  style={{
-    color: displayPnl >= 0 ? "#16a34a" : "#dc2626",
-    fontWeight: 600
-  }}
->
-  {formatPnl(displayPnl)}
-</Table.Td>
-      {/* ACTION COLUMN */}
-      <Table.Td>
-        <ActionIcon
-          variant="subtle"
-          onClick={() => handleRowToggle(strategy.id)}
-        >
-          {openedRow === strategy.id ? (
-            <IconChevronUp size={18} />
-          ) : (
-            <IconChevronDown size={18} />
-          )}
-        </ActionIcon>
-      </Table.Td>
-
-      <Table.Td>
-        <Button size='xs' radius={"1rem"} onClick={()=>fetchstatistics(strategy.id)} bg={"#000"} >Statistics</Button>
-      </Table.Td>
-    </Table.Tr>
-
-    {/* EXPANDED ROW */}
-    {openedRow === strategy.id && (
-      <>
-      <Select
-  label="Select Date"
-  placeholder="Pick date"
-  value={selectedDate[strategy.id] || null}
-  data={(dates[strategy.id] || []).map((d, i) => {
-  const pnl = dateWisePnL?.[strategy.id]?.[d] ?? 0;
-
-  return {
-    value: d,
-    label: `${i + 1} ${dayjs(d).format("DD-MM-YYYY")} (₹ ${pnl.toFixed(2)})`
-  };
-})}
-
-
-  onChange={(value) => {
-    setSelectedDate((prev) => ({
-      ...prev,
-      [strategy.id]: value,
-    }));
-
-    fetchLegsByDate(strategy.id, value);
-  }}
-
-  opened={dropdownOpened}
-  onDropdownOpen={() => setDropdownOpened(true)}
-  onDropdownClose={() => setDropdownOpened(false)}
-
-  comboboxProps={{
-  withinPortal: true,
-  keepMounted: true
-}}
-  mb="md"
-/>
-  <Table.Tr>
-    <Table.Td colSpan={7}>
-      <Box  style={{ background: "#f8f9fa", borderRadius: "8px" }}>
+      <Table.Tr>
+        <Table.Td colSpan={7}>
+          <Box  style={{ background: "#f8f9fa", borderRadius: "8px" }}>
         
         <Table
           horizontalSpacing="md"
@@ -621,15 +543,15 @@ const PaperUI = ()=>{
       
     const ltp = isToday
   ? (leg.leg === "CE"
-      ? liveData[strategy.id]?.ce_ltp
-      : liveData[strategy.id]?.pe_ltp)
+      ? live?.ce_ltp
+      : live?.pe_ltp)
   : "-"; // or store historical LTP if needed
 
 
     const pnl = isToday
   ? (leg.leg === "CE"
-      ? liveData[strategy.id]?.ce_pnl
-      : liveData[strategy.id]?.pe_pnl)
+      ? live?.ce_pnl
+      : live?.pe_pnl)
   : legPnls[strategy.id]?.[leg.token]?.pnl;
 
     const qty = 0;
@@ -700,24 +622,102 @@ const PaperUI = ()=>{
 </Table.Tbody>
         </Table>
       </Box>
-    </Table.Td>
-  </Table.Tr>
-  </>
-)}
-  </React.Fragment>
-      )
-})
-  ) : (
-    <Table.Tr>
-      <Table.Td
-        colSpan={7}
-        style={{ textAlign: "center", padding: "60px", color: "#adb5bd" }}
-      >
-        <Text size="sm">No strategies available</Text>
-      </Table.Td>
-    </Table.Tr>
-  )}
+        </Table.Td>
+      </Table.Tr>
+    </>
+  );
+},  [
+  legs,
+  dates,
+  selectedDate,
+  dateWisePnL,
+  legPnls,
+  fetchLegsByDate
+]);
+
+
+
+
+const PaperUI = ()=>{
+  return(
+      <Box
+        style={{
+          backgroundColor: "white",
+          borderRadius: "12px",
+          padding: "20px",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+          width: "100%",
+  }}  
+>
+  {/* Scrollable container */}
+  <ScrollArea  w={isMobile? '100vw':'100%'}
+  type="auto"
+  scrollbarSize={6}
+  offsetScrollbars>
+            <Table
+              w={isMobile? '100vw': '100%'}
+              horizontalSpacing="md"
+              verticalSpacing="md"
+          /*     stickyHeader 
+              stickyHeaderOffset={0} */
+              style={{
+                minWidth: '900px',
+              }}
+            >
+              <Table.Thead>
+                <Table.Tr style={{ backgroundColor: '#ffffffff' }}>
+                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' ,whiteSpace: "nowrap" }}>
+                    S.No
+                  </Table.Th>
+                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px',whiteSpace: "nowrap"  }}>
+                    Strategy Name
+                  </Table.Th>
+{/*                   <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px',whiteSpace: "nowrap"  }}>
+                    O | T | M O
+                  </Table.Th> */}
+                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' ,whiteSpace: "nowrap" }}>
+                    Status
+                  </Table.Th>
+                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px',whiteSpace: "nowrap"  }}>
+                    PNL
+                  </Table.Th>
+                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' ,whiteSpace: "nowrap" }}>
+                    Details
+                  </Table.Th>
+                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px',whiteSpace: "nowrap"  }}>
+                    Actions
+                  </Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>
+  {startergies?.map((strategy, index) => (
+   <StrategyRow
+  key={strategy.id}
+  strategy={strategy}
+  index={index}
+  cumulativePnl={cumulativePnl}
+  fetchstatistics={fetchstatistics}
+  fetchDates={fetchDates}
+  renderExpanded={renderExpanded}
+  isOpen={openedRow === strategy.id}
+  onToggle={() => {
+    if (openedRow === strategy.id) {
+      setOpenedRow(null);
+    } else {
+      setOpenedRow(strategy.id);
+
+      // fetch ONLY if not already fetched
+      if (!dates[strategy.id]) {
+        fetchDates(strategy.id);
+      }
+    }
+  }}
+/>
+  ))}
 </Table.Tbody>
+
+
+              
             </Table>
             </ScrollArea>
             {/* Pagination */}
@@ -745,15 +745,15 @@ const PaperUI = ()=>{
 
 
 const LiveUI = ()=>{
-  return(
-      <Box
-  style={{
-    backgroundColor: "white",
-    borderRadius: "12px",
-    padding: "20px",
-    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-    width: "100%",
-  }}
+  return (
+         <Box
+        style={{
+          backgroundColor: "white",
+          borderRadius: "12px",
+          padding: "20px",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+          width: "100%",
+  }}  
 >
   {/* Scrollable container */}
   <ScrollArea  w={isMobile? '100vw':'100%'}
@@ -778,17 +778,14 @@ const LiveUI = ()=>{
                   <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px',whiteSpace: "nowrap"  }}>
                     Strategy Name
                   </Table.Th>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px',whiteSpace: "nowrap"  }}>
+{/*                   <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px',whiteSpace: "nowrap"  }}>
                     O | T | M O
-                  </Table.Th>
+                  </Table.Th> */}
                   <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' ,whiteSpace: "nowrap" }}>
                     Status
                   </Table.Th>
                   <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px',whiteSpace: "nowrap"  }}>
                     PNL
-                  </Table.Th>
-                   <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px',whiteSpace: "nowrap"  }}>
-                    Broker
                   </Table.Th>
                   <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' ,whiteSpace: "nowrap" }}>
                     Details
@@ -799,203 +796,36 @@ const LiveUI = ()=>{
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
-  {deployedStrategies.length > 0 ? (
-    deployedStrategies.map((strategy, index) => (
-  <React.Fragment key={strategy.id}>
-    <Table.Tr>
-      <Table.Td>{index + 1}</Table.Td>
+  {deployedStrategies?.map((strategy, index) => (
+   <StrategyRow
+  key={strategy.id}
+  strategy={strategy}
+  index={index}
+  cumulativePnl={cumulativePnl}
+  fetchstatistics={fetchstatistics}
+  fetchDates={fetchDates}
+  renderExpanded={renderExpanded}
+  isOpen={openedRow === strategy.id}
+  onToggle={() => {
+    if (openedRow === strategy.id) {
+      setOpenedRow(null);
+    } else {
+      setOpenedRow(strategy.id);
 
-      <Table.Td>{strategy.name} - {strategy.state_id}</Table.Td>
-
-      <Table.Td>-</Table.Td>
-
-      <Table.Td>
-  {liveData[strategy.id]?.status || "CLOSED"}
-</Table.Td>
-
-      <Table.Td
-  style={{
-    color: liveData[strategy.id]?.pnl >= 0 ? "#16a34a" : "#dc2626",
-    fontWeight: 600
+      // fetch ONLY if not already fetched
+      if (!dates[strategy.id]) {
+        fetchDates(strategy.id);
+      }
+    }
   }}
->
-  {liveData[strategy.id]?.pnl ?? "-"}
-</Table.Td>
-  <Table.Td>
-  {deploymentMap[strategy.id]?.join(", ") || "-"}
-</Table.Td>
-
-      {/* ACTION COLUMN */}
-      <Table.Td>
-        <ActionIcon
-          variant="subtle"
-          onClick={() => handleRowToggle(strategy.id)}
-        >
-          {openedRow === strategy.id ? (
-            <IconChevronUp size={18} />
-          ) : (
-            <IconChevronDown size={18} />
-          )}
-        </ActionIcon>
-      </Table.Td>
-
-      <Table.Td>-</Table.Td>
-    </Table.Tr>
-
-    {/* EXPANDED ROW */}
-    {openedRow === strategy.id && (
-      <>
-      <Select
-  label="Select Date"
-  placeholder="Pick date"
-  value={selectedDate[strategy.id] || null}
-  data={(dates[strategy.id] || []).map((d) => ({
-    value: d,
-    label: d,
-  }))}
-
-
-  onChange={(value) => {
-    setSelectedDate((prev) => ({
-      ...prev,
-      [strategy.id]: value,
-    }));
-
-    fetchLegsByDate(strategy.id, value);
-  }}
-
-  opened={dropdownOpened}
-  onDropdownOpen={() => setDropdownOpened(true)}
-  onDropdownClose={() => setDropdownOpened(false)}
-
-  comboboxProps={{
-  withinPortal: true,
-  keepMounted: true
-}}
-  mb="md"
 />
-  <Table.Tr>
-    <Table.Td colSpan={7}>
-      <Box  style={{ background: "#f8f9fa", borderRadius: "8px" }}>
-        
-        <Table
-          horizontalSpacing="md"
-          verticalSpacing="sm"
-          style={{ width: "100%" }}
-        >
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>#</Table.Th>
-              <Table.Th>Symbol</Table.Th>
-              <Table.Th>QTY</Table.Th>
-              <Table.Th>LTP ₹</Table.Th>
-              <Table.Th>P&L ₹</Table.Th>
-              <Table.Th>Val ₹</Table.Th>
-            </Table.Tr>
-          </Table.Thead>
-
-          <Table.Tbody>
-  {legs[strategy.id]?.length > 0 ? (
-    legs[strategy.id].map((leg, i) => {
-      
-      const ltp =
-  leg.leg === "CE"
-    ? liveData[strategy.id]?.ce_ltp
-    : liveData[strategy.id]?.pe_ltp;
-
-    const pnl =
-  leg.leg === "CE"
-    ? liveData[strategy.id]?.ce_pnl
-    : liveData[strategy.id]?.pe_pnl;
-
-    const qty = 0;
-
-    const val = qty * (ltp || 0);
-
-      return (
-        <Table.Tr key={leg.leg}>
-          <Table.Td>{i + 1}</Table.Td>
-
-          <Table.Td>
-            <Text
-    fw={500}
-    style={{ cursor: "pointer", color: "#228be6" }}
-    onClick={() => {
-
-      const token = leg.token; // ✅ FIXED
-      const date = selectedDate[strategy.id];
-
-      setSelectedLegInfo({
-        strategyId: strategy.id,
-        token,
-        date,
-        leg: leg.leg
-      });
-
-      fetchTradesByToken(strategy.id, date, token);
-    }}
-  >
-    {leg.symbol}
-  </Text>
-            <Text size="xs" c="dimmed">
-              {leg.leg}
-            </Text>
-          </Table.Td>
-
-          <Table.Td>{qty}</Table.Td>
-
-<Table.Td>{ltp ?? "-"}</Table.Td>
-
-<Table.Td
-  style={{
-    color: pnl >= 0 ? "#16a34a" : "#dc2626",
-    fontWeight: 500
-  }}
->
-  {pnl ?? "-"}
-</Table.Td>
-
-<Table.Td>{val.toFixed(2)}</Table.Td>
-        </Table.Tr>
-      );
-    })
-  ) : (
-    <Table.Tr>
-      <Table.Td
-        colSpan={6}
-        style={{
-          textAlign: "center",
-          padding: "30px",
-          color: "#868e96"
-        }}
-      >
-        No Legs found
-      </Table.Td>
-    </Table.Tr>
-  )}
+  ))}
 </Table.Tbody>
-        </Table>
-      </Box>
-    </Table.Td>
-  </Table.Tr>
-  </>
-)}
-  </React.Fragment>
-))
-  ) : (
-    <Table.Tr>
-      <Table.Td
-        colSpan={7}
-        style={{ textAlign: "center", padding: "60px", color: "#adb5bd" }}
-      >
-        <Text size="sm">No strategies available</Text>
-      </Table.Td>
-    </Table.Tr>
-  )}
-</Table.Tbody>
+
+
+              
             </Table>
             </ScrollArea>
-
             {/* Pagination */}
             <Group justify="flex-end" mt="xl">
               <Pagination
@@ -1020,20 +850,6 @@ const LiveUI = ()=>{
 }
 
 
-
-useEffect(()=>{
-      const Fetchstartergies = async ()=>{
-        try {
-          const response = await apiRequest('GET','/api/stratergy')
-          await setstartergies(response.strategies)
-          await setoverallpnl(response.overall_pnl)
-          console.log(response)
-        }catch(err){
-          console.log(err)
-        }
-      }
-      Fetchstartergies();
-     },[])
 
      const indices = [
     { name: "NIFTY", label: "NIFTY50" },
@@ -1204,33 +1020,6 @@ useEffect(()=>{
 
 
 
-   {/*    <Grid gutter="lg" mb="xl">
-      {indices.map((item) => (
-        <Grid.Col span="auto" key={item.name}>
-          <Stack
-            style={{
-              border: "1.5px solid #d6d6d6ff",
-              borderLeft: "3px solid #2563eb",
-              padding: "0.5rem",
-              borderRadius: "0.3rem",
-              background: "#fff",
-              minWidth: "140px",
-            }}
-          >
-            <Text fw={600}>{item.label}</Text>
-
-            <Flex gap="0.4rem">
-              <Text size="0.9rem" fw={600}>
-                {Livestock[item.name] ?? "-"}
-              </Text>
-            </Flex>
-          </Stack>
-        </Grid.Col>
-      ))}
-    </Grid>
- */}
-
-
 
 <Grid gutter="lg" align={"end"}  mb="xl">
   <Grid.Col   span={{ base: 6, sm: 6, md: 4, lg: 2.3 }}>
@@ -1323,15 +1112,6 @@ useEffect(()=>{
   </Grid.Col>
 
 
-{/*   <Grid.Col span={{ base: 6, sm: 6, md: 4, lg: 3 }}>
-    <StatCard
-      icon={IconChartBar}
-      title="Total Trades"
-      value="73"
-      subtitle="48 wins, 25 losses"
-    />
-  </Grid.Col>
- */}
 
 </Grid>
 
@@ -1348,183 +1128,6 @@ useEffect(()=>{
           }
         </Box>
 
-
-    {/* 
-          <SimpleGrid
-        cols={5}
-        spacing="lg"
-        mb="xl"
-        breakpoints={[
-          { maxWidth: 'md', cols: 2, spacing: 'md' },
-          { maxWidth: 'sm', cols: 1, spacing: 'sm' },
-        ]}
-      >
-     <Stack
-      style={{
-        border: "1.5px solid #d6d6d6ff",
-        borderLeft: "3px solid red",
-        padding: "0.5rem",
-        borderRadius: "0.3rem",
-        background: "#fff",
-        minWidth: "140px",
-      }}
-    >
-      <Text fw={600}>NIFTY50</Text>
-
-      <Flex gap="0.4rem">
-        <Text size="0.8rem" c={"red"} fw={600}>
-          22333.2
-        </Text>
-        <Text size="0.8rem" fw={600}>
-          -12.34 
-        </Text>
-      </Flex>
-    </Stack>
-         <Stack
-      style={{
-        border: "1.5px solid #d6d6d6ff",
-        borderLeft: "3px solid red",
-        padding: "0.5rem",
-        borderRadius: "0.3rem",
-        background: "#fff",
-        minWidth: "140px",
-      }}
-    >
-      <Text fw={600}>BANKNIFTY</Text>
-
-      <Flex gap="0.4rem">
-        <Text size="0.8rem" c={"red"} fw={600}>
-         48754.6
-        </Text>
-        <Text size="0.8rem" fw={600}>
-          +$44
-        </Text>
-      </Flex>
-    </Stack>
-         <Stack
-      style={{
-        border: "1.5px solid #d6d6d6ff",
-        borderLeft: "3px solid green",
-        padding: "0.5rem",
-        borderRadius: "0.3rem",
-        background: "#fff",
-        minWidth: "140px",
-      }}
-    >
-      <Text fw={600}>FINNIFTY</Text>
-
-      <Flex gap="0.4rem">
-        <Text size="0.8rem" c={"green"} fw={600}>
-          48754.6
-        </Text>
-        <Text size="0.8rem" fw={600}>
-          +$44
-        </Text>
-      </Flex>
-    </Stack>
-         <Stack
-      style={{
-        border: "1.5px solid #d6d6d6ff",
-        borderLeft: "3px solid green",
-        padding: "0.5rem",
-        borderRadius: "0.3rem",
-        background: "#fff",
-        minWidth: "140px",
-      }}
-    >
-      <Text fw={600}>SENSEX</Text>
-
-      <Flex gap="0.4rem">
-        <Text size="0.8rem" c={"green"} fw={600}>
-          19640.5
-        </Text>
-        <Text size="0.8rem" fw={600}>
-          +$44
-        </Text>
-      </Flex>
-    </Stack>
-         <Stack
-      style={{
-        border: "1.5px solid #d6d6d6ff",
-        borderLeft: "3px solid red",
-        padding: "0.5rem",
-        borderRadius: "0.3rem",
-        background: "#fff",
-        minWidth: "140px",
-      }}
-    >
-      <Text >MIDCAP</Text>
-
-      <Flex gap="0.4rem">
-        <Text size="0.8rem" c={"red"} fw={600}>
-          73120.8
-        </Text>
-        <Text size="0.8rem" fw={600}>
-          +$44
-        </Text>
-      </Flex>
-    </Stack>
-    </SimpleGrid> */}
-
-      {/* Stats Grid */}
-{/*       <SimpleGrid
-        cols={4}
-        spacing="lg"
-        mb="xl"
-        breakpoints={[
-          { maxWidth: 'md', cols: 2, spacing: 'md' },
-          { maxWidth: 'sm', cols: 1, spacing: 'sm' },
-        ]}
-      >
-        <StatCard
-          icon={IconCurrencyDollar}
-          title="Portfolio Value"
-          value="₹125,847"
-          change="+28.5% total return"
-        />
-        <StatCard
-          icon={IconActivity}
-          title="Active Strategies"
-          value="3"
-          subtitle="8 total created"
-        />
-        <StatCard
-          icon={IconChartBar}
-          title="Total Trades"
-          value="73"
-          subtitle="48 wins, 25 losses"
-        />
-        <Paper
-          p="md"
-          radius="md"
-           style={{
-        border : '1.5px solid #d6d6d6ff',
-        borderRadius : '10px'
-      }}
-          sx={{
-            backgroundColor: '#fff',
-            border: '1px solid #e5e7eb',
-            height: '100%',
-          }}
-        >
-            <Flex align="center" gap="1rem" >
-          <Group position="apart" mb="xs">
-            <ThemeIcon size="lg" variant="light" color="gray">
-              <IconAlertTriangle size={20} stroke={1.5} />
-            </ThemeIcon>
-          </Group>
-          <Text size="sm" color="dimmed" weight={500}>
-            Risk Score
-          </Text>
-          </Flex>
-          <Text size="xl" weight={700} mt="xs" color="orange">
-            Medium
-          </Text>
-          <Text size="xs" color="dimmed" mt={4}>
-            Portfolio diversity: 85%
-          </Text>
-        </Paper>
-      </SimpleGrid> */}
 
       {/* Main Content Grid */}
       <Modal
@@ -1566,21 +1169,7 @@ useEffect(()=>{
             </Table.Td>
 
 
-  {/*           <Table.Td>
-  {
-    new Intl.DateTimeFormat("en-IN", {
-      timeZone: "Asia/Kolkata",
-      day: "2-digit",
-      month: "numeric",
-      year: "numeric",
-      hour: "numeric",
-      minute: "numeric",
-      second: "numeric",
-      hour12: true
-    }).format(new Date(trade.timestamp))
-  }
-</Table.Td> */}
-
+ 
               <Table.Td>{trade.event_type}</Table.Td>
 
               <Table.Td>{trade.symbol}</Table.Td>
