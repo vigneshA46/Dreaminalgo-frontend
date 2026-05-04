@@ -31,7 +31,7 @@ const menu = [
   { label: "Create Signal", icon: IconDeviceImacPlus },
   { label: "Trader Signal", icon: IconPresentationAnalytics },
   { label: "Strategies", icon: IconChartHistogram },
-  { label: "Subscriptions", icon: IconFileDescription },
+  //{ label: "Subscriptions", icon: IconFileDescription },
   { label: "Reports", icon: IconReportAnalytics },
   { label: "Create Strategy", icon: IconSquareRoundedPlus },
   { label: "Plans & Pricing", icon: IconCoinRupee},

@@ -52,7 +52,7 @@ const StrategyRow = React.memo(({  strategy,
 
         <Table.Td>
           <ActionIcon onClick={onToggle}>
-  {isOpen ? <IconChevronUp /> : <IconChevronDown />}
+  {isOpen ? <IconChevronUp style={{background:"#fff", color:"#000",border:"1px solid white" }}  /> : <IconChevronDown style={{background:"#fff", color:"#000",border:"1px solid white" }}/>}
 </ActionIcon>
         </Table.Td>
 

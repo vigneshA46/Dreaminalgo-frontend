@@ -988,9 +988,9 @@ const LiveUI = ()=>{
     Demat Account
   </Menu.Item>
 
-  <Menu.Item leftSection={<IconReceipt size={18} />}>
+{/*   <Menu.Item leftSection={<IconReceipt size={18} />}>
     Invoices
-  </Menu.Item>
+  </Menu.Item> */}
 
     <Menu.Item onClick={()=>navigation('/privacy')} leftSection={<IconHelpCircle size={18} />}>
     Privacy Policy
