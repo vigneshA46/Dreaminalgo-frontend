@@ -62,6 +62,7 @@ import { useNavigate } from 'react-router-dom';
 import { apiRequest } from '../utils/api';
 import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
 import { DateInput } from '@mantine/dates';
+import LiveStrategyRow from './LiveStrategyRow';
 
 // Static data for portfolio performance
 const portfolioData = [
@@ -230,7 +231,7 @@ export default function Dashboard() {
 useEffect(()=>{
       const Fetchstartergies = async ()=>{
         try {
-          const response = await apiRequest('GET','/api/stratergy')
+          const response = await apiRequest('GET','/api/stratergy') 
           await setstartergies(response.strategies)
           await setoverallpnl(response.overall_pnl)
           console.log(response)
@@ -294,9 +295,12 @@ const [Livestock, setLivestock] = useState({
 
 todaydeployment.forEach((d) => {
   if (!deploymentMap[d.strategy_id]) {
-    deploymentMap[d.strategy_id] = [];
+    deploymentMap[d.strategy_id] = d; // fallback first one
   }
-  deploymentMap[d.strategy_id].push(d.type);
+
+  if (d.status === "ACTIVE") {
+    deploymentMap[d.strategy_id] = d; // overwrite with ACTIVE
+  }
 });
 
   const deployedStrategyIds = new Set(
@@ -796,30 +800,34 @@ const LiveUI = ()=>{
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
-  {deployedStrategies?.map((strategy, index) => (
-   <StrategyRow
-  key={strategy.id}
-  strategy={strategy}
-  index={index}
-  cumulativePnl={cumulativePnl}
-  fetchstatistics={fetchstatistics}
-  fetchDates={fetchDates}
-  renderExpanded={renderExpanded}
-  isOpen={openedRow === strategy.id}
-  onToggle={() => {
-    if (openedRow === strategy.id) {
-      setOpenedRow(null);
-    } else {
-      setOpenedRow(strategy.id);
+{deployedStrategies?.map((strategy, index) => {
+  const deployment = deploymentMap[strategy.id]; // ✅ single object
 
-      // fetch ONLY if not already fetched
-      if (!dates[strategy.id]) {
-        fetchDates(strategy.id);
-      }
-    }
-  }}
-/>
-  ))}
+  return (
+    <LiveStrategyRow
+      key={strategy.id}
+      strategy={strategy}
+      deployment={deployment}   // ✅ only one deployment
+      index={index}
+      cumulativePnl={cumulativePnl}
+      fetchstatistics={fetchstatistics}
+      fetchDates={fetchDates}
+      renderExpanded={renderExpanded}
+      isOpen={openedRow === strategy.id}
+      onToggle={() => {
+        if (openedRow === strategy.id) {
+          setOpenedRow(null);
+        } else {
+          setOpenedRow(strategy.id);
+
+          if (!dates[strategy.id]) {
+            fetchDates(strategy.id);
+          }
+        }
+      }}
+    />
+  );
+})}
 </Table.Tbody>
 
 
