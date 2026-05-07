@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { apiRequest } from '../utils/api.js';
+import { notifications } from '@mantine/notifications';
 
 const UserContext = createContext(null);
 
@@ -44,8 +45,14 @@ export const UserProvider = ({ children }) => {
   const logout = async () => {
     try {
       await apiRequest('POST', '/api/auth/logout');
+      notifications.show({
+          title: 'Logged Out',
+          message: 'User logged out successfully',
+          color: 'green',
+        });
     } catch (err) {
       console.error('Logout failed', err.message);
+
     } finally {
       setUser(null);
       setIsAuthenticated(false);

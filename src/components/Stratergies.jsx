@@ -174,6 +174,31 @@ const Stratergies = () => {
     fetmystartergies();
   },[])
 
+  const isCurrentTimeBetween = (startTime, endTime) => {
+  if (!startTime || !endTime) return false;
+
+  const now = new Date();
+
+  const currentMinutes =
+    now.getHours() * 60 + now.getMinutes();
+
+  const [startHour, startMinute] = startTime
+    .split(":")
+    .map(Number);
+
+  const [endHour, endMinute] = endTime
+    .split(":")
+    .map(Number);
+
+  const startMinutes = startHour * 60 + startMinute;
+  const endMinutes = endHour * 60 + endMinute;
+
+  return (
+    currentMinutes >= startMinutes &&
+    currentMinutes <= endMinutes
+  );
+};
+
   
   return (
      <Box style={{ backgroundColor: '#ffffffff', minHeight: '100vh' }}>
@@ -281,27 +306,37 @@ const Stratergies = () => {
                       </Box>
                     
                     </Group>
-
-                    <Button
+<Button
   size="md"
   radius="md"
   variant="outline"
   disabled={
     deployedStrategyIds.has(strategy.id) ||
-    isTimeExceeded(strategy.starting_time)
+    isCurrentTimeBetween(
+      strategy.starting_time,
+      strategy.ending_time
+    )
   }
   onClick={() => openModal(strategy.name, strategy.id)}
   style={{
     borderColor:
       deployedStrategyIds.has(strategy.id) ||
-      isTimeExceeded(strategy.starting_time)
+      isCurrentTimeBetween(
+        strategy.starting_time,
+        strategy.ending_time
+      )
         ? '#adb5bd'
         : '#dc3545',
+
     color:
       deployedStrategyIds.has(strategy.id) ||
-      isTimeExceeded(strategy.starting_time)
+      isCurrentTimeBetween(
+        strategy.starting_time,
+        strategy.ending_time
+      )
         ? '#adb5bd'
         : '#dc3545',
+
     fontWeight: 600,
     paddingLeft: '32px',
     paddingRight: '32px',
@@ -309,8 +344,11 @@ const Stratergies = () => {
 >
   {deployedStrategyIds.has(strategy.id)
     ? "DEPLOYED"
-    : isTimeExceeded(strategy.starting_time)
-    ? "TIME OVER"
+    : isCurrentTimeBetween(
+        strategy.starting_time,
+        strategy.ending_time
+      )
+    ? "RUNNING TIME"
     : "DEPLOY"}
 </Button>
                   </Group>

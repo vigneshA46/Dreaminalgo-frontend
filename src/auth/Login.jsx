@@ -1,4 +1,4 @@
-import React,{ useEffect, useState } from "react";
+import React,{ useEffect, useState, useRef } from "react";
 import { MantineProvider, Box, Container, Text, TextInput, PasswordInput, Button, Group, Avatar, Paper, Flex } from '@mantine/core';
 import { IconMail, IconLock, IconBrandGoogle, IconArrowRight, IconWand, IconPencil, IconTrendingUp } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
@@ -16,11 +16,12 @@ function Login(){
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const passwordRef = useRef(null);
 
  const loginhandler = async () => {
   if (!email.trim() || !password.trim()) {
     notifications.show({
-      title: 'Missing fields',
+      title: 'Missing  fields',
       message: 'Please enter both email and password',
       color: 'red',
     });
@@ -124,43 +125,56 @@ function Login(){
               placeholder="hello@turpio.studio "
               icon={<IconMail size={18} color="#17a2b8" />}
               size="md"
-              styles={{
-                root: { marginBottom: '16px' },
-                input: {
-                  backgroundColor: 'white',
-                  border: '1px solid #e9ecef',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  padding: '12px 16px',
-                  height: '48px'
-                }
-              }}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+              styles={{ 
+              root: { marginBottom: '16px' },
+              input: {
+                backgroundColor: 'white',
+                border: '1px solid #e9ecef',
+                borderRadius: '8px',
+                fontSize: '14px',
+                padding: '12px 16px',
+              height: '48px'
+              } 
+                }}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+                
+            onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              passwordRef.current?.focus();
+            }
+          }}
+          />
 
             {/* Password Input */}
             <PasswordInput
-              placeholder="Password"
-              icon={<IconLock size={18} color="#adb5bd" />}
-              size="md"
-              styles={{
-                root: { marginBottom: '20px' },
-                input: {
-                  backgroundColor: 'white',
-                  border: '1px solid #e9ecef',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  padding: '12px 16px',
-                  height: '48px'
-                },
-                innerInput: {
-                  fontSize: '14px'
-                }
-              }}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+  ref={passwordRef}
+  placeholder="Password"
+  icon={<IconLock size={18} color="#adb5bd" />}
+  size="md"
+  styles={{
+    root: { marginBottom: '20px' },
+    input: {
+      backgroundColor: 'white',
+      border: '1px solid #e9ecef',
+      borderRadius: '8px',
+      fontSize: '14px',
+      padding: '12px 16px',
+      height: '48px'
+    },
+    innerInput: {
+      fontSize: '14px'
+    }
+  }}
+  value={password}
+  onChange={(e) => setPassword(e.target.value)}
+
+  onKeyDown={(e) => {
+    if (e.key === "Enter") {
+      loginhandler();
+    }
+  }}
+/>
 
             {/* Sign in Button */}
             <Button

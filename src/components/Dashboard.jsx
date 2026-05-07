@@ -63,6 +63,7 @@ import { apiRequest } from '../utils/api';
 import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
 import { DateInput } from '@mantine/dates';
 import LiveStrategyRow from './LiveStrategyRow';
+import { notifications } from '@mantine/notifications';
 
 // Static data for portfolio performance
 const portfolioData = [
@@ -859,7 +860,7 @@ const LiveUI = ()=>{
 
 
 
-     const indices = [
+  const indices = [
     { name: "NIFTY", label: "NIFTY50" },
     { name: "BANKNIFTY", label: "BANKNIFTY" },
     { name: "FINNIFTY", label: "FINNIFTY" },
@@ -1015,7 +1016,12 @@ const LiveUI = ()=>{
   <Divider />
 
   {/* Logout should stay last */}
-  <Menu.Item onClick={()=>{logout()}} color="red" leftSection={<IconLogout size={18} />}>
+  <Menu.Item onClick={()=>{logout();      
+   notifications.show({
+            title: 'Logged Out',
+            message: 'User logged out successfully',
+            color: 'green',
+          });}} color="red" leftSection={<IconLogout size={18} />}>
     Log Out
   </Menu.Item>
 </Menu.Dropdown>
@@ -1030,7 +1036,10 @@ const LiveUI = ()=>{
 
 
 <Grid gutter="lg" align={"end"}  mb="xl">
-  <Grid.Col   span={{ base: 6, sm: 6, md: 4, lg: 2.3 }}>
+
+  {active === "pt" && (
+        <>
+          <Grid.Col   span={{ base: 6, sm: 6, md: 4, lg: 2.3 }}>
     <StatCard
       icon={IconCurrencyDollar}
       title="Portfolio Value"
@@ -1077,6 +1086,10 @@ const LiveUI = ()=>{
     </Group>
   </Grid.Col>
 
+        </>
+      )}
+
+
   {/* RIGHT SIDE (buttons) */}
   <Grid.Col span={{ base: 6, md: 5, lg: 3 }}>
     <Group justify="flex-end" gap="sm" wrap="wrap">
@@ -1090,7 +1103,7 @@ const LiveUI = ()=>{
           border: "1px solid #e9ecef",
           borderRadius: "8px",
           fontWeight: 500,
-          paddingInline: "32px",
+          paddingInline: "20px",
         }}
       >
         PT
@@ -1103,7 +1116,7 @@ const LiveUI = ()=>{
           color: active === "live" ? "#fff" : "#000",
           borderRadius: "8px",
           fontWeight: 500,
-          paddingInline: "32px",
+          paddingInline: "20px",
           border: "1px solid #e9ecef",
         }}
       >

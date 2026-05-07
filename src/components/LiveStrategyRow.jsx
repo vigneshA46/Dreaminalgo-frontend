@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useLiveStore } from "../components/liveStore.js";
 import {
   Table,
@@ -15,6 +15,8 @@ import {
   IconTrash
 } from "@tabler/icons-react";
 import { apiRequest } from "../utils/api.js";
+import StrategyStatsModal from "./StrategyStatsModal.jsx";
+import LiveStrategyStatistics from "./LiveStrategyStatistics.jsx";
 
 const LiveStrategyRow = React.memo(({
   strategy,
@@ -22,11 +24,26 @@ const LiveStrategyRow = React.memo(({
   isOpen,
   onToggle,
   renderExpanded,
-  fetchstatistics,
   cumulativePnl,
   deployment
 }) => {
   const live = useLiveStore((s) => s.liveData[strategy.id]);
+
+  const [statisticsopened ,setstatisticsopened ] = useState(false)
+
+  const [statistics , setstatistics] = useState({})
+
+      const fetchstatistics = async (strategy_id) =>{
+    try{
+      const res = await apiRequest("GET", `/api/realtradegroups/getstatistics?strategy_id=${strategy_id}`)
+      console.log(res)
+      setstatistics(res)
+      setstatisticsopened(true)
+      
+    }catch(err){
+      console.log(err)
+    }
+  }
 
   const displayPnl =
     live?.pnl ??
@@ -38,8 +55,15 @@ const LiveStrategyRow = React.memo(({
     // call exitDeployment API here later
   };
 
-  const handleDelete = () => {
-    console.log("Delete strategy", strategy.id);
+  const handleDelete = async() => {
+    try{
+      const res = await apiRequest("POST",`/api/deployments/stopdeployment?strategy_id=${strategy.id}&broker_account_id=${deployment.broker_account_id}`)
+      console.log(res)
+      console.log("strategy  id " , strategy.id , "broker account id" , deployment.broker_account_id)
+      console.log("Delete strategy", strategy.id);
+    }catch(err){
+      console.log(err)
+    }
     // call delete API here later
   };
 
@@ -128,6 +152,13 @@ const LiveStrategyRow = React.memo(({
       </Table.Tr>
 
       {isOpen && renderExpanded(strategy, live)}
+
+      
+      <LiveStrategyStatistics
+              opened={statisticsopened}
+              onClose={() => setstatisticsopened(false)}
+              statistics={statistics}
+            />
     </>
   );
 });
