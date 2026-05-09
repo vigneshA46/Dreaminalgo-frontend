@@ -8,6 +8,7 @@ import {
 } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { apiRequest } from "../../utils/api";
+import { notifications } from "@mantine/notifications";
 
 
 
@@ -21,6 +22,7 @@ const DeployStrategyModal = ({
   const [deploymentType, setDeploymentType] = useState("LIVE AUTO");
   const [broker, setBroker] = useState("");
   const [brokers, setBrokers] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(()=>{
     const fetchbasebroker = async ()=>{
@@ -34,37 +36,75 @@ const DeployStrategyModal = ({
 
     fetchbasebroker();
   },[])
-const deployStrategy = async (strategy_id, type, broker_id, multipliervalue) => {
-  if (type === 'live' && broker_id === '') return;
+
+  const deployStrategy = async (
+  strategy_id,
+  type,
+  broker_id,
+  multipliervalue
+) => {
+
+  if (loading) return;
+
+  if (type !== "paper" && broker_id === "") {
+    notifications.show({
+      title: "Broker Required",
+      message: "Please select a broker account",
+      color: "red",
+    });
+    return;
+  }
 
   try {
-    const res = await apiRequest('POST', '/api/deployments', {
-      strategy_id: strategy_id,
-      type: type,
+    setLoading(true);
+
+    const res = await apiRequest("POST", "/api/deployments", {
+      strategy_id,
+      type,
       broker_account_id: broker_id,
-      multiplier: multipliervalue
+      multiplier: multipliervalue,
     });
-      
-    // 🔥 HANDLE RESPONSE
+
+    // backend validation fail
     if (!res.success) {
-      Alert(res.message || "Something went wrong");
-      return; // ❗ stop here, don't close modal
+      notifications.show({
+        title: "Deployment Failed",
+        message: res.message || "Something went wrong",
+        color: "red",
+      });
+
+      return;
     }
 
-    // ✅ success case
-    alert("Strategy deployed successfully");
+    // success
+    notifications.show({
+      title: "Deployment Success",
+      message: `${strategyName} deployed successfully`,
+      color: "green",
+    });
+
     onClose();
 
   } catch (err) {
     console.log(err);
-    alert("Server error, try again");
+
+    notifications.show({
+      title: "Server Error",
+      message: err.message || "Failed to deploy strategy",
+      color: "red",
+    });
+
+  } finally {
+    setLoading(false);
   }
 };
 
   return (
     <Modal
       opened={opened}
-      onClose={onClose}
+       onClose={() => {
+    if (!loading) onClose();
+  }}
       centered
       title={
         <Text fw={600} size="lg">
@@ -109,14 +149,20 @@ const deployStrategy = async (strategy_id, type, broker_id, multipliervalue) => 
         {/* BUTTON */}
     <Button
   mt="md"
-  bg={"#000"}
+  bg="#000"
   fullWidth
+  loading={loading}
+  disabled={loading}
+  loaderProps={{ size: "sm" }}
   onClick={() => {
+
     let type = "paper";
     let broker_id = "";
-    
+
     if (deploymentType === "LIVE AUTO") {
-      const selectedBroker = brokers.find((b) => b.id === broker);
+      const selectedBroker = brokers.find(
+        (b) => b.id === broker
+      );
 
       type = selectedBroker?.broker_name || "";
       broker_id = broker;
@@ -124,10 +170,15 @@ const deployStrategy = async (strategy_id, type, broker_id, multipliervalue) => 
 
     const multiplierValue = parseInt(multiplier);
 
-    deployStrategy(strategy_id, type, broker_id, multiplierValue);
+    deployStrategy(
+      strategy_id,
+      type,
+      broker_id,
+      multiplierValue
+    );
   }}
 >
-  DEPLOY STRATEGY
+  {loading ? "DEPLOYING..." : "DEPLOY STRATEGY"}
 </Button>
       </Stack>
     </Modal>

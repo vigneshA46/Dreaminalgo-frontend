@@ -17,11 +17,10 @@ function Login(){
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const passwordRef = useRef(null);
-
- const loginhandler = async () => {
+const loginhandler = async () => {
   if (!email.trim() || !password.trim()) {
     notifications.show({
-      title: 'Missing  fields',
+      title: 'Missing fields',
       message: 'Please enter both email and password',
       color: 'red',
     });
@@ -29,31 +28,37 @@ function Login(){
   }
 
   try {
-  // 1️⃣ Login
-  const response = await apiRequest(
-    'POST',
-    '/api/auth/login',
-    {email, password}
-  );
-    console.log(response)
+    setLoading(true);
 
-  notifications.show({
-    title: 'Logged in',
-    message: 'User logged in successfully',
-    color: 'green',
-  });
+    const response = await apiRequest(
+      'POST',
+      '/api/auth/login',
+      { email, password }
+    );
 
-  navigation('/');
-}catch (error) {
+    console.log(response);
+
+    notifications.show({
+      title: 'Logged in',
+      message: 'User logged in successfully',
+      color: 'green',
+    });
+
+    navigation('/');
+
+  } catch (error) {
     notifications.show({
       title: 'Login failed',
       message: error.message,
       color: 'red',
     });
+
     console.error('Login failed:', error);
+
+  } finally {
+    setLoading(false);
   }
 };
-
 
   return(
     <>
@@ -177,27 +182,39 @@ function Login(){
 />
 
             {/* Sign in Button */}
+
             <Button
-              fullWidth
-              size="md"
-              onClick={loginhandler}
-              style={{
-                backgroundColor: '#17a2b8',
-                color: 'white',
-                fontSize: '15px',
-                fontWeight: 600,
-                height: '48px',
-                borderRadius: '8px',
-                marginBottom: '20px',
-                border: 'none',
-                cursor: 'pointer',
-                transition: 'background-color 0.2s'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#138496'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#17a2b8'}
-            >
-              Login
-            </Button>
+  fullWidth
+  size="md"
+  onClick={loginhandler}
+  loading={loading}
+  disabled={loading}
+  loaderProps={{ size: 'sm' }}
+  style={{
+    backgroundColor: '#17a2b8',
+    color: 'white',
+    fontSize: '15px',
+    fontWeight: 600,
+    height: '48px',
+    borderRadius: '8px',
+    marginBottom: '20px',
+    border: 'none',
+    cursor: 'pointer',
+    transition: 'background-color 0.2s'
+  }}
+  onMouseEnter={(e) => {
+    if (!loading) {
+      e.currentTarget.style.backgroundColor = '#138496';
+    }
+  }}
+  onMouseLeave={(e) => {
+    if (!loading) {
+      e.currentTarget.style.backgroundColor = '#17a2b8';
+    }
+  }}
+>
+  Login
+</Button>
 
             {/* Divider */}
             <Text
