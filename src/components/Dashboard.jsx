@@ -190,10 +190,39 @@ function RiskCard({ title, description, level, color }) {
 export default function Dashboard() {
   //const [totalPnl, setTotalPnl] = useState(null);
 
+  const [notification , setnotification] = useState([{
+            "id": "de089bdc-1dff-42a0-8894-cc289590a04e",
+            "title": "test notification",
+            "message": "this is a test notification",
+            "type": "info",
+            "created_by": null,
+            "created_at": "2026-05-12T13:06:12.132Z",
+            "starts_at": "2026-05-12T13:06:12.132Z",
+            "expires_at": "2026-05-19T13:06:12.132Z",
+            "is_active": true,
+            "target_type": "all",
+            "metadata": {}
+        }])
+
   const formatPnl = (value) => {
   if (value === null || value === undefined || value === "-") return "-";
   return Number(value).toFixed(2);
 };
+
+
+const getactivenotification = async()=>{
+  try{
+    const res = await apiRequest('GET','/api/notifications')
+    console.log(res)
+    setnotification(res.data)
+  }catch(err){
+    console.log(err)
+  }
+}
+
+useEffect(()=>{
+  getactivenotification()
+},[])
   
   useSocket();
   const [active, setActive] = useState("live"); 
@@ -933,17 +962,32 @@ const LiveUI = ()=>{
       <Text fw={600} p="sm">Notifications</Text>
       <Divider />
 
-      <Box p="sm">
-        <Text size="sm" fw={500}>Order Completed</Text>
-        <Text size="xs" c="dimmed">02 Dec 2025 • 11:45 AM</Text>
-      </Box>
-      <Divider />
+{notification?.map((notification) => (
+  <React.Fragment key={notification.id}>
+    <Box p="sm">
+      <Text size="sm" fw={500}>
+        {notification.title}
+      </Text>
 
-      <Box p="sm">
-        <Text size="sm" fw={500}>Subscription Expiring Soon</Text>
-        <Text size="xs" c="dimmed">01 Dec 2025 • 3:12 PM</Text>
-      </Box>
+      <Text size="xs" c="dimmed">
+        {new Date(notification.created_at).toLocaleString("en-IN", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true,
+        })}
+      </Text>
 
+      <Text size="sm" mt={4}>
+        {notification.message}
+      </Text>
+    </Box>
+
+    <Divider />
+  </React.Fragment>
+))}
       <Divider />
       <Menu.Item>View all</Menu.Item>
     </Menu.Dropdown>
