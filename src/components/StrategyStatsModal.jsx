@@ -305,6 +305,39 @@ const downloadStrategyReport = (statistics) => {
       radius="lg"
     >
       <Stack>
+        
+    <Card radius="lg" p="md">
+  <Text fw={600} mb="md">
+    Equity Curve
+  </Text>
+
+  <Box h={300}>
+    <ResponsiveContainer width="100%" height="100%">
+      <LineChart data={equityCurveData}>
+        <CartesianGrid strokeDasharray="3 3" />
+
+        <XAxis dataKey="date" />
+
+        <YAxis
+          domain={["auto", "auto"]}
+          tickFormatter={(v) => `₹${Math.round(v / 1000)}k`}
+        />
+
+        <Tooltip
+          formatter={(value) => [`₹ ${value}`, "Equity"]}
+        />
+
+        <Line
+          type="monotone"
+          dataKey="equity"
+          stroke="#000"
+          strokeWidth={2}
+          dot={false}
+        />
+      </LineChart>
+    </ResponsiveContainer>
+  </Box>
+</Card>
         <Card radius="lg" p="md">
   <Text fw={600} mb="sm">Strategy Overview</Text>
 <Table striped highlightOnHover withTableBorder>
@@ -549,38 +582,6 @@ const downloadStrategyReport = (statistics) => {
       </Stack>
     </Card>
 
-    <Card radius="lg" p="md">
-  <Text fw={600} mb="md">
-    Equity Curve
-  </Text>
-
-  <Box h={300}>
-    <ResponsiveContainer width="100%" height="100%">
-      <LineChart data={equityCurveData}>
-        <CartesianGrid strokeDasharray="3 3" />
-
-        <XAxis dataKey="date" />
-
-        <YAxis
-          domain={["auto", "auto"]}
-          tickFormatter={(v) => `₹${Math.round(v / 1000)}k`}
-        />
-
-        <Tooltip
-          formatter={(value) => [`₹ ${value}`, "Equity"]}
-        />
-
-        <Line
-          type="monotone"
-          dataKey="equity"
-          stroke="#000"
-          strokeWidth={2}
-          dot={false}
-        />
-      </LineChart>
-    </ResponsiveContainer>
-  </Box>
-</Card>
       </Stack>
 
     </Modal>
