@@ -6,10 +6,20 @@ import {
   Stack,
   Grid,
   Badge,
-  Title
+  Title,
+  Box
 } from "@mantine/core";
 import autoTable from "jspdf-autotable";
-
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+} from "recharts";
+import dayjs from "dayjs";
 
 import { Table } from "@mantine/core";
 import { Select } from "@mantine/core";
@@ -144,6 +154,21 @@ const allWeeks = Object.keys(weekMap).sort(
 );
 
 const capital = parseFloat(strategy.capital_required || 0);
+
+const equityCurveData = [];
+
+let runningEquity = capital;
+
+[...daily]
+  .sort((a, b) => new Date(a.date) - new Date(b.date))
+  .forEach((d) => {
+    runningEquity += parseFloat(d.day_pnl || 0);
+
+    equityCurveData.push({
+      date: dayjs(d.date).format("DD MMM"),
+      equity: Number(runningEquity.toFixed(2)),
+    });
+  });
 
 // 🔹 Day format → 2026 - May - 02
 const formatDayDate = (date) => {
@@ -523,6 +548,39 @@ const downloadStrategyReport = (statistics) => {
         })}
       </Stack>
     </Card>
+
+    <Card radius="lg" p="md">
+  <Text fw={600} mb="md">
+    Equity Curve
+  </Text>
+
+  <Box h={300}>
+    <ResponsiveContainer width="100%" height="100%">
+      <LineChart data={equityCurveData}>
+        <CartesianGrid strokeDasharray="3 3" />
+
+        <XAxis dataKey="date" />
+
+        <YAxis
+          domain={["auto", "auto"]}
+          tickFormatter={(v) => `₹${Math.round(v / 1000)}k`}
+        />
+
+        <Tooltip
+          formatter={(value) => [`₹ ${value}`, "Equity"]}
+        />
+
+        <Line
+          type="monotone"
+          dataKey="equity"
+          stroke="#000"
+          strokeWidth={2}
+          dot={false}
+        />
+      </LineChart>
+    </ResponsiveContainer>
+  </Box>
+</Card>
       </Stack>
 
     </Modal>
