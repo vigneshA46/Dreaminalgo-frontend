@@ -258,21 +258,26 @@ useEffect(()=>{
 });
 
 
-useEffect(()=>{
-      const Fetchstartergies = async ()=>{
-        try {
-          const response = await apiRequest('GET','/api/stratergy') 
-          await setstartergies(response.strategies)
-          await setoverallpnl(response.overall_pnl)
-          console.log(response)
-        }catch(err){
-          console.log(err)
-        }
-      }
-      Fetchstartergies();
-    },[])
+useEffect(() => {
+  const Fetchstartergies = async () => {
+    try {
+      const response = await apiRequest('GET', '/api/stratergy');
 
+      const sortedStrategies = response.strategies.sort(
+        (a, b) => Number(a.state_id) - Number(b.state_id)
+      );
 
+      setstartergies(sortedStrategies);
+      setoverallpnl(response.overall_pnl);
+
+      console.log(response);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  Fetchstartergies();
+}, []);
     const fetchstatistics = async (strategy_id) =>{
   try{
     const res = await apiRequest("GET", `/api/statistics?strategy_id=${strategy_id}`)
