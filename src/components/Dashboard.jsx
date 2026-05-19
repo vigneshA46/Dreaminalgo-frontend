@@ -1084,38 +1084,14 @@ const LiveUI = ()=>{
 
 
 
-<Grid gutter="lg" align={"end"}  mb="xl">
+<Flex gap={"2rem"} align={"end"} justify={"flex-start"} mb="xl">
 
   {active === "pt" && (
         <>
-          <Grid.Col   span={{ base: 6, sm: 6, md: 4, lg: 2.3 }}>
-    <StatCard
-      icon={IconCurrencyDollar}
-      title="Portfolio Value"
-      value="₹125,847"
-      change="+28.5% total return"
-    />
-  </Grid.Col>
-
-  <Grid.Col span={{ base: 6, sm: 6, md: 4, lg: 2.3 }}>
-    <StatCard
-      icon={IconActivity}
-      title="Active Strategies"
-      value="3"
-      subtitle="8 total created"
-    />
-  </Grid.Col>
 
     {/* LEFT SIDE (filters + pnl) */}
-  <Grid.Col span={{ base: 6, md: 7, lg: 4 }}>
-    <Group gap="2rem" wrap="wrap">
-      
-      <DateInput
-        label="Expiry Date"
-        placeholder="Select expiry date"
-      />
-
-      <Box>
+    <Group gap="2rem" justify={"flex-start"}>
+      <Box style={{border:"2px solid #cccccc", padding:"8px 15px", borderRadius:"10px"}}>
         <Text size="xs" c="dimmed" fw={500}>
           PNL
         </Text>
@@ -1133,14 +1109,12 @@ const LiveUI = ()=>{
       </Box>
 
     </Group>
-  </Grid.Col>
 
         </>
       )}
 
 
   {/* RIGHT SIDE (buttons) */}
-  <Grid.Col span={{ base: 6, md: 5, lg: 3 }}>
     <Group justify="flex-end" gap="sm" wrap="wrap">
 
       <Button
@@ -1179,11 +1153,10 @@ const LiveUI = ()=>{
       )}
 
     </Group>
-  </Grid.Col>
 
 
 
-</Grid>
+</Flex>
 
         <Box style={{ maxWidth: '100%' }}>
           {/* Table Container */}
