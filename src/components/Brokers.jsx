@@ -382,7 +382,7 @@ const deleteBroker = async (id) => {
   const renderForm = () => {
 
     switch (selectedBroker) {
-
+/* 
       case "Angelone":
         return (
           <Stack>
@@ -407,7 +407,8 @@ const deleteBroker = async (id) => {
 />
           </Stack>
         );
-      case "zebumynt":
+       */
+        case "zebumynt":
         return (
           <Stack>
             <TextInput
@@ -431,7 +432,7 @@ const deleteBroker = async (id) => {
             />
           </Stack>
         );
-
+/* 
       case "Dhan":
         return (
           <Stack>
@@ -525,7 +526,7 @@ const deleteBroker = async (id) => {
       />
     </Stack>
   );
-      
+       */
         default:
         return null;
     }
@@ -565,13 +566,13 @@ const deleteBroker = async (id) => {
             label="Select Broker"
             placeholder="Choose broker"
             data={[
-              "Angelone",
-              "Dhan",
-              "aliceblue",
-              "Zerodha",
+              //"Angelone",
+              //"Dhan",
+              //"aliceblue",
+              //"Zerodha",
               "zebumynt",
-              "upstox",
-              "flattrade"
+              //"upstox",
+              //"flattrade"
             ]}
             value={selectedBroker}
             onChange={setSelectedBroker}
