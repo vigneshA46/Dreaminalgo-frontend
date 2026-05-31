@@ -316,6 +316,7 @@ const SignupHandler = async () => {
             >
               Already have an account?{' '}
               <Text
+              onClick={() => navigation('/auth/login')}
                 component="span"
                 style={{
                   color: '#0066ff',
