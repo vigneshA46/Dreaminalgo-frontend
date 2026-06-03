@@ -64,6 +64,9 @@ import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
 import { DateInput } from '@mantine/dates';
 import LiveStrategyRow from './LiveStrategyRow';
 import { notifications } from '@mantine/notifications';
+import { TotalPnlCard } from './Totalpnlcard';
+import { PaperUI } from './PaperUI';
+import { LiveUI } from './LiveUI';
 
 // Static data for portfolio performance
 const portfolioData = [
@@ -249,13 +252,13 @@ useEffect(()=>{
    const [statisticsopened ,setstatisticsopened ] = useState(false)
    const [overallpnl , setoverallpnl] = useState(0)
 
-   const totalPnl = useLiveStore((state) => {
+  /*  const totalPnl = useLiveStore((state) => {
   let total = 0;
   Object.values(state.liveData).forEach((d) => {
     if (d?.pnl) total += Number(d.pnl);
   });
   return total;
-});
+}); */
 
 
 useEffect(() => {
@@ -307,6 +310,8 @@ useEffect(() => {
 }, [liveData]);
 
  */
+
+
 const [Livestock, setLivestock] = useState({
   NIFTY: null,
   BANKNIFTY: null,
@@ -405,6 +410,7 @@ useEffect(()=>{
   }
 };
  */
+
 const fetchDates = async (strategyId) => {
   try {
     const res = await apiRequest(
@@ -446,6 +452,7 @@ const fetchDates = async (strategyId) => {
     console.error(err);
   }
 };
+
 /* 
 useEffect(() => {
   startergies.forEach((strategy) => {
@@ -677,220 +684,6 @@ const renderExpanded = useCallback((strategy, live) => {
 
 
 
-const PaperUI = ()=>{
-  return(
-      <Box
-        style={{
-          backgroundColor: "white",
-          borderRadius: "12px",
-          padding: "20px",
-          boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-          width: "100%",
-  }}  
->
-  {/* Scrollable container */}
-  <ScrollArea  w={isMobile? '100vw':'100%'}
-  type="auto"
-  scrollbarSize={6}
-  offsetScrollbars>
-            <Table
-              w={isMobile? '100vw': '100%'}
-              horizontalSpacing="md"
-              verticalSpacing="md"
-          /*     stickyHeader 
-              stickyHeaderOffset={0} */
-              style={{
-                minWidth: '900px',
-              }}
-            >
-              <Table.Thead>
-                <Table.Tr style={{ backgroundColor: '#ffffffff' }}>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' ,whiteSpace: "nowrap" }}>
-                    S.No
-                  </Table.Th>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px',whiteSpace: "nowrap"  }}>
-                    Strategy Name
-                  </Table.Th>
-{/*                   <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px',whiteSpace: "nowrap"  }}>
-                    O | T | M O
-                  </Table.Th> */}
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' ,whiteSpace: "nowrap" }}>
-                    Status
-                  </Table.Th>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px',whiteSpace: "nowrap"  }}>
-                    PNL
-                  </Table.Th>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' ,whiteSpace: "nowrap" }}>
-                    Details
-                  </Table.Th>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px',whiteSpace: "nowrap"  }}>
-                    Actions
-                  </Table.Th>
-                </Table.Tr>
-              </Table.Thead>
-              <Table.Tbody>
-  {startergies?.map((strategy, index) => (
-   <StrategyRow
-  key={strategy.id}
-  strategy={strategy}
-  index={index}
-  cumulativePnl={cumulativePnl}
-  fetchstatistics={fetchstatistics}
-  fetchDates={fetchDates}
-  renderExpanded={renderExpanded}
-  isOpen={openedRow === strategy.id}
-  onToggle={() => {
-    if (openedRow === strategy.id) {
-      setOpenedRow(null);
-    } else {
-      setOpenedRow(strategy.id);
-
-      // fetch ONLY if not already fetched
-      if (!dates[strategy.id]) {
-        fetchDates(strategy.id);
-      }
-    }
-  }}
-/>
-  ))}
-</Table.Tbody>
-
-
-              
-            </Table>
-            </ScrollArea>
-            {/* Pagination */}
-            <Group justify="flex-end" mt="xl">
-              <Pagination
-                total={1}
-                value={1}
-                onChange={() => {}}
-                size="sm"
-                styles={{
-                  control: {
-                    border: '1px solid #000',
-                    borderRadius: '6px',
-                    '&[data-active]': {
-                      backgroundColor: '#000',
-                      borderColor: '#000',
-                    },
-                  },
-                }}
-              />
-            </Group>
-          </Box>
-  )
-}
-
-
-const LiveUI = ()=>{
-  return (
-         <Box
-        style={{
-          backgroundColor: "white",
-          borderRadius: "12px",
-          padding: "20px",
-          boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-          width: "100%",
-  }}  
->
-  {/* Scrollable container */}
-  <ScrollArea  w={isMobile? '100vw':'100%'}
-  type="auto"
-  scrollbarSize={6}
-  offsetScrollbars>
-            <Table
-              w={isMobile? '100vw': '100%'}
-              horizontalSpacing="md"
-              verticalSpacing="md"
-          /*     stickyHeader 
-              stickyHeaderOffset={0} */
-              style={{
-                minWidth: '900px',
-              }}
-            >
-              <Table.Thead>
-                <Table.Tr style={{ backgroundColor: '#ffffffff' }}>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' ,whiteSpace: "nowrap" }}>
-                    S.No
-                  </Table.Th>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px',whiteSpace: "nowrap"  }}>
-                    Strategy Name
-                  </Table.Th>
-{/*                   <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px',whiteSpace: "nowrap"  }}>
-                    O | T | M O
-                  </Table.Th> */}
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' ,whiteSpace: "nowrap" }}>
-                    Status
-                  </Table.Th>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px',whiteSpace: "nowrap"  }}>
-                    PNL
-                  </Table.Th>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px' ,whiteSpace: "nowrap" }}>
-                    Details
-                  </Table.Th>
-                  <Table.Th style={{ color: '#868e96', fontWeight: 600, fontSize: '14px', padding: '16px',whiteSpace: "nowrap"  }}>
-                    Actions
-                  </Table.Th>
-                </Table.Tr>
-              </Table.Thead>
-              <Table.Tbody>
-{deployedStrategies?.map((strategy, index) => {
-  const deployment = deploymentMap[strategy.id]; // ✅ single object
-
-  return (
-    <LiveStrategyRow
-      key={strategy.id}
-      strategy={strategy}
-      deployment={deployment}   // ✅ only one deployment
-      index={index}
-      cumulativePnl={cumulativePnl}
-      fetchstatistics={fetchstatistics}
-      fetchDates={fetchDates}
-      renderExpanded={renderExpanded}
-      isOpen={openedRow === strategy.id}
-      onToggle={() => {
-        if (openedRow === strategy.id) {
-          setOpenedRow(null);
-        } else {
-          setOpenedRow(strategy.id);
-
-          if (!dates[strategy.id]) {
-            fetchDates(strategy.id);
-          }
-        }
-      }}
-    />
-  );
-})}
-</Table.Tbody>
-
-
-              
-            </Table>
-            </ScrollArea>
-            {/* Pagination */}
-            <Group justify="flex-end" mt="xl">
-              <Pagination
-                total={1}
-                value={1}
-                onChange={() => {}}
-                size="sm"
-                styles={{
-                  control: {
-                    border: '1px solid #000',
-                    borderRadius: '6px',
-                    '&[data-active]': {
-                      backgroundColor: '#000',
-                      borderColor: '#000',
-                    },
-                  },
-                }}
-              />
-            </Group>
-          </Box>
-  )
-}
 
 
 
@@ -1095,7 +888,8 @@ const LiveUI = ()=>{
         <Text size="xs" c="dimmed" fw={500}>
           PNL
         </Text>
-        <span
+        <TotalPnlCard />
+        {/* <span
           style={{
             color: totalPnl >= 0 ? "#16a34a" : "#dc2626",
             fontWeight: 500,
@@ -1105,7 +899,7 @@ const LiveUI = ()=>{
           {totalPnl
             ? totalPnl?.toFixed(2)
             : parseFloat(overallpnl).toFixed(2)}
-        </span>
+        </span> */}
       </Box>
 
     </Group>
@@ -1163,10 +957,29 @@ const LiveUI = ()=>{
           {
             active == 'pt' ? (
               <>
-              <PaperUI />
+              <PaperUI 
+              startergies = {startergies} 
+              cumulativePnl = {cumulativePnl} 
+              fetchstatistics = {fetchstatistics} 
+              fetchDates = {fetchDates} 
+              renderExpanded = {renderExpanded} 
+              openedRow = {openedRow} 
+              setOpenedRow={setOpenedRow}
+              dates={dates}
+              />
               </>
             ) : (
-              <><LiveUI /></>
+              <><LiveUI 
+              deployedStrategies = {deployedStrategies} 
+              deploymentMap = {deploymentMap} 
+              cumulativePnl = {cumulativePnl} 
+              fetchstatistics = {fetchstatistics} 
+              fetchDates = {fetchDates} 
+              renderExpanded = {renderExpanded} 
+              openedRow = {openedRow} 
+              setOpenedRow={setOpenedRow}
+              dates={dates}
+              /></>
             )
           }
         </Box>
