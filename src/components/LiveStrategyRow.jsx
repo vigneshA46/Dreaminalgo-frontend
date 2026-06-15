@@ -17,6 +17,16 @@ import {
 import { apiRequest } from "../utils/api.js";
 import StrategyStatsModal from "./StrategyStatsModal.jsx";
 import LiveStrategyStatistics from "./LiveStrategyStatistics.jsx";
+import { modals } from "@mantine/modals";
+import { notifications } from "@mantine/notifications";
+
+
+import {
+  IconCheck,
+  IconX,
+  IconAlertTriangle,
+} from "@tabler/icons-react";
+
 
 const LiveStrategyRow = React.memo(({
   strategy,
@@ -30,6 +40,41 @@ const LiveStrategyRow = React.memo(({
   const live = useLiveStore((s) => s.liveData[strategy.id]);
 
   const [statisticsopened ,setstatisticsopened ] = useState(false)
+
+  
+
+  const isStrategyRunning = () => {
+  const now = new Date();
+
+  const currentMinutes =
+    now.getHours() * 60 + now.getMinutes();
+
+  const [sh, sm] = strategy.starting_time
+    .split(":")
+    .map(Number);
+
+  const [eh, em] = strategy.ending_time
+    .split(":")
+    .map(Number);
+
+  const startMinutes = sh * 60 + sm;
+  const endMinutes = eh * 60 + em;
+
+  // crosses midnight
+  if (startMinutes > endMinutes) {
+    return (
+      currentMinutes >= startMinutes ||
+      currentMinutes <= endMinutes
+    );
+  }
+
+  return (
+    currentMinutes >= startMinutes &&
+    currentMinutes <= endMinutes
+  );
+};
+
+const isRunningNow = isStrategyRunning();
 
   const [statistics , setstatistics] = useState({})
 
@@ -55,31 +100,98 @@ const LiveStrategyRow = React.memo(({
     // call exitDeployment API here later
   };
 
-  const handleDelete = async() => {
-    try{
-      const res = await apiRequest("POST",`/api/deployments/stopdeployment?strategy_id=${strategy.id}&broker_account_id=${deployment.broker_account_id}`)
-      console.log(res)
-      console.log("strategy  id " , strategy.id , "broker account id" , deployment.broker_account_id)
-      console.log("Delete strategy", strategy.id);
-    }catch(err){
-      console.log(err)
-    }
-    // call delete API here later
-  };
+  const handleDelete = () => {
+  modals.openConfirmModal({
+    title: "Delete Strategy",
+    centered: true,
+    children: (
+      <Text size="sm">
+        Are you sure you want to delete this strategy?
+      </Text>
+    ),
+    labels: {
+      confirm: "Delete",
+      cancel: "Cancel",
+    },
+    confirmProps: {
+      color: "black",
+    },
+    onConfirm: async () => {
+      try {
+        await apiRequest(
+          "POST",
+          `/api/deployments/stopdeployment?strategy_id=${strategy.id}&broker_account_id=${deployment.broker_account_id}`
+        );
+
+        notifications.show({
+          title: "Deleted",
+          message: "Strategy deleted successfully",
+          color: "green",
+          icon: <IconCheck size={16} />,
+        });
+        window.location.reload();
+      } catch (err) {
+        console.log(err);
+
+        notifications.show({
+          title: "Failed",
+          message: "Unable to delete strategy",
+          color: "red",
+          icon: <IconX size={16} />,
+        });
+      }
+    },
+  });
+};
 
 
   const deployid = deployment.id
 
 
-  const exitStrategy = async (id)=>{
-    try{
-        const res = await apiRequest("POST",`/api/deployments/userdep/stopdep/${id}`)
-        console.log(res)
-    }catch(err){
-        console.log(err)
-    }
+  const exitStrategy = (id) => {
+  modals.openConfirmModal({
+    title: "Exit Strategy",
+    centered: true,
+    children: (
+      <Text size="sm">
+        Are you sure you want to exit this strategy?
+      </Text>
+    ),
+    labels: {
+      confirm: "Exit",
+      cancel: "Cancel",
+    },
+    confirmProps: {
+      color: "black",
+    },
+    onConfirm: async () => {
+      try {
+        await apiRequest(
+          "POST",
+          `/api/deployments/userdep/stopdep/${id}`
+        );
 
-  }
+        notifications.show({
+          title: "Success",
+          message: "Strategy exited successfully",
+          color: "green",
+          icon: <IconCheck size={16} />,
+        });
+      } catch (err) {
+        console.log(err);
+
+        notifications.show({
+          title: "Failed",
+          message: "Unable to exit strategy",
+          color: "red",
+          icon: <IconX size={16} />,
+        });
+      }
+    },
+  });
+};
+
+
 
   return (
     <>
@@ -131,22 +243,25 @@ const LiveStrategyRow = React.memo(({
               </ActionIcon>
             </Menu.Target>
 
-            <Menu.Dropdown>
-              <Menu.Item
-                leftSection={<IconLogout size={14} />}
-                onClick={()=>{exitStrategy(deployid)}}
-              >
-                Exit Strategy
-              </Menu.Item>
-
-              <Menu.Item
-                color="red"
-                leftSection={<IconTrash size={14} />}
-                onClick={handleDelete}
-              >
-                Delete Strategy
-              </Menu.Item>
-            </Menu.Dropdown>
+<Menu.Dropdown>
+  {isRunningNow ? (
+    <Menu.Item
+      color="orange"
+      leftSection={<IconLogout size={14} />}
+      onClick={() => exitStrategy(deployid)}
+    >
+      Exit Strategy
+    </Menu.Item>
+  ) : (
+    <Menu.Item
+      color="red"
+      leftSection={<IconTrash size={14} />}
+      onClick={handleDelete}
+    >
+      Delete Strategy
+    </Menu.Item>
+  )}
+</Menu.Dropdown>
           </Menu>
         </Table.Td>
       </Table.Tr>

@@ -4,6 +4,8 @@ import { MantineProvider } from '@mantine/core';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Notifications } from '@mantine/notifications';
 
+
+
 import Home from './modules/Home';
 import Dashboard from './components/Dashboard';
 import Stratergies from './components/Stratergies';
