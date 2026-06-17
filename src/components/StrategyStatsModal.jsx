@@ -52,6 +52,10 @@ const dayPnls = daily.length
   const winDays = dayPnls.filter(p => p > 0).length;
   const lossDays = dayPnls.filter(p => p < 0).length;
 
+  const winRate = totalDays
+  ? (winDays / totalDays) * 100
+  : 0;
+
   const totalPnl = parseFloat(statistics.summary?.total_pnl || 0);
   const totalTrades = parseInt(statistics.summary?.total_trades || 0);
 
@@ -362,6 +366,13 @@ const downloadStrategyReport = (statistics) => {
       <Table.Td>Total Win Days</Table.Td>
       <Table.Td>{winDays}</Table.Td>
     </Table.Tr>
+
+    <Table.Tr>
+  <Table.Td>Win Rate</Table.Td>
+  <Table.Td c={winRate >= 50 ? "green" : "red"}>
+    {winRate.toFixed(2)}%
+  </Table.Td>
+</Table.Tr>
 
     <Table.Tr>
       <Table.Td>Total Loss Days</Table.Td>
