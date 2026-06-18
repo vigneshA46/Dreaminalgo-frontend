@@ -289,8 +289,10 @@ const downloadStrategyReport = (statistics) => {
 
   return (
     <Modal
+      mt={"200px"}
       opened={opened}
       onClose={onClose}
+      centered
       title={
   <Group justify="space-between" w="100%">
     <Title order={3}>Strategy Statistics</Title>

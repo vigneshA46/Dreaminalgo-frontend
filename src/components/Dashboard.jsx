@@ -32,7 +32,8 @@ import {
   UnstyledButton,
   Avatar,
   ScrollArea,
-  Modal
+  Modal,
+  Card
 } from '@mantine/core';
 import { 
   IconCurrencyDollar, 
@@ -696,7 +697,7 @@ const renderExpanded = useCallback((strategy, live) => {
   ];
 
   return (
-    <Box>
+    <Box  >
       {/* Header */}
       <Flex align={'center'} justify="space-between" mb="xl">
         <Box>
@@ -707,7 +708,7 @@ const renderExpanded = useCallback((strategy, live) => {
             Track your algorithmic trading performance
           </Text>
         </Box>
-<Flex gap="2rem" align="center" justify="center">
+    <Flex gap="2rem" align="center" justify="center">
     <Flex
       align="center"
       style={{
@@ -876,7 +877,6 @@ const renderExpanded = useCallback((strategy, live) => {
 
 
 
-
 <Flex gap={"2rem"} align={"end"} justify={"flex-start"} mb="xl">
 
   {active === "pt" && (
@@ -907,6 +907,8 @@ const renderExpanded = useCallback((strategy, live) => {
         </>
       )}
 
+      
+
 
   {/* RIGHT SIDE (buttons) */}
     <Group justify="flex-end" gap="sm" wrap="wrap">
@@ -914,11 +916,13 @@ const renderExpanded = useCallback((strategy, live) => {
       <Button
         variant="subtle"
         onClick={() => setActive("pt")}
+        px="xl"
+
         style={{
           backgroundColor: active === "pt" ? "#000" : "#fff",
           color: active === "pt" ? "#fff" : "#000",
           border: "1px solid #e9ecef",
-          borderRadius: "8px",
+          borderRadius: "1.5rem",
           fontWeight: 500,
           paddingInline: "20px",
         }}
@@ -928,10 +932,11 @@ const renderExpanded = useCallback((strategy, live) => {
 
       <Button
         onClick={() => setActive("live")}
+        px="xl"
         style={{
           backgroundColor: active === "live" ? "#000" : "#fff",
           color: active === "live" ? "#fff" : "#000",
-          borderRadius: "8px",
+          borderRadius: "1.5rem",
           fontWeight: 500,
           paddingInline: "20px",
           border: "1px solid #e9ecef",
@@ -941,18 +946,16 @@ const renderExpanded = useCallback((strategy, live) => {
       </Button>
 
       {active === "live" && (
-        <Button bg="#000" radius="0.5rem">
+        <Button bg="#000" radius="1.5rem">
           Exit all
         </Button>
       )}
 
     </Group>
 
-
-
 </Flex>
 
-        <Box style={{ maxWidth: '100%' }}>
+        <Box style={{ maxWidth: '100%' }}>  
           {/* Table Container */}
           {
             active == 'pt' ? (
@@ -987,7 +990,8 @@ const renderExpanded = useCallback((strategy, live) => {
 
       {/* Main Content Grid */}
       <Modal
-  opened={tradesModalOpen}
+  centered
+opened={tradesModalOpen}
   onClose={() => setTradesModalOpen(false)}
   title={`Trades - ${selectedLegInfo?.leg || ""}`}
   size="xl"
@@ -1068,11 +1072,15 @@ const renderExpanded = useCallback((strategy, live) => {
   </ScrollArea>
 </Modal>
 
+<Flex justify={"center"} align="center" mt="500px">
+
 <StrategyStatsModal
         opened={statisticsopened}
         onClose={() => setstatisticsopened(false)}
         statistics={statistics}
+
       />
+      </Flex>
      </Box>
   );
 }

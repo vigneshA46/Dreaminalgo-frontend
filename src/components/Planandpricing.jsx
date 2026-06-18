@@ -3,10 +3,8 @@ import {
   Box,
   Container,
   Grid,
-  Card,
   Text,
   Group,
-  Badge,
   Button,
   List,
   ThemeIcon,
@@ -16,77 +14,62 @@ import {
   Stack,
   TextInput,
 } from "@mantine/core";
-import { IconCheck, IconSparkles } from "@tabler/icons-react";
+import { IconCheck, IconArrowRight, IconPlayerPlay } from "@tabler/icons-react";
 import qrcode from "../../src/assets/qrcode.jpeg";
 import { apiRequest } from "../utils/api";
 
-/* ─── Tier palette ─────────────────────────────────────────────────── */
+/* ─── Exact Color Palette from Screenshot 2026-06-18 142438.png ─── */
 const tiers = {
   bronze: {
     label: "Bronze",
-    aura: "rgba(205,127,50,0.35)",
-    glow: "#cd7f32",
-    border: "rgba(205,127,50,0.6)",
-    gradient: "linear-gradient(135deg,#3b2a1a 0%,#1c130a 100%)",
-    accent: "#e8975a",
-    shimmer: "rgba(205,127,50,0.15)",
-    badgeBg: "rgba(205,127,50,0.2)",
-    badgeColor: "#e8975a",
-    iconBg: "rgba(205,127,50,0.2)",
-    iconColor: "#cd7f32",
+    cardBg: "#e3edfa", // Soft ice blue tint (Basic/Starter)
+    borderColor: "#c1daf8",
+    textColor: "#1d3557",
+    subTextColor: "#5c6f84",
+    btnBg: "#0b6bcb",
+    btnColor: "#fff",
+    accent: "#0b6bcb",
   },
   silver: {
     label: "Silver",
-    aura: "rgba(192,192,192,0.3)",
-    glow: "#c0c0c0",
-    border: "rgba(192,192,192,0.55)",
-    gradient: "linear-gradient(135deg,#1e2530 0%,#10141a 100%)",
-    accent: "#d8e4f0",
-    shimmer: "rgba(192,192,192,0.12)",
-    badgeBg: "rgba(180,190,205,0.2)",
-    badgeColor: "#c8d8e8",
-    iconBg: "rgba(192,192,192,0.15)",
-    iconColor: "#a0b0c0",
+    cardBg: "#e3edfa", // Soft ice blue tint
+    borderColor: "#c1daf8",
+    textColor: "#1d3557",
+    subTextColor: "#5c6f84",
+    btnBg: "#0b6bcb",
+    btnColor: "#fff",
+    accent: "#0b6bcb",
   },
   gold: {
     label: "Gold",
-    aura: "rgba(255,215,0,0.4)",
-    glow: "#ffd700",
-    border: "rgba(255,215,0,0.65)",
-    gradient: "linear-gradient(135deg,#2a2000 0%,#141000 100%)",
-    accent: "#ffe566",
-    shimmer: "rgba(255,215,0,0.18)",
-    badgeBg: "rgba(255,215,0,0.25)",
-    badgeColor: "#ffe566",
-    iconBg: "rgba(255,215,0,0.2)",
-    iconColor: "#ffd700",
-    isBestValue: true,
+    cardBg: "#004b87", // Deep Navy/Dark Blue (Pro card)
+    borderColor: "#003a66",
+    textColor: "#ffffff",
+    subTextColor: "rgba(255, 255, 255, 0.7)",
+    btnBg: "#ffffff",
+    btnColor: "#004b87",
+    accent: "#ffd700",
+    isBestValue: true, // Draws the "New" badge style
   },
   platinum: {
     label: "Platinum",
-    aura: "rgba(180,210,240,0.35)",
-    glow: "#b4d2ef",
-    border: "rgba(180,210,240,0.55)",
-    gradient: "linear-gradient(135deg,#0d1520 0%,#060d15 100%)",
-    accent: "#cce0f5",
-    shimmer: "rgba(180,210,240,0.12)",
-    badgeBg: "rgba(180,210,240,0.2)",
-    badgeColor: "#b4d2ef",
-    iconBg: "rgba(180,210,240,0.15)",
-    iconColor: "#8ab4d8",
+    cardBg: "#379ae6", // Bright Blue (Premium card)
+    borderColor: "#228be6",
+    textColor: "#ffffff",
+    subTextColor: "rgba(255, 255, 255, 0.8)",
+    btnBg: "#ffffff",
+    btnColor: "#379ae6",
+    accent: "#ffffff",
   },
   diamond: {
     label: "Diamond",
-    aura: "rgba(120,220,255,0.4)",
-    glow: "#78dcff",
-    border: "rgba(120,220,255,0.65)",
-    gradient: "linear-gradient(135deg,#050f1a 0%,#020810 100%)",
-    accent: "#a8edff",
-    shimmer: "rgba(120,220,255,0.18)",
-    badgeBg: "rgba(120,220,255,0.25)",
-    badgeColor: "#78dcff",
-    iconBg: "rgba(120,220,255,0.2)",
-    iconColor: "#50c8f0",
+    cardBg: "#379ae6", // Bright Blue
+    borderColor: "#228be6",
+    textColor: "#ffffff",
+    subTextColor: "rgba(255, 255, 255, 0.8)",
+    btnBg: "#ffffff",
+    btnColor: "#379ae6",
+    accent: "#ffffff",
   },
 };
 
@@ -99,7 +82,7 @@ const plans = [
     price: 490,
     discount: "10% OFF",
     features: ["7 Strategy Actions", "Create / Deploy / Backtest", "Basic Support"],
-    buttonText: "Buy Now",
+    buttonText: "Order Now",
   },
   {
     tier: "silver",
@@ -109,7 +92,7 @@ const plans = [
     price: 2100,
     discount: "10% OFF",
     features: ["30 Strategy Actions", "Create / Deploy / Backtest", "Priority Support"],
-    buttonText: "Buy Now",
+    buttonText: "Order Now",
   },
   {
     tier: "gold",
@@ -124,7 +107,7 @@ const plans = [
       "Priority Support",
       "Faster Execution",
     ],
-    buttonText: "Buy Now",
+    buttonText: "Order Now",
     isBestValue: true,
   },
   {
@@ -135,7 +118,7 @@ const plans = [
     price: 7000,
     discount: "10% OFF",
     features: ["100 Strategy Actions", "All Features Access", "Priority Support"],
-    buttonText: "Buy Now",
+    buttonText: "Order Now",
   },
   {
     tier: "diamond",
@@ -145,237 +128,134 @@ const plans = [
     price: 35000,
     discount: "10% OFF",
     features: ["500 Strategy Actions", "All Features Access", "Dedicated Support"],
-    buttonText: "Buy Now",
+    buttonText: "Order Now",
   },
 ];
 
-/* ─── Keyframe styles injected once ───────────────────────────────── */
 const globalStyles = `
   @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
 
-  * { box-sizing: border-box; }
-
   .pricing-root {
     font-family: 'Outfit', sans-serif;
-    background: #050810;
+    background: #ffffff;
     min-height: 100vh;
     position: relative;
-    overflow: hidden;
+    padding-bottom: 60px;
   }
 
-  .pricing-root::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background:
-      radial-gradient(ellipse 60% 40% at 20% 10%, rgba(100,60,20,0.15) 0%, transparent 70%),
-      radial-gradient(ellipse 50% 50% at 80% 90%, rgba(30,60,120,0.18) 0%, transparent 70%),
-      radial-gradient(ellipse 40% 60% at 50% 50%, rgba(20,10,40,0.3) 0%, transparent 80%);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  /* star field */
-  .stars {
-    position: fixed;
-    inset: 0;
-    background-image:
-      radial-gradient(1px 1px at 15% 20%, rgba(255,255,255,0.5) 0%, transparent 100%),
-      radial-gradient(1px 1px at 42% 65%, rgba(255,255,255,0.4) 0%, transparent 100%),
-      radial-gradient(1px 1px at 70% 30%, rgba(255,255,255,0.35) 0%, transparent 100%),
-      radial-gradient(1.5px 1.5px at 85% 55%, rgba(255,255,255,0.5) 0%, transparent 100%),
-      radial-gradient(1px 1px at 30% 80%, rgba(255,255,255,0.3) 0%, transparent 100%),
-      radial-gradient(1px 1px at 60% 10%, rgba(255,255,255,0.4) 0%, transparent 100%),
-      radial-gradient(1px 1px at 90% 15%, rgba(255,255,255,0.35) 0%, transparent 100%),
-      radial-gradient(1.5px 1.5px at 5% 50%, rgba(255,255,255,0.4) 0%, transparent 100%);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  @keyframes shimmer {
-    0% { background-position: -200% center; }
-    100% { background-position: 200% center; }
-  }
-
-  @keyframes floatUp {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-6px); }
-  }
-
-  @keyframes pulseGlow {
-    0%, 100% { opacity: 0.6; }
-    50% { opacity: 1; }
-  }
-
-  @keyframes rotateBorder {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-
-  .plan-card-wrap {
-    animation: floatUp 4s ease-in-out infinite;
-  }
-  .plan-card-wrap:nth-child(2) { animation-delay: 0.5s; }
-  .plan-card-wrap:nth-child(3) { animation-delay: 1s; }
-  .plan-card-wrap:nth-child(4) { animation-delay: 1.5s; }
-  .plan-card-wrap:nth-child(5) { animation-delay: 2s; }
-
-  .plan-card {
-    position: relative;
-    border-radius: 20px;
-    padding: 2px;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    height: 100%;
-  }
-  .plan-card:hover { transform: translateY(-6px) scale(1.015); }
-
-  .plan-card-inner {
-    border-radius: 18px;
-    padding: 28px 22px 24px;
+  /* Exact Geometry Framework Match */
+  .screenshot-card {
+    border-radius: 32px;
+    padding: 24px 20px 0px 20px;
     height: 100%;
     display: flex;
     flex-direction: column;
     position: relative;
+    border: 1px solid transparent;
     overflow: hidden;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    transition: transform 0.2s ease;
+  }
+  .screenshot-card:hover {
+    transform: translateY(-4px);
   }
 
-  .plan-card-inner::before {
-    content: '';
-    position: absolute;
-    top: -60px; left: -60px;
-    width: 180px; height: 180px;
-    border-radius: 50%;
-    opacity: 0.18;
-    filter: blur(40px);
-    pointer-events: none;
-  }
-
-  .tier-badge {
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    padding: 3px 10px;
-    border-radius: 20px;
-    display: inline-block;
-    margin-bottom: 12px;
-  }
-
-  .tier-icon {
-    width: 48px; height: 48px;
-    border-radius: 14px;
-    display: flex; align-items: center; justify-content: center;
-    margin: 0 auto 14px;
-    font-size: 22px;
-  }
-
-  .price-shimmer {
-    background: linear-gradient(90deg, currentColor 25%, rgba(255,255,255,0.9) 50%, currentColor 75%);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: shimmer 3s linear infinite;
-  }
-
-  .buy-btn {
+  /* Distinct Top Card Floating Wrapper (White Box Layout) */
+  .screenshot-card-header {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 24px 20px;
     position: relative;
     overflow: hidden;
-    border: none;
-    border-radius: 12px;
-    padding: 13px 0;
-    font-family: 'Outfit', sans-serif;
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    width: 100%;
-    transition: filter 0.2s, transform 0.15s;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
   }
-  .buy-btn:hover { filter: brightness(1.15); transform: scale(1.02); }
-  .buy-btn:active { transform: scale(0.98); }
 
-  .buy-btn::after {
-    content: '';
+  .new-tag {
     position: absolute;
-    top: -50%; left: -60%;
-    width: 30%; height: 200%;
-    background: rgba(255,255,255,0.2);
-    transform: skewX(-20deg);
-    transition: left 0.4s ease;
-  }
-  .buy-btn:hover::after { left: 130%; }
-
-  .best-value-ribbon {
-    position: absolute;
-    top: 14px; right: -28px;
-    background: linear-gradient(90deg, #ffd700, #ffaa00);
-    color: #1a0f00;
+    top: 14px;
+    right: 0;
+    background: #ffd700;
+    color: #000;
     font-size: 10px;
     font-weight: 800;
-    letter-spacing: 1.5px;
-    padding: 5px 36px;
-    transform: rotate(35deg);
+    padding: 2px 14px;
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+    letter-spacing: 0.5px;
     text-transform: uppercase;
-    box-shadow: 0 2px 12px rgba(255,200,0,0.5);
-    z-index: 5;
   }
 
-  .divider-line {
+  .included-title {
+    text-align: center;
+    font-size: 15px;
+    font-weight: 600;
+    margin: 24px 0 18px 0;
+    letter-spacing: 0.3px;
+  }
+
+  .features-container {
+    flex: 1;
+    padding-bottom: 24px;
+    padding-left: 8px;
+  }
+
+  .action-container {
+    display: flex;
+    justify-content: center;
+    padding-bottom: 28px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  }
+  
+  /* Ice Blue tint bottom divider support */
+  .light-divider {
+    border-bottom-color: rgba(0, 0, 0, 0.08) !important;
+  }
+
+  .screenshot-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 32px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
     border: none;
-    border-top: 1px solid rgba(255,255,255,0.07);
-    margin: 18px 0;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+    transition: transform 0.1s ease, opacity 0.2s ease;
+  }
+  .screenshot-btn:hover {
+    opacity: 0.95;
+    transform: scale(1.02);
+  }
+
+  .screenshot-card-footer {
+    padding: 16px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+  }
+  .screenshot-card-footer:hover {
+    opacity: 0.8;
   }
 
   .coupon-btn {
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.15);
-    color: rgba(255,255,255,0.85);
+    background: #ffffff;
+    border: 1px solid #dbe2ef;
+    color: #3f51b5;
     font-family: 'Outfit', sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    border-radius: 10px;
-    padding: 9px 20px;
-    cursor: pointer;
-    transition: background 0.2s, border-color 0.2s;
-  }
-  .coupon-btn:hover {
-    background: rgba(255,255,255,0.1);
-    border-color: rgba(255,255,255,0.3);
-  }
-
-  .modal-overlay .mantine-Modal-content {
-    background: #0d111e;
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 20px;
-  }
-  .modal-overlay .mantine-Modal-header {
-    background: transparent;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-  }
-  .modal-overlay .mantine-Modal-title {
-    color: #fff;
-    font-family: 'Outfit', sans-serif;
+    font-size: 12px;
     font-weight: 700;
-  }
-  .modal-overlay .mantine-Modal-close {
-    color: rgba(255,255,255,0.5);
+    letter-spacing: 0.5px;
+    border-radius: 8px;
+    padding: 8px 16px;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
   }
 `;
 
-/* ─── Tier icons (emoji-based) ─────────────────────────────────────── */
-const tierIcons = {
-  bronze: "🥉",
-  silver: "🥈",
-  gold: "🏆",
-  platinum: "💠",
-  diamond: "💎",
-};
-
-/* ─── Main component ───────────────────────────────────────────────── */
 const Planandpricing = () => {
   const [qrOpened, setQrOpened] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
@@ -387,8 +267,7 @@ const Planandpricing = () => {
     if (!coupon) return;
     try {
       setApplying(true);
-      const res = await apiRequest("POST", "/api/coupons/apply", { code: coupon });
-      console.log(res);
+      await apiRequest("POST", "/api/coupons/apply", { code: coupon });
       setCoupon("");
       setCouponOpen(false);
     } catch (err) {
@@ -403,279 +282,129 @@ const Planandpricing = () => {
       <style>{globalStyles}</style>
 
       <Box className="pricing-root">
-        <div className="stars" />
-
-        <Box style={{ position: "relative", zIndex: 1, padding: "36px 0 60px" }}>
-          {/* ── Header actions ── */}
-          <Flex justify="flex-end" align="center" px="xl" mb="xl">
+        <Box style={{ position: "relative", zIndex: 1, padding: "24px 0 40px" }}>
+          
+          {/* Apply Coupon Row */}
+          <Flex justify="flex-end" align="center" px="xl" mb="md">
             <button className="coupon-btn" onClick={() => setCouponOpen(true)}>
               + APPLY COUPON
             </button>
           </Flex>
 
-          {/* ── Title ── */}
-          <Box ta="center" mb={8}>
-            <Text
-              style={{
-                fontFamily: "'Outfit', sans-serif",
-                fontSize: "2.6rem",
-                fontWeight: 800,
-                background: "linear-gradient(90deg,#cd7f32,#c0c0c0,#ffd700,#b4d2ef,#78dcff)",
-                backgroundSize: "200% auto",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-                animation: "shimmer 4s linear infinite",
-                letterSpacing: "-0.5px",
-              }}
-            >
+          {/* Heading */}
+          <Box ta="center" mb={6}>
+            <Text style={{ fontSize: "2.4rem", fontWeight: 800, color: "#1d3557" }}>
               Plans & Pricing
             </Text>
           </Box>
 
-          <Text
-            ta="center"
-            mb={48}
-            style={{
-              color: "rgba(255,255,255,0.4)",
-              fontSize: "13px",
-              letterSpacing: "1px",
-              fontFamily: "'Outfit', sans-serif",
-            }}
-          >
+          <Text ta="center" mb={40} style={{ color: "#5c6f84", fontSize: "13px", fontWeight: 500, letterSpacing: "0.5px" }}>
             1 TOKEN = 1 STRATEGY ACTION &nbsp;·&nbsp; CREATE / DEPLOY / BACKTEST / SIGNAL
           </Text>
 
-          {/* ── Cards ── */}
-          <Container size="xl" style={{ maxWidth: 1380 }}>
-            <Grid justify="center" gutter="lg">
+          {/* Grid Layout Layout */}
+          <Container size="xl" style={{ maxWidth: 1400 }}>
+            <Grid justify="center" gutter="xl">
               {plans.map((plan) => {
                 const t = tiers[plan.tier];
+                const isCardLight = plan.tier === "bronze" || plan.tier === "silver";
+
                 return (
-                  <Grid.Col key={plan.name} span={{ base: 6, sm: 6, md: 4, lg: 4 }}>
-                    <div className="plan-card-wrap" style={{ height: "100%" }}>
-                      {/* outer glow border */}
-                      <div
-                        className="plan-card"
-                        style={{
-                          background: t.border,
-                          boxShadow: `0 0 30px ${t.aura}, 0 0 60px ${t.aura.replace("0.35", "0.15")}`,
-                        }}
-                      >
-                        {/* Best value ribbon */}
-                        {plan.isBestValue && (
-                          <div className="best-value-ribbon">Best Value</div>
-                        )}
-
-                        <div
-                          className="plan-card-inner"
-                          style={{
-                            background: t.gradient,
-                            border: `1px solid ${t.border}`,
-                          }}
-                        >
-                          {/* corner aura */}
-                          <div
-                            className="plan-card-inner::before"
-                            style={{
-                              position: "absolute",
-                              top: -60, left: -60,
-                              width: 180, height: 180,
-                              borderRadius: "50%",
-                              background: t.glow,
-                              opacity: 0.2,
-                              filter: "blur(45px)",
-                              pointerEvents: "none",
-                            }}
-                          />
-
-                          {/* tier badge */}
-                          <Box ta="center">
-                            <span
-                              className="tier-badge"
-                              style={{
-                                background: t.badgeBg,
-                                color: t.badgeColor,
-                                border: `1px solid ${t.border}`,
-                              }}
-                            >
-                              {t.label}
-                            </span>
-                          </Box>
-
-                          {/* icon */}
-                          <Box ta="center" mb={6}>
-                            <div
-                              className="tier-icon"
-                              style={{
-                                background: t.iconBg,
-                                border: `1px solid ${t.border}`,
-                                boxShadow: `0 0 20px ${t.aura}`,
-                              }}
-                            >
-                              {tierIcons[plan.tier]}
-                            </div>
-                          </Box>
-
-                          {/* plan name */}
-                          <Text
-                            ta="center"
-                            fw={700}
-                            mb={16}
-                            style={{
-                              fontFamily: "'Outfit', sans-serif",
-                              fontSize: "1.25rem",
-                              color: t.accent,
-                            }}
-                          >
-                            {plan.name}
-                          </Text>
-
-                          {/* tokens */}
-                          <Text
-                            ta="center"
-                            mb={8}
-                            style={{
-                              fontFamily: "'Outfit', sans-serif",
-                              fontSize: "2rem",
-                              fontWeight: 800,
-                              color: "#fff",
-                              lineHeight: 1,
-                            }}
-                          >
-                            {plan.tokens}
-                            <Text component="span" style={{ fontSize: "1rem", fontWeight: 400, color: "rgba(255,255,255,0.45)", marginLeft: 6 }}>
-                              tokens
-                            </Text>
-                          </Text>
-
-                          {/* price row */}
-                          <Group justify="center" gap={8} mb={4}>
-                            <Text
-                              style={{
-                                textDecoration: "line-through",
-                                color: "rgba(255,255,255,0.3)",
-                                fontSize: "13px",
-                              }}
-                            >
-                              ₹{plan.originalPrice.toLocaleString()}
-                            </Text>
-                            <span
-                              style={{
-                                background: t.badgeBg,
-                                color: t.badgeColor,
-                                border: `1px solid ${t.border}`,
-                                borderRadius: 20,
-                                fontSize: 11,
-                                fontWeight: 700,
-                                padding: "2px 8px",
-                                letterSpacing: "0.5px",
-                              }}
-                            >
-                              {plan.discount}
-                            </span>
-                          </Group>
-
-                          <Text
-                            ta="center"
-                            mb={4}
-                            style={{
-                              fontFamily: "'Outfit', sans-serif",
-                              fontSize: "1.8rem",
-                              fontWeight: 800,
-                              background: `linear-gradient(90deg, ${t.glow}, ${t.accent}, ${t.glow})`,
-                              backgroundSize: "200% auto",
-                              WebkitBackgroundClip: "text",
-                              WebkitTextFillColor: "transparent",
-                              backgroundClip: "text",
-                              animation: "shimmer 3s linear infinite",
-                            }}
-                          >
+                  <Grid.Col key={plan.name} span={{ base: 12, sm: 6, md: 4, lg: 4 }}>
+                    <div 
+                      className="screenshot-card" 
+                      style={{ 
+                        background: t.cardBg,
+                        borderColor: t.borderColor,
+                      }}
+                    >
+                      {/* Top White Block Element */}
+                      <div className="screenshot-card-header">
+                        {plan.isBestValue && <div className="new-tag">New</div>}
+                        
+                        <Text style={{ fontSize: "20px", fontWeight: 700, color: "#1d3557" }} mb={2}>
+                          {plan.name}
+                        </Text>
+                        
+                        <Group align="baseline" gap={4}>
+                          <Text style={{ fontSize: "24px", fontWeight: 800, color: "#1d3557" }}>
                             ₹{plan.price.toLocaleString()}
                           </Text>
-
-                          <Text
-                            ta="center"
-                            mb={20}
-                            style={{ color: "rgba(255,255,255,0.3)", fontSize: "12px" }}
-                          >
-                            ₹{(plan.price / plan.tokens).toFixed(1)} / token
+                          <Text style={{ fontSize: "13px", color: "#5c6f84", fontWeight: 500 }}>
+                            / {plan.tokens} Tokens
                           </Text>
+                        </Group>
 
-                          <hr className="divider-line" />
-
-                          {/* features */}
-                          <Box style={{ flex: 1 }} mb={24}>
-                            <List
-                              spacing={10}
-                              size="sm"
-                              icon={
-                                <ThemeIcon
-                                  radius="xl"
-                                  size={20}
-                                  style={{
-                                    background: t.iconBg,
-                                    border: `1px solid ${t.border}`,
-                                  }}
-                                >
-                                  <IconCheck
-                                    size={11}
-                                    style={{ color: t.iconColor }}
-                                  />
-                                </ThemeIcon>
-                              }
-                            >
-                              {plan.features.map((feat, i) => (
-                                <List.Item key={i}>
-                                  <Text
-                                    style={{
-                                      color: "rgba(255,255,255,0.75)",
-                                      fontSize: "13px",
-                                      fontFamily: "'Outfit', sans-serif",
-                                    }}
-                                  >
-                                    {feat}
-                                  </Text>
-                                </List.Item>
-                              ))}
-                            </List>
-                          </Box>
-
-                          {/* CTA button */}
-                          <button
-                            className="buy-btn"
-                            onClick={() => setQrOpened(true)}
-                            style={{
-                              background: `linear-gradient(135deg, ${t.glow}, ${t.iconColor})`,
-                              color: plan.tier === "gold" || plan.tier === "bronze" ? "#1a0e00" : "#fff",
-                              boxShadow: `0 4px 20px ${t.aura}`,
-                            }}
-                          >
-                            {plan.buttonText}
-                          </button>
-                        </div>
+                        <Group gap={8} mt={6}>
+                          <Text style={{ textDecoration: "line-through", color: "#a0aab5", fontSize: "12px" }}>
+                            ₹{plan.originalPrice.toLocaleString()}
+                          </Text>
+                          <Text style={{ color: "#0b6bcb", fontSize: "12px", fontWeight: 700 }}>
+                            ({plan.discount})
+                          </Text>
+                          <Text style={{ color: "#a0aab5", fontSize: "11px", marginLeft: "auto", fontWeight: 500 }}>
+                            Excluding GST
+                          </Text>
+                        </Group>
                       </div>
+
+                      {/* Header Title Text Section */}
+                      <div className="included-title" style={{ color: t.textColor }}>
+                        What's included
+                      </div>
+
+                      {/* Checkbox Listing Segment */}
+                      <div className="features-container">
+                        <List
+                          spacing={12}
+                          icon={
+                            <ThemeIcon size={18} radius="xl" style={{ background: isCardLight ? "#0b6bcb" : "#ffffff", border: "none" }}>
+                              <IconCheck size={12} stroke={3} style={{ color: isCardLight ? "#ffffff" : t.cardBg }} />
+                            </ThemeIcon>
+                          }
+                        >
+                          {plan.features.map((feat, i) => (
+                            <List.Item key={i}>
+                              <Text style={{ color: t.textColor, fontSize: "14px", fontWeight: 500 }}>
+                                {feat}
+                              </Text>
+                            </List.Item>
+                          ))}
+                        </List>
+                      </div>
+
+                      {/* Unified Central Form Button */}
+                      <div className={`action-container ${isCardLight ? "light-divider" : ""}`}>
+                        <button 
+                          className="screenshot-btn"
+                          onClick={() => setQrOpened(true)}
+                          style={{ background: t.btnBg, color: t.btnColor }}
+                        >
+                          <span>{plan.buttonText}</span>
+                          <IconArrowRight size={16} stroke={2.5} />
+                        </button>
+                      </div>
+
+                      {/* Bottom Media Call to Action row */}
+                      {/* <div 
+                        className="screenshot-card-footer" 
+                        onClick={() => setQrOpened(true)}
+                        style={{ color: isCardLight ? "#0b6bcb" : "#ffffff" }}
+                      >
+                        <IconPlayerPlay size={12} fill="currentColor" />
+                        <Text style={{ fontSize: "13px", fontWeight: 700 }}>
+                          Click Here to Watch Video
+                        </Text>
+                      </div> */}
                     </div>
                   </Grid.Col>
                 );
               })}
             </Grid>
 
-            {/* footer note */}
-            <Text
-              ta="center"
-              mt={40}
-              style={{
-                color: "rgba(255,255,255,0.3)",
-                fontSize: "12px",
-                fontFamily: "'Outfit', sans-serif",
-                letterSpacing: "0.3px",
-              }}
-            >
-              <Text component="span" fw={600} style={{ color: "rgba(255,255,255,0.5)" }}>
-                Note:
-              </Text>{" "}
-              Tokens are deducted per strategy action. GST & payment gateway charges may apply.
+            {/* Base Disclaimer notes */}
+            <Text ta="center" mt={45} style={{ color: "#5c6f84", fontSize: "13px", fontWeight: 500 }}>
+              <span style={{ color: "#1d3557", fontWeight: 700 }}>Note:</span> Tokens are deducted per strategy action. GST & payment gateway charges may apply.
             </Text>
           </Container>
         </Box>
@@ -686,26 +415,14 @@ const Planandpricing = () => {
           onClose={() => { setQrOpened(false); setShowMessage(false); }}
           title="Complete Your Payment"
           centered
-          className="modal-overlay"
           styles={{
-            content: {
-              background: "#0d111e",
-              border: "1px solid rgba(255,255,255,0.12)",
-              borderRadius: 20,
-            },
-            header: {
-              background: "transparent",
-              borderBottom: "1px solid rgba(255,255,255,0.08)",
-            },
-            title: {
-              color: "#fff",
-              fontFamily: "'Outfit', sans-serif",
-              fontWeight: 700,
-            },
-            close: { color: "rgba(255,255,255,0.5)" },
+            content: { background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: 20 },
+            header: { background: "transparent", borderBottom: "1px solid #edf2f7" },
+            title: { color: "#1d3557", fontFamily: "'Outfit', sans-serif", fontWeight: 700 },
+            close: { color: "#718096" },
           }}
         >
-          <Text size="sm" mb="md" ta="center" c="rgba(255,255,255,0.6)">
+          <Text size="sm" mb="md" ta="center" c="#4a5568">
             Scan the QR code using GPay / UPI to complete your payment.
           </Text>
 
@@ -716,8 +433,8 @@ const Planandpricing = () => {
               style={{
                 width: 200,
                 borderRadius: 12,
-                border: "1px solid rgba(255,215,0,0.3)",
-                boxShadow: "0 0 30px rgba(255,215,0,0.15)",
+                border: "1px solid #cbd5e0",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
               }}
             />
           </Box>
@@ -726,11 +443,9 @@ const Planandpricing = () => {
             <Button
               onClick={() => setShowMessage(true)}
               style={{
-                background: "linear-gradient(135deg,#ffd700,#ffaa00)",
-                color: "#1a0e00",
+                background: "#0b6bcb",
+                color: "#ffffff",
                 fontWeight: 700,
-                fontFamily: "'Outfit', sans-serif",
-                border: "none",
                 borderRadius: 10,
               }}
             >
@@ -739,11 +454,11 @@ const Planandpricing = () => {
           </Group>
 
           {showMessage && (
-            <Text mt="md" ta="center" style={{ color: "#78dcff", fontSize: 13 }}>
+            <Text mt="md" ta="center" style={{ color: "#e65100", fontSize: 13, fontWeight: 600 }}>
               Contact admin — send screenshot on WhatsApp to confirm payment and receive tokens.
               <br />
               <br />
-              <Text component="span" fw={700} c="#ffd700">
+              <Text component="span" fw={700} c="#0b6bcb" style={{ fontSize: "15px" }}>
                 +91 9787675597 &nbsp;/&nbsp; +91 9080058704
               </Text>
             </Text>
@@ -757,21 +472,10 @@ const Planandpricing = () => {
           title="Apply Coupon"
           centered
           styles={{
-            content: {
-              background: "#0d111e",
-              border: "1px solid rgba(255,255,255,0.12)",
-              borderRadius: 20,
-            },
-            header: {
-              background: "transparent",
-              borderBottom: "1px solid rgba(255,255,255,0.08)",
-            },
-            title: {
-              color: "#fff",
-              fontFamily: "'Outfit', sans-serif",
-              fontWeight: 700,
-            },
-            close: { color: "rgba(255,255,255,0.5)" },
+            content: { background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: 20 },
+            header: { background: "transparent", borderBottom: "1px solid #edf2f7" },
+            title: { color: "#1d3557", fontFamily: "'Outfit', sans-serif", fontWeight: 700 },
+            close: { color: "#718096" },
           }}
         >
           <Stack>
@@ -781,12 +485,11 @@ const Planandpricing = () => {
               value={coupon}
               onChange={(e) => setCoupon(e.target.value)}
               styles={{
-                label: { color: "rgba(255,255,255,0.6)", fontFamily: "'Outfit', sans-serif" },
+                label: { color: "#4a5568", fontWeight: 600 },
                 input: {
-                  background: "rgba(255,255,255,0.06)",
-                  border: "1px solid rgba(255,255,255,0.15)",
-                  color: "#fff",
-                  fontFamily: "'Outfit', sans-serif",
+                  background: "#f7fafc",
+                  border: "1px solid #cbd5e0",
+                  color: "#1d3557",
                   borderRadius: 10,
                 },
               }}
@@ -795,11 +498,9 @@ const Planandpricing = () => {
               loading={applying}
               onClick={handleApplyCoupon}
               style={{
-                background: "linear-gradient(135deg,#78dcff,#2090c0)",
-                color: "#050810",
+                background: "#0b6bcb",
+                color: "#ffffff",
                 fontWeight: 700,
-                fontFamily: "'Outfit', sans-serif",
-                border: "none",
                 borderRadius: 10,
               }}
             >
