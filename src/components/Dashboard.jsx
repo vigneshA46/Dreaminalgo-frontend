@@ -945,11 +945,11 @@ const renderExpanded = useCallback((strategy, live) => {
         Live
       </Button>
 
-      {active === "live" && (
+      {/* {active === "live" && (
         <Button bg="#000" radius="1.5rem">
           Exit all
         </Button>
-      )}
+      )} */}
 
     </Group>
 

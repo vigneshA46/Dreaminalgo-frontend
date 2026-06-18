@@ -89,7 +89,7 @@ export const PaperUI = ({
     ([category, strategies]) => (
       <>
         {/* Category Heading Row */}
-        <Table.Tr key={category}>
+        {/* <Table.Tr key={category}>
           <Table.Td
             colSpan={6}
             style={{
@@ -101,7 +101,7 @@ export const PaperUI = ({
           >
             {category}
           </Table.Td>
-        </Table.Tr>
+        </Table.Tr> */}
 
         {/* Strategies under category */}
         {strategies.map((strategy, index) => (
