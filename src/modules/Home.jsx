@@ -4,12 +4,15 @@ import { useEffect, useState } from "react";
 import { ActionIcon } from "@mantine/core";
 import { IconMenu2 } from "@tabler/icons-react";
 import { useUser } from "../context/UserContext";
+import { useMediaQuery } from "@mantine/hooks";
+
 
 
 export default function Home() {
   const navigate = useNavigate();
   const { user, logout } = useUser();
   const location = useLocation();
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
 
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -79,8 +82,11 @@ export default function Home() {
           flex: 1,
           padding: "20px",
           transition: "margin-left 0.25s ease",
-          marginLeft:
-            window.innerWidth > 768 ? (collapsed ? "80px" : "250px") : "0px",
+          marginLeft: isMobile
+  ? 0
+  : collapsed
+    ? "80px"
+    : "250px",
         }}
       >
         {/* PAGE CONTENT VIA ROUTES */}
