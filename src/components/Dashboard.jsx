@@ -927,7 +927,7 @@ const renderExpanded = useCallback((strategy, live) => {
           paddingInline: "20px",
         }}
       >
-        PT
+        Live Market Strategies
       </Button>
 
       <Button
@@ -942,7 +942,7 @@ const renderExpanded = useCallback((strategy, live) => {
           border: "1px solid #e9ecef",
         }}
       >
-        Live
+        Deployed Strategies
       </Button>
 
       {/* {active === "live" && (

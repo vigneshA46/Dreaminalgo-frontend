@@ -87,11 +87,11 @@ const plans = [
   {
     tier: "silver",
     name: "Trader Pack",
-    tokens: 30,
-    originalPrice: 2311,
-    price: 2100,
+    tokens: 20,
+    originalPrice: 1540,
+    price: 1400,
     discount: "10% OFF",
-    features: ["30 Strategy Actions", "Create / Deploy / Backtest", "Priority Support"],
+    features: ["20 Strategy Actions", "Create / Deploy / Backtest", "Priority Support"],
     buttonText: "Order Now",
   },
   {
@@ -109,19 +109,19 @@ const plans = [
     ],
     buttonText: "Order Now",
     isBestValue: true,
-  },
-  {
-    tier: "platinum",
-    name: "Advanced",
-    tokens: 100,
+    },
+     {
+  tier: "platinum",
+  name: "Advanced",
+  tokens: 100,
     originalPrice: 7700,
     price: 7000,
     discount: "10% OFF",
     features: ["100 Strategy Actions", "All Features Access", "Priority Support"],
     buttonText: "Order Now",
-  },
-  {
-    tier: "diamond",
+    },
+   /* {
+      tier: "diamond",
     name: "Enterprise",
     tokens: 500,
     originalPrice: 38500,
@@ -129,7 +129,7 @@ const plans = [
     discount: "10% OFF",
     features: ["500 Strategy Actions", "All Features Access", "Dedicated Support"],
     buttonText: "Order Now",
-  },
+  }, */
 ];
 
 const globalStyles = `
