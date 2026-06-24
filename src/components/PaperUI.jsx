@@ -20,6 +20,11 @@ export const PaperUI = ({
       const isMobile = useMediaQuery('(max-width: 768px)');
       /* console.log("🚀 ~ file: PaperUI.jsx:11 ~ PaperUI ~ startergies:", startergies) */
 
+      const sortedStrategies = [...(startergies || [])].sort(
+      (a, b) => a.id - b.id
+      );
+
+      
     const groupedStrategies = startergies?.reduce((acc, strategy) => {
   const category = strategy.category || "Others";
 
@@ -84,54 +89,31 @@ export const PaperUI = ({
                 </Table.Tr>
               </Table.Thead>
 
-              <Table.Tbody>
-  {Object.entries(groupedStrategies || {}).map(
-    ([category, strategies]) => (
-      <>
-        {/* Category Heading Row */}
-        {/* <Table.Tr key={category}>
-          <Table.Td
-            colSpan={6}
-            style={{
-              backgroundColor: "#f8f9fa",
-              fontWeight: 500,
-              fontSize: "16px",
-              padding: "12px 16px",
-            }}
-          >
-            {category}
-          </Table.Td>
-        </Table.Tr> */}
+<Table.Tbody>
+  {sortedStrategies.map((strategy, index) => (
+    <StrategyRow
+      key={strategy.id}
+      strategy={strategy}
+      index={index + 1}
+      cumulativePnl={cumulativePnl}
+      fetchstatistics={fetchstatistics}
+      fetchDates={fetchDates}
+      renderExpanded={renderExpanded}
+      isOpen={openedRow === strategy.id}
+      onToggle={() => {
+        if (openedRow === strategy.id) {
+          setOpenedRow(null);
+        } else {
+          setOpenedRow(strategy.id);
 
-        {/* Strategies under category */}
-        {strategies.map((strategy, index) => (
-          <StrategyRow
-            key={strategy.id}
-            strategy={strategy}
-            index={index}
-            cumulativePnl={cumulativePnl}
-            fetchstatistics={fetchstatistics}
-            fetchDates={fetchDates}
-            renderExpanded={renderExpanded}
-            isOpen={openedRow === strategy.id}
-            onToggle={() => {
-              if (openedRow === strategy.id) {
-                setOpenedRow(null);
-              } else {
-                setOpenedRow(strategy.id);
-
-                if (!dates[strategy.id]) {
-                  fetchDates(strategy.id);
-                }
-              }
-            }}
-          />
-        ))}
-      </>
-    )
-  )}
+          if (!dates[strategy.id]) {
+            fetchDates(strategy.id);
+          }
+        }
+      }}
+    />
+  ))}
 </Table.Tbody>
-
               
             </Table>
             </ScrollArea>

@@ -45,6 +45,7 @@ const Reports = () => {
   useEffect(() => {
   const getalluserdeployments = async () => {
     const res = await apiRequest('GET', '/api/reports/strategies');
+    console.log(res.strategies)
 
     if (res?.success) {
       setData(res.strategies);
@@ -316,6 +317,7 @@ const downloadDatewiseReport = (strategy, datewiseData) => {
             onClick={() => {
   setSelectedStrategy(strategy);
   setOpened(true);
+  
   fetchDatewisePnl(strategy.strategy_id); // 🔥 important
 }}
           >
