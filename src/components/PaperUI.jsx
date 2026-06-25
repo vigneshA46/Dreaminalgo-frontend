@@ -94,7 +94,7 @@ export const PaperUI = ({
     <StrategyRow
       key={strategy.id}
       strategy={strategy}
-      index={index + 1}
+      index={index}
       cumulativePnl={cumulativePnl}
       fetchstatistics={fetchstatistics}
       fetchDates={fetchDates}
