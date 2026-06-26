@@ -130,6 +130,7 @@ const SignupHandler = async () => {
 
             {!signupSuccess ? (<>
             <TextInput
+              label="Full Name"
               placeholder="Jhon Doe"
               icon={<IconMail size={18} color="#17a2b8" />}
               size="md"
@@ -150,6 +151,7 @@ const SignupHandler = async () => {
 
             {/* Email Input */}
             <TextInput
+              label="Email"
               placeholder="hello@turpio.studio "
               icon={<IconMail size={18} color="#17a2b8" />}
               size="md"
@@ -169,6 +171,7 @@ const SignupHandler = async () => {
             />
             {/* Mobile number Input */}
             <TextInput
+              label="Mobile Number"
               placeholder="+91 987..."
               icon={<IconPhone size={18} color="#17a2b8" />}
               size="md"
@@ -189,6 +192,7 @@ const SignupHandler = async () => {
 
             {/* Password Input */}
             <PasswordInput
+            label="Password"
               placeholder="Password"
               icon={<IconLock size={18} color="#adb5bd" />}
               size="md"
@@ -211,6 +215,7 @@ const SignupHandler = async () => {
             />
 
             <PasswordInput
+  label="Confirm Password"
   placeholder="Confirm Password"
   icon={<IconLock size={18} color="#adb5bd" />}
   size="md"
