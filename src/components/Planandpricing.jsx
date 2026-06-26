@@ -95,6 +95,16 @@ const plans = [
     buttonText: "Order Now",
   },
   {
+    tier: "silver",
+    name: "Trader Pack",
+    tokens: 30,
+    originalPrice: 2210,
+    price: 2100,
+    discount: "10% OFF",
+    features: ["30 Strategy Actions", "Create / Deploy / Backtest", "Priority Support"],
+    buttonText: "Order Now",
+  },
+  {
     tier: "gold",
     name: "Pro",
     tokens: 50,
@@ -110,7 +120,7 @@ const plans = [
     buttonText: "Order Now",
     isBestValue: true,
     },
-     {
+    {
   tier: "platinum",
   name: "Advanced",
   tokens: 100,

@@ -683,11 +683,6 @@ const renderExpanded = useCallback((strategy, live) => {
 ]);
 
 
-
-
-
-
-
   const indices = [
     { name: "NIFTY", label: "NIFTY50" },
     { name: "BANKNIFTY", label: "BANKNIFTY" },
@@ -697,7 +692,7 @@ const renderExpanded = useCallback((strategy, live) => {
   ];
 
   return (
-    <Box  >
+    <Box>
       {/* Header */}
       <Flex align={'center'} justify="space-between" mb="xl">
         <Box>
