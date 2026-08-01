@@ -261,27 +261,6 @@ useEffect(()=>{
   return total;
 }); */
 
-
-useEffect(() => {
-  const Fetchstartergies = async () => {
-    try {
-      const response = await apiRequest('GET', '/api/stratergy');
-
-      const sortedStrategies = response.strategies.sort(
-        (a, b) => Number(a.state_id) - Number(b.state_id)
-      );
-
-      setstartergies(sortedStrategies);
-      setoverallpnl(response.overall_pnl);
-
-      console.log(response);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  Fetchstartergies();
-}, []);
     const fetchstatistics = async (strategy_id) =>{
   try{
     const res = await apiRequest("GET", `/api/statistics?strategy_id=${strategy_id}`)
@@ -388,17 +367,53 @@ const deployedStrategies = startergies.filter(strategy =>
 }, []);
 
  */
-useEffect(()=>{
-  const fetchuser = async ()=>{
-    try{
-      const res = await apiRequest('POST','/api/users/me')
-      setUser(res)
-    }catch(err){
-      console.log(err)
-    }  
+
+const fetchuser = async () => {
+  try {
+    const res = await apiRequest("POST", "/api/users/me");
+
+    setUser(res);
+    //console.log("User fetched successfully:", res);
+
+    // Fetch strategies immediately using the fetched user
+    Fetchstartergies(res.id);
+
+  } catch (err) {
+    console.log(err);
   }
+};
+
+const Fetchstartergies = async (userId) => {
+  try {
+    const response = await apiRequest(
+      "GET",
+      `/api/stratergy/user/${userId}`
+    );
+
+    const sortedStrategies = response.strategies.sort(
+      (a, b) => Number(a.state_id) - Number(b.state_id)
+    );
+
+    setstartergies(sortedStrategies);
+    setoverallpnl(response.overall_pnl);
+
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+useEffect(() => {
   fetchuser();
-},[])
+}, []);
+
+
+
+
+useEffect(() => {
+  fetchuser();
+
+  Fetchstartergies();
+}, []);
 
 /* const handleRowToggle = async (strategyId) => {
   if (openedRow === strategyId) {
