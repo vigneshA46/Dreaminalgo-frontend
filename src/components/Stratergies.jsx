@@ -183,15 +183,7 @@ const Stratergies = () => {
     );
   };
 
-  const fetchStratergy = async () => {
-    try {
-      const strategies = await apiRequest("GET", "/api/stratergy");
-      await setstrategies(strategies.strategies);
-    }
-    catch (err) {
-      console.log(err);
-    }
-  };
+ 
 
   const fetmystartergies = async () => {
     try {
@@ -203,10 +195,47 @@ const Stratergies = () => {
     }
   };
 
+  
+  const fetchuser = async () => {
+    try {
+      const res = await apiRequest("POST", "/api/users/me");
+  
+      
+      //console.log("User fetched successfully:", res);
+  
+      // Fetch strategies immediately using the fetched user
+      Fetchstartergies(res.id);
+  
+    } catch (err) {
+      console.log(err);
+    }
+  };
+  
+  const Fetchstartergies = async (userId) => {
+    try {
+      const response = await apiRequest(
+        "GET",
+        `/api/stratergy/user/${userId}`
+      );
+  
+      const sortedStrategies = response.strategies.sort(
+        (a, b) => Number(a.state_id) - Number(b.state_id)
+      );
+  
+      setstrategies(sortedStrategies);
+
+  
+    } catch (err) {
+      console.log(err);
+    }
+  };
+  
   useEffect(() => {
-    fetchStratergy();
+    fetchuser();
     fetmystartergies();
   }, []);
+  
+
 
   const isCurrentTimeBetween = (startTime, endTime) => {
     if (!startTime || !endTime) return false;
