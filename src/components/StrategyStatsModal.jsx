@@ -306,6 +306,7 @@ const downloadStrategyReport = (statistics) => {
     </ActionIcon>
   </Group>
 }
+
       size="lg"
       centered
       radius="lg"

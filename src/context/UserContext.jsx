@@ -52,7 +52,7 @@ export const UserProvider = ({ children }) => {
         });
     } catch (err) {
       console.error('Logout failed', err.message);
-
+      
     } finally {
       setUser(null);
       setIsAuthenticated(false);

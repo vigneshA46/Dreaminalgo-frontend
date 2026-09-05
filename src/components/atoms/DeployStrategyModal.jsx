@@ -18,11 +18,16 @@ const DeployStrategyModal = ({
   strategyName,
   strategy_id
 }) => {
+
+  const [broker, setBroker] = useState("");
+  const MULTIPLIERS = Array.from({ length: 50 }, (_, i) => `${i + 1}x`); // web only goes 1x–10x
+  const DEPLOYMENT_TYPES = ['LIVE AUTO', 'PAPER TRADE'];
+
   const [multiplier, setMultiplier] = useState("1x");
   const [deploymentType, setDeploymentType] = useState("LIVE AUTO");
-  const [broker, setBroker] = useState("");
   const [brokers, setBrokers] = useState([]);
   const [loading, setLoading] = useState(false);
+
 
   useEffect(()=>{
     const fetchbasebroker = async ()=>{
@@ -55,6 +60,8 @@ const DeployStrategyModal = ({
     return;
   }
 
+  
+
   try {
     setLoading(true);
 
@@ -64,6 +71,7 @@ const DeployStrategyModal = ({
       broker_account_id: broker_id,
       multiplier: multipliervalue,
     });
+    
 
     // backend validation fail
     if (!res.success) {
@@ -84,6 +92,9 @@ const DeployStrategyModal = ({
     });
 
     onClose();
+    setTimeout(() => {
+      window.location.reload();
+      }, 150);
 
   } catch (err) {
     console.log(err);
@@ -118,7 +129,7 @@ const DeployStrategyModal = ({
         {/* MULTIPLIER */}
         <Select
           label="MULTIPLIER"
-          data={["1x", "2x", "3x","4x","5x","6x","7x","8x","9x","10x"]}
+          data={MULTIPLIERS}
           value={multiplier}
           onChange={setMultiplier}
         />
