@@ -11,9 +11,10 @@ const Stratergies = () => {
   const [strategies, setstrategies] = useState([]);
   const [mystartergieslist, setmystartergieslist] = useState([]);
   const [opened, setOpened] = useState(false);
-  const [selectedStrategy, setSelectedStrategy] = useState("");
+  const [selectedStrategy, setSelectedStrategy] = useState(null);
   const [strategyid, setstrategyid] = useState('');
   const [todaydeployment, settodaydeployment] = useState([]);
+  
 
   const [expanded, setExpanded] = useState({});
 
@@ -54,11 +55,10 @@ const Stratergies = () => {
     todaydeployment.map(d => d.strategy_id)
   );
 
-  const openModal = (strategyName, strategy_id) => {
-    setSelectedStrategy(strategyName);
-    setstrategyid(strategy_id);
+  const openModal = (strategy) => {
+    setSelectedStrategy(strategy);
     setOpened(true);
-  };
+};
 
   const filteredStrategies = strategies.filter((strategy) => {
     if (!search) return true;
@@ -425,7 +425,7 @@ const Stratergies = () => {
                               size="md"
                               radius="md"
                               disabled={isDisabled}
-                              onClick={() => openModal(strategy.name, strategy.id)}
+                              onClick={() => openModal(strategy)}
                               leftSection={isRunning && !isDeployed ? <IconClock size={16} /> : undefined}
                               style={{
                                 backgroundColor: isDisabled ? '#f1f3f5' : '#000000',
@@ -474,8 +474,7 @@ const Stratergies = () => {
       <DeployStrategyModal
         opened={opened}
         onClose={() => setOpened(false)}
-        strategyName={selectedStrategy}
-        strategy_id={strategyid}
+        strategy={selectedStrategy}
       />
     </Box>
   );

@@ -95,10 +95,7 @@ const isRunningNow = isStrategyRunning();
     cumulativePnl[strategy.id] ??
     strategy.latest_cum_pnl;
 
-  const handleExit = () => {
-    console.log("Exit strategy", strategy.id);
-    // call exitDeployment API here later
-  };
+
 
   const handleDelete = () => {
   modals.openConfirmModal({
