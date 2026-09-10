@@ -55,7 +55,8 @@ import {
   IconBook,
   IconBuildingBank,
   IconHelpCircle,
-  IconCoinFilled
+  IconCoinFilled,
+  IconDownload
 } from '@tabler/icons-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import { useUser } from '../context/UserContext';
@@ -68,6 +69,11 @@ import { notifications } from '@mantine/notifications';
 import { TotalPnlCard } from './Totalpnlcard';
 import { PaperUI } from './PaperUI';
 import { LiveUI } from './LiveUI';
+
+
+
+// Android APK served from the React public folder
+const ANDROID_APK_URL = "../assets/Dreaminalgo.apk";
 
 // Static data for portfolio performance
 const portfolioData = [
@@ -243,6 +249,7 @@ useEffect(()=>{
    const [selectedDate, setSelectedDate] = useState({});
    const [dropdownOpened, setDropdownOpened] = useState(false);
    const [tradesModalOpen, setTradesModalOpen] = useState(false);
+   const [appDownloadModalOpen, setAppDownloadModalOpen] = useState(false);
    const [tradesData, setTradesData] = useState([]);
    const [selectedLegInfo, setSelectedLegInfo] = useState(null);
    const [todaydeployment , settodaydeployment] = useState([])
@@ -252,6 +259,19 @@ useEffect(()=>{
    const [statistics , setstatistics ] = useState({});
    const [statisticsopened ,setstatisticsopened ] = useState(false)
    const [overallpnl , setoverallpnl] = useState(0)
+
+   // Download Android APK
+   const handleDownloadApp = () => {
+     const link = document.createElement("a");
+     link.href = ANDROID_APK_URL;
+     link.download = "Dreamin-Algo.apk";
+
+     document.body.appendChild(link);
+     link.click();
+     document.body.removeChild(link);
+
+     setAppDownloadModalOpen(false);
+   };
 
   /*  const totalPnl = useLiveStore((state) => {
   let total = 0;
@@ -408,7 +428,6 @@ useEffect(() => {
 
 
 
-
 useEffect(() => {
   fetchuser();
 
@@ -540,7 +559,6 @@ const fetchTradesByToken = async (strategyId, date, token) => {
     console.error(err);
   }
 };
-
 
 
 const renderExpanded = useCallback((strategy, live) => {
@@ -718,7 +736,25 @@ const renderExpanded = useCallback((strategy, live) => {
             Track your algorithmic trading performance
           </Text>
         </Box>
+
     <Flex gap="2rem" align="center" justify="center">
+
+      {/* Get App Button */}
+      <Button
+        variant="outline"
+        leftSection={<IconDownload size={17} />}
+        onClick={() => setAppDownloadModalOpen(true)}
+        radius="xl"
+        style={{
+          border: "1px solid #000",
+          color: "#000",
+          background: "#fff",
+          fontWeight: 500,
+        }}
+      >
+        Get App
+      </Button>
+
     <Flex
       align="center"
       style={{
@@ -759,6 +795,7 @@ const renderExpanded = useCallback((strategy, live) => {
         {user.tokens} TOKENS
       </Text>
     </Flex>
+
   {/* 🔔 Notification icon */}
   <Menu width={310} position="bottom-end" shadow="md">
     <Menu.Target>
@@ -771,32 +808,32 @@ const renderExpanded = useCallback((strategy, live) => {
       <Text fw={600} p="sm">Notifications</Text>
       <Divider />
 
-{notification?.map((notification) => (
-  <React.Fragment key={notification.id}>
-    <Box p="sm">
-      <Text size="sm" fw={500}>
-        {notification.title}
-      </Text>
+ {notification?.map((notification) => (
+   <React.Fragment key={notification.id}>
+     <Box p="sm">
+       <Text size="sm" fw={500}>
+         {notification.title}
+       </Text>
 
-      <Text size="xs" c="dimmed">
-        {new Date(notification.created_at).toLocaleString("en-IN", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-          hour: "numeric",
-          minute: "2-digit",
-          hour12: true,
-        })}
-      </Text>
+       <Text size="xs" c="dimmed">
+         {new Date(notification.created_at).toLocaleString("en-IN", {
+           day: "2-digit",
+           month: "short",
+           year: "numeric",
+           hour: "numeric",
+           minute: "2-digit",
+           hour12: true,
+         })}
+       </Text>
 
-      <Text size="sm" mt={4}>
-        {notification.message}
-      </Text>
-    </Box>
+       <Text size="sm" mt={4}>
+         {notification.message}
+       </Text>
+     </Box>
 
-    <Divider />
-  </React.Fragment>
-))}
+     <Divider />
+   </React.Fragment>
+ ))}
       <Divider />
       <Menu.Item>View all</Menu.Item>
     </Menu.Dropdown>
@@ -845,7 +882,6 @@ const renderExpanded = useCallback((strategy, live) => {
   </Menu.Item>
 
 
-
     <Menu.Item onClick={()=>navigation('/demat')} leftSection={<IconBuildingBank size={18} />}>
     Demat Account
   </Menu.Item>
@@ -886,7 +922,6 @@ const renderExpanded = useCallback((strategy, live) => {
 </Flex>
 
 
-
 <Flex gap={"2rem"} align={"end"} justify={"flex-start"} mb="xl">
 
   {active === "pt" && (
@@ -899,26 +934,12 @@ const renderExpanded = useCallback((strategy, live) => {
           PNL
         </Text>
         <TotalPnlCard />
-        {/* <span
-          style={{
-            color: totalPnl >= 0 ? "#16a34a" : "#dc2626",
-            fontWeight: 500,
-          }}
-        >
-          ₹{" "}
-          {totalPnl
-            ? totalPnl?.toFixed(2)
-            : parseFloat(overallpnl).toFixed(2)}
-        </span> */}
       </Box>
 
     </Group>
 
         </>
       )}
-
-      
-
 
   {/* RIGHT SIDE (buttons) */}
     <Group justify="flex-end" gap="sm" wrap="wrap">
@@ -998,10 +1019,41 @@ const renderExpanded = useCallback((strategy, live) => {
         </Box>
 
 
+      {/* Android App Download Modal */}
+      <Modal
+        centered
+        opened={appDownloadModalOpen}
+        onClose={() => setAppDownloadModalOpen(false)}
+        title="Get Dreamin Algo App"
+      >
+        <Text size="sm" c="dimmed" mb="lg">
+          Do you want to download our Dreamin Algo Android application?
+        </Text>
+
+        <Group justify="flex-end">
+          <Button
+            variant="default"
+            onClick={() => setAppDownloadModalOpen(false)}
+          >
+            Cancel
+          </Button>
+
+          <Button
+            bg="#000"
+            color="white"
+            leftSection={<IconDownload size={17} />}
+            onClick={handleDownloadApp}
+          >
+            Download App
+          </Button>
+        </Group>
+      </Modal>
+
+
       {/* Main Content Grid */}
       <Modal
   centered
-opened={tradesModalOpen}
+  opened={tradesModalOpen}
   onClose={() => setTradesModalOpen(false)}
   title={`Trades - ${selectedLegInfo?.leg || ""}`}
   size="xl"
@@ -1039,7 +1091,7 @@ opened={tradesModalOpen}
             </Table.Td>
 
 
- 
+  
               <Table.Td>{trade.event_type}</Table.Td>
 
               <Table.Td>{trade.symbol}</Table.Td>
