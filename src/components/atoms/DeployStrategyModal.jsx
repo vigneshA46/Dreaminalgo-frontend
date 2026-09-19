@@ -213,6 +213,10 @@ const DeployStrategyModal = ({
 
       setLoading(true);
 
+      console.log("deployment JSON")
+
+      console.log(strategy_id , type , broker_id , multipliervalue)
+
 
       const res = await apiRequest(
         "POST",
@@ -260,9 +264,9 @@ const DeployStrategyModal = ({
       onClose();
 
 
-      setTimeout(() => {
+      /* setTimeout(() => {
         window.location.reload();
-      }, 150);
+      }, 150); */
 
 
     } catch (err) {

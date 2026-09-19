@@ -28,12 +28,12 @@ import { useState } from "react";
 
 const menu = [
   { label: "Dashboard", icon: IconHome },
-  { label: "Create Signal", icon: IconDeviceImacPlus },
-  { label: "Trader Signal", icon: IconPresentationAnalytics },
+  //{ label: "Create Signal", icon: IconDeviceImacPlus },
+  //{ label: "Trader Signal", icon: IconPresentationAnalytics },
   { label: "Strategies", icon: IconChartHistogram },
   //{ label: "Subscriptions", icon: IconFileDescription },
   { label: "Reports", icon: IconReportAnalytics },
-  { label: "Create Strategy", icon: IconSquareRoundedPlus },
+  //{ label: "Create Strategy", icon: IconSquareRoundedPlus },
   { label: "Plans & Pricing", icon: IconCoinRupee},
   { label: "Tutorials", icon: IconBrandParsinta},
 ];
