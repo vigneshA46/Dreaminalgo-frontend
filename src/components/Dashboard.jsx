@@ -512,6 +512,23 @@ useEffect(() => {
 }, [dates]);
  */
 
+// Strategies whose legs show their created_at time (backend returns every leg for these)
+const SHOW_LEG_CREATED_AT_IDS = ["4f62a290-efc7-4ed5-889d-0e10d1ed6a31"];
+
+const formatIST = (value) =>
+  value
+    ? new Date(value).toLocaleString("en-IN", {
+        timeZone: "Asia/Kolkata",
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true
+      })
+    : "-";
+
 const fetchLegsByDate = async (strategyId, date) => {
   try {
     const res = await apiRequest(
@@ -639,7 +656,7 @@ const renderExpanded = useCallback((strategy, live) => {
     const val = qty * (ltp || 0);
 
       return (
-        <Table.Tr key={leg.leg}>
+        <Table.Tr key={leg.id ?? leg.leg}>
           <Table.Td>{i + 1}</Table.Td>
 
           <Table.Td>
@@ -666,6 +683,11 @@ const renderExpanded = useCallback((strategy, live) => {
             <Text size="xs" c="dimmed">
               {leg.leg}
             </Text>
+            {SHOW_LEG_CREATED_AT_IDS.includes(strategy.id) && (
+              <Text size="xs" c="dimmed">
+                {formatIST(leg.created_at)} IST
+              </Text>
+            )}
           </Table.Td>
 
           {/* <Table.Td>{qty}</Table.Td> */}
