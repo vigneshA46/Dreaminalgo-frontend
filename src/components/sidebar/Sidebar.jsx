@@ -18,7 +18,8 @@ import {
   IconSquareRoundedPlus,
   IconPresentationAnalytics,
   IconBrandParsinta,
-  IconDeviceImacPlus
+  IconDeviceImacPlus,
+  IconHistory
 } from "@tabler/icons-react";
 import classes from "./Sidebar.module.css";
 import dreaminbg from "../../assets/dreaminbg.jpg"
@@ -33,6 +34,7 @@ const menu = [
   { label: "Strategies", icon: IconChartHistogram },
   //{ label: "Subscriptions", icon: IconFileDescription },
   { label: "Reports", icon: IconReportAnalytics },
+  { label: "Backtest", icon: IconHistory },
   //{ label: "Create Strategy", icon: IconSquareRoundedPlus },
   { label: "Plans & Pricing", icon: IconCoinRupee},
   { label: "Tutorials", icon: IconBrandParsinta},

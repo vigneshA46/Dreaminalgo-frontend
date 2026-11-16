@@ -30,6 +30,8 @@ import AliceCallback from './components/Alicecallback.jsx';
 import UpstoxCallback from './components/UpstoxCallback.jsx';
 import ChangePassword from './components/ChangePassword.jsx';
 import Flatradecallback from './components/Flartradecallback.jsx';
+import Backtest from './components/backtest/Backtest.jsx';
+import BacktestStrategy from './components/backtest/BacktestStrategy.jsx';
 
 
 function App() {
@@ -88,6 +90,8 @@ function App() {
             <Route path="websocket" element={<StrategyLive />} />
             <Route path="demat" element={<Demataccount />} />
             <Route path="changepassword" element={<ChangePassword />} />
+            <Route path="backtest" element={<Backtest />} />
+            <Route path="backtest/:key" element={<BacktestStrategy />} />
 
           </Route>
 
