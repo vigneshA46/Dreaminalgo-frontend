@@ -3,6 +3,7 @@ import { Badge, SimpleGrid, Text } from "@mantine/core";
 import { ExitCell, PivotPnlPanel, PriceTime, SideBadge } from "./BacktestRunPage";
 import { inr, pnlColor } from "./backtestUtils";
 import { LevelsTable, TargetsReachedPanel } from "./LevelBreakoutPanels";
+import { HourlyCyclesPanel } from "./HourlyCyclesPanel";
 
 /*
  * How each backtest's result is shown (stat tiles, trade-table columns, extra panels).
@@ -203,9 +204,74 @@ const NIFTY_OPTION_LEVEL_BREAKOUT = {
   ),
 };
 
+// ---------- nifty_hourly_range_touch ----------
+const NIFTY_HOURLY_RANGE_TOUCH = {
+  subtitle:
+    "NIFTY hourly High / Low (first 5 hours), each traded in the next hour. Touch a line → 3-min NIFTY close beyond it with " +
+    "line < avg < close → buy ATM CE / PE, 1 lot. SL 3-min close back through the line. Cycle limits −₹3,500 / +₹5,000, max 2 entries.",
+
+  stats: (day, result) => {
+    const stopped = (day.cycles || []).filter((c) => c.stoppedBy);
+    return [
+      { label: "Day P&L", value: inr(day.dayPnl), color: pnlColor(day.dayPnl) },
+      { label: "CE P&L", value: inr(day.ce.pnl), color: pnlColor(day.ce.pnl) },
+      { label: "PE P&L", value: inr(day.pe.pnl), color: pnlColor(day.pe.pnl) },
+      { label: "Trades", value: day.totalTrades, sub: `${day.targets} cycle target · ${day.stopLosses} SL` },
+      {
+        label: "Win rate",
+        value: `${result.summary?.winRatePct ?? 0}%`,
+        sub: `avg win ${inr(result.summary?.avgWin)} · avg loss ${inr(result.summary?.avgLoss)}`,
+      },
+      {
+        label: "Cycles stopped",
+        value: `${stopped.length} / ${day.cycles?.length ?? 5}`,
+        sub: stopped.map((c) => `C${c.cycle} ${c.stoppedBy.toLowerCase()}`).join(" · ") || "none",
+      },
+    ];
+  },
+
+  tradeColumns: [
+    { header: "Cycle", render: (t) => <Badge variant="outline" radius="sm">C{t.cycle}</Badge> },
+    { header: "Side", render: (t) => <SideBadge side={t.side} /> },
+    { header: "Strike", render: (t) => <Text size="sm" fw={600}>{t.strike}</Text> },
+    { header: "Entry", render: (t) => <PriceTime price={t.entryPrice} time={t.entryTime} /> },
+    { header: "Exit", render: (t) => <PriceTime price={t.exitPrice} time={t.exitTime} /> },
+    {
+      header: "Line",
+      render: (t) => (
+        <Text size="sm" c={t.line === "HIGH" ? "teal" : "red"}>
+          {t.line} {t.lineValue}
+        </Text>
+      ),
+    },
+    {
+      header: "Signal candle",
+      render: (t) => (
+        <>
+          <Text size="sm">close {t.signalCandle.close}</Text>
+          <Text size="xs" c="dimmed">
+            avg {t.signalCandle.avg}
+          </Text>
+        </>
+      ),
+    },
+    { header: "Exit type", wrap: true, render: (t) => <ExitCell t={t} /> },
+    { header: "Points", align: "right", render: (t) => <Text size="sm" c={pnlColor(t.points)}>{t.points}</Text> },
+    { header: "P&L", align: "right", render: (t) => <Text size="sm" fw={700} c={pnlColor(t.pnl)}>{inr(t.pnl)}</Text> },
+    { header: "Cycle P&L", align: "right", render: (t) => <Text size="sm" c={pnlColor(t.cyclePnlAfter)}>{inr(t.cyclePnlAfter)}</Text> },
+  ],
+
+  extraPanels: (day) => <HourlyCyclesPanel cycles={day.cycles} />,
+};
+
+// ---------- nifty_hourly_range_touch_1m (same view, 1-min entry candles) ----------
+const NIFTY_HOURLY_RANGE_TOUCH_1M = NIFTY_HOURLY_RANGE_TOUCH;
+
 export const STRATEGY_VIEWS = {
   pivot_option_buying_cum: PIVOT_OPTION_BUYING_CUM,
   nifty_option_pivot_buffer: NIFTY_OPTION_PIVOT_BUFFER,
   nifty_option_pivot_fixed_target: NIFTY_OPTION_PIVOT_FIXED_TARGET,
   nifty_option_level_breakout: NIFTY_OPTION_LEVEL_BREAKOUT,
+  nifty_hourly_range_touch: NIFTY_HOURLY_RANGE_TOUCH,
+  nifty_hourly_range_touch_1m: NIFTY_HOURLY_RANGE_TOUCH_1M,
 };
