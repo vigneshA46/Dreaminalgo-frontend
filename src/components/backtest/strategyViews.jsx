@@ -4,6 +4,8 @@ import { ExitCell, PivotPnlPanel, PriceTime, SideBadge } from "./BacktestRunPage
 import { inr, pnlColor } from "./backtestUtils";
 import { LevelsTable, TargetsReachedPanel } from "./LevelBreakoutPanels";
 import { HourlyCyclesPanel } from "./HourlyCyclesPanel";
+import { HourlyOptionsForm } from "./HourlyOptionsForm";
+import { HOURLY_DEFAULT_OPTIONS, hourlyOptionsValid } from "./hourlyOptions";
 
 /*
  * How each backtest's result is shown (stat tiles, trade-table columns, extra panels).
@@ -261,11 +263,19 @@ const NIFTY_HOURLY_RANGE_TOUCH = {
     { header: "Cycle P&L", align: "right", render: (t) => <Text size="sm" c={pnlColor(t.cyclePnlAfter)}>{inr(t.cyclePnlAfter)}</Text> },
   ],
 
-  extraPanels: (day) => <HourlyCyclesPanel cycles={day.cycles} />,
+  extraPanels: (day, result) => <HourlyCyclesPanel cycles={day.cycles} params={result.params} />,
 };
 
 // ---------- nifty_hourly_range_touch_1m (same view, 1-min entry candles) ----------
 const NIFTY_HOURLY_RANGE_TOUCH_1M = NIFTY_HOURLY_RANGE_TOUCH;
+
+// ---------- nifty_hourly_range_touch_custom (same view + settings form) ----------
+const NIFTY_HOURLY_RANGE_TOUCH_CUSTOM = {
+  ...NIFTY_HOURLY_RANGE_TOUCH,
+  defaultOptions: HOURLY_DEFAULT_OPTIONS,
+  OptionsForm: HourlyOptionsForm,
+  optionsValid: hourlyOptionsValid,
+};
 
 export const STRATEGY_VIEWS = {
   pivot_option_buying_cum: PIVOT_OPTION_BUYING_CUM,
@@ -274,4 +284,5 @@ export const STRATEGY_VIEWS = {
   nifty_option_level_breakout: NIFTY_OPTION_LEVEL_BREAKOUT,
   nifty_hourly_range_touch: NIFTY_HOURLY_RANGE_TOUCH,
   nifty_hourly_range_touch_1m: NIFTY_HOURLY_RANGE_TOUCH_1M,
+  nifty_hourly_range_touch_custom: NIFTY_HOURLY_RANGE_TOUCH_CUSTOM,
 };

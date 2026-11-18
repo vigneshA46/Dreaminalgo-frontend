@@ -42,6 +42,7 @@ import "@mantine/dates/styles.css";
  * minus the Dhan credential inputs: the backend runs it on the platform's Dhan data).
  * Each strategy passes a config:
  *   key, title, subtitle
+ *   defaultOptions?, OptionsForm?, optionsValid?  settings sent as body.options (strategies with settings)
  *   stats(day, result)   -> [{ label, value, color?, sub? }]   tiles under the date
  *   tradeColumns         -> [{ header, align?, wrap?, render(t) }]  trades table (cells stay on one line unless wrap)
  *   extraPanels?(day, result) -> JSX                            strategy-specific sections
@@ -321,6 +322,7 @@ const BacktestRunPage = ({ config }) => {
   const navigate = useNavigate();
 
   const [date, setDate] = useState(null);
+  const [options, setOptions] = useState(config.defaultOptions || null);
 
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
@@ -330,7 +332,8 @@ const BacktestRunPage = ({ config }) => {
   const minDate = dayjs().subtract(5, "year").add(1, "day").format("YYYY-MM-DD");
   const isWeekend = (d) => [0, 6].includes(dayjs(d).day());
 
-  const canRun = date && !loading;
+  const optionsOk = !options || !config.optionsValid || config.optionsValid(options);
+  const canRun = date && optionsOk && !loading;
 
   const runBacktest = async () => {
     const day = dayjs(date).format("YYYY-MM-DD");
@@ -341,7 +344,7 @@ const BacktestRunPage = ({ config }) => {
     try {
       let res;
       try {
-        res = await api.post(url, { date: day });
+        res = await api.post(url, { date: day, ...(options ? { options } : {}) });
       } catch (err) {
         // session expired: refresh once, then retry (axios directly to keep the server's error message)
         if (err.response?.status !== 401) throw err;
@@ -351,7 +354,7 @@ const BacktestRunPage = ({ config }) => {
           window.location.href = "/auth/login";
           return;
         }
-        res = await api.post(url, { date: day });
+        res = await api.post(url, { date: day, ...(options ? { options } : {}) });
       }
       setResult(res.data);
     } catch (err) {
@@ -408,6 +411,11 @@ const BacktestRunPage = ({ config }) => {
             {loading ? "Running…" : "Run backtest"}
           </Button>
         </SimpleGrid>
+        {config.OptionsForm && options && (
+          <Box mt="md">
+            <config.OptionsForm value={options} onChange={setOptions} disabled={loading} />
+          </Box>
+        )}
         <Text size="xs" c="dimmed" mt="sm">
           Pick any weekday up to yesterday. The backtest runs on 1-minute NIFTY option data for that day.
         </Text>
