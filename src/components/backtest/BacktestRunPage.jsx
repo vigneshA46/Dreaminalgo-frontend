@@ -43,6 +43,7 @@ import "@mantine/dates/styles.css";
  * Each strategy passes a config:
  *   key, title, subtitle
  *   defaultOptions?, OptionsForm?, optionsValid?  settings sent as body.options (strategies with settings)
+ *   bottomPanels?(day, result) -> JSX                           shown at the very bottom of the result
  *   stats(day, result)   -> [{ label, value, color?, sub? }]   tiles under the date
  *   tradeColumns         -> [{ header, align?, wrap?, render(t) }]  trades table (cells stay on one line unless wrap)
  *   extraPanels?(day, result) -> JSX                            strategy-specific sections
@@ -634,6 +635,8 @@ const BacktestRunPage = ({ config }) => {
               </Accordion.Panel>
             </Accordion.Item>
           </Accordion>
+
+          {config.bottomPanels?.(day, result)}
 
           <Text size="xs" c="dimmed">
             Lot size {result.params?.lotSize} · gross P&L (no brokerage / taxes / slippage) · fills simulated from 1-minute bars.

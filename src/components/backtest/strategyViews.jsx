@@ -5,6 +5,7 @@ import { inr, pnlColor } from "./backtestUtils";
 import { LevelsTable, TargetsReachedPanel } from "./LevelBreakoutPanels";
 import { HourlyCyclesPanel } from "./HourlyCyclesPanel";
 import { HourlyOptionsForm } from "./HourlyOptionsForm";
+import { IndexCandlesPanel } from "./IndexCandlesPanel";
 import { HOURLY_DEFAULT_OPTIONS, hourlyOptionsValid } from "./hourlyOptions";
 
 /*
@@ -289,6 +290,9 @@ const NIFTY_HOURLY_RANGE_TOUCH_CUSTOM = {
   defaultOptions: HOURLY_DEFAULT_OPTIONS,
   OptionsForm: HourlyOptionsForm,
   optionsValid: hourlyOptionsValid,
+  bottomPanels: (day, result) => (
+    <IndexCandlesPanel candles={day.indexCandles} trades={day.trades} timeframe={result.params?.candleMinutes} />
+  ),
 };
 
 export const STRATEGY_VIEWS = {
