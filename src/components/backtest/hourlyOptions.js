@@ -25,6 +25,6 @@ export const HOURLY_LIMITS = [
 
 export const touchBufferValid = (v) => v !== "" && Number(v) >= 0 && Number(v) <= 100;
 
-/** Enabled limits need a value above 0; touch buffer 0-100 points; touch memory 1-100 candles. */
+/** Enabled limits need a value above 0; touch buffer 0-100 points. */
 export const hourlyOptionsValid = (o) =>
   touchBufferValid(o.touchBuffer) && HOURLY_LIMITS.every(([k]) => !o[k].enabled || Number(o[k].value) > 0);

@@ -287,6 +287,7 @@ const NIFTY_HOURLY_RANGE_TOUCH_1M = NIFTY_HOURLY_RANGE_TOUCH;
 // ---------- nifty_hourly_range_touch_custom (same view + settings form) ----------
 const NIFTY_HOURLY_RANGE_TOUCH_CUSTOM = {
   ...NIFTY_HOURLY_RANGE_TOUCH,
+  dateRange: true,
   defaultOptions: HOURLY_DEFAULT_OPTIONS,
   OptionsForm: HourlyOptionsForm,
   optionsValid: hourlyOptionsValid,

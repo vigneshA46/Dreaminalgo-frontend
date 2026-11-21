@@ -316,6 +316,211 @@ const LogLines = ({ logs }) => (
 );
 
 // --------------------------------------------------
+// One day's stats, legs, P&L curve, trades and strategy panels (used by single-day and range views)
+// --------------------------------------------------
+
+const DayDetails = ({ day, result, config }) => (
+  <Stack gap="lg" miw={0}>
+    <SimpleGrid cols={{ base: 2, sm: 3, lg: 6 }} spacing="md">
+      {config.stats(day, result).map((s) => (
+        <Stat key={s.label} {...s} />
+      ))}
+    </SimpleGrid>
+
+    <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md">
+      <LegCard name="CE" leg={day.ce} />
+      <LegCard name="PE" leg={day.pe} />
+    </SimpleGrid>
+
+    {day.trades.length > 0 && (
+      <Paper withBorder radius="md" p="md">
+        <Text fw={600} mb="xs">
+          Realized P&L through the day
+        </Text>
+        <PnlCurve trades={day.trades} />
+      </Paper>
+    )}
+
+    <Paper withBorder radius="md" p="md">
+      <Text fw={600} mb="sm">
+        Trades ({day.trades.length})
+      </Text>
+      {day.trades.length === 0 ? (
+        <Text size="sm" c="dimmed">
+          No trades on this day.
+        </Text>
+      ) : (
+        <Table.ScrollContainer minWidth={1100}>
+          <Table striped highlightOnHover verticalSpacing="xs" fz="sm">
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>#</Table.Th>
+                {config.tradeColumns.map((c) => (
+                  <Table.Th key={c.header} ta={c.align}>
+                    {c.header}
+                  </Table.Th>
+                ))}
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {day.trades.map((t, i) => (
+                <Table.Tr key={i}>
+                  <Table.Td>{i + 1}</Table.Td>
+                  {config.tradeColumns.map((c) => (
+                    <Table.Td key={c.header} ta={c.align} style={c.wrap ? undefined : { whiteSpace: "nowrap" }}>
+                      {c.render(t)}
+                    </Table.Td>
+                  ))}
+                </Table.Tr>
+              ))}
+            </Table.Tbody>
+          </Table>
+        </Table.ScrollContainer>
+      )}
+    </Paper>
+
+    {config.extraPanels?.(day, result)}
+  </Stack>
+);
+
+/** Win rate etc. of ONE day, so the per-day tiles of a range run show that day and not the whole range. */
+const dayResult = (day, result) => {
+  const wins = day.trades.filter((t) => t.pnl > 0);
+  const losses = day.trades.filter((t) => t.pnl <= 0);
+  const avg = (a) => (a.length ? Math.round((a.reduce((x, t) => x + t.pnl, 0) / a.length) * 100) / 100 : 0);
+  return {
+    ...result,
+    summary: {
+      ...result.summary,
+      winRatePct: day.trades.length ? Math.round((1000 * wins.length) / day.trades.length) / 10 : 0,
+      avgWin: avg(wins),
+      avgLoss: avg(losses),
+    },
+  };
+};
+
+/** Overall numbers of a multi-day run + each day as a collapsible row headed by its day P&L. */
+const RangeResults = ({ result, config }) => {
+  const sm = result.summary;
+  const days = result.days || [];
+  const tiles = sm
+    ? [
+        { label: "Net P&L", value: inr(sm.netPnl), color: pnlColor(sm.netPnl), sub: `avg ${inr(sm.avgPnlPerDay)} / day` },
+        { label: "CE P&L", value: inr(sm.cePnl), color: pnlColor(sm.cePnl) },
+        { label: "PE P&L", value: inr(sm.pePnl), color: pnlColor(sm.pePnl) },
+        { label: "Days traded", value: sm.daysTraded, sub: `${sm.winDays} green · ${sm.lossDays} red · ${sm.flatDays} flat` },
+        { label: "Trades", value: sm.totalTrades, sub: `${sm.winningTrades} won · ${sm.losingTrades} lost` },
+        { label: "Win rate", value: `${sm.winRatePct}%`, sub: `avg win ${inr(sm.avgWin)} · avg loss ${inr(sm.avgLoss)}` },
+        { label: "Profit factor", value: sm.profitFactor ?? "-" },
+        { label: "Max drawdown", value: inr(sm.maxDrawdown), color: pnlColor(sm.maxDrawdown), sub: `worst losing streak ${sm.longestLosingStreakDays} day(s)` },
+        { label: "Best day", value: inr(sm.bestDay.pnl), color: pnlColor(sm.bestDay.pnl), sub: dayjs(sm.bestDay.date).format("DD MMM") },
+        { label: "Worst day", value: inr(sm.worstDay.pnl), color: pnlColor(sm.worstDay.pnl), sub: dayjs(sm.worstDay.date).format("DD MMM") },
+      ]
+    : [];
+
+  return (
+    <Stack gap="lg" miw={0}>
+      {tiles.length > 0 && (
+        <Paper withBorder radius="md" p="md">
+          <Group justify="space-between" mb="sm">
+            <Text fw={700} size="lg">
+              Overall · {days[0]?.date && dayjs(days[0].date).format("DD MMM")} – {days.length && dayjs(days[days.length - 1].date).format("DD MMM YYYY")}
+            </Text>
+            <Text size="xs" c="dimmed">
+              {result.meta?.durationSec}s
+            </Text>
+          </Group>
+          <SimpleGrid cols={{ base: 2, sm: 3, lg: 5 }} spacing="md">
+            {tiles.map((t) => (
+              <Stat key={t.label} {...t} />
+            ))}
+          </SimpleGrid>
+        </Paper>
+      )}
+
+      {result.analysis?.length > 0 && (
+        <Paper withBorder radius="md" p="md">
+          <Text fw={600} mb="sm">
+            Analysis
+          </Text>
+          <List spacing={6} size="sm">
+            {result.analysis.map((a, i) => (
+              <List.Item key={i}>{a}</List.Item>
+            ))}
+          </List>
+        </Paper>
+      )}
+
+      <Stack gap="xs" miw={0}>
+        <Text fw={600}>Days ({days.length})</Text>
+        <Accordion variant="separated" radius="md" chevronPosition="left">
+          {days.map((d) =>
+            d.status === "ok" ? (
+              <Accordion.Item key={d.date} value={d.date}>
+                <Accordion.Control>
+                  <Group justify="space-between" wrap="nowrap" pr="sm">
+                    <Group gap="xs">
+                      <Text fw={600}>{dayjs(d.date).format("DD MMM YYYY, ddd")}</Text>
+                      {d.expiryDay && (
+                        <Badge color="violet" variant="light" size="sm">
+                          Expiry
+                        </Badge>
+                      )}
+                      <Text size="xs" c="dimmed">
+                        {d.totalTrades} trade{d.totalTrades === 1 ? "" : "s"}
+                      </Text>
+                    </Group>
+                    <Text fw={700} c={pnlColor(d.dayPnl)}>
+                      {inr(d.dayPnl)}
+                    </Text>
+                  </Group>
+                </Accordion.Control>
+                <Accordion.Panel>
+                  <DayDetails day={d} result={dayResult(d, result)} config={config} />
+                </Accordion.Panel>
+              </Accordion.Item>
+            ) : (
+              <Paper key={d.date} withBorder radius="md" px="md" py="sm">
+                <Group justify="space-between" wrap="nowrap">
+                  <Text fw={600} c="dimmed">
+                    {dayjs(d.date).format("DD MMM YYYY, ddd")}
+                  </Text>
+                  <Group gap="xs">
+                    <Text size="xs" c="dimmed">
+                      {d.message}
+                    </Text>
+                    <Badge color={d.status === "holiday" ? "yellow" : "red"} variant="light">
+                      {d.status}
+                    </Badge>
+                  </Group>
+                </Group>
+              </Paper>
+            ),
+          )}
+        </Accordion>
+      </Stack>
+
+      {result.errors?.length > 0 && (
+        <Accordion variant="separated" radius="md">
+          <Accordion.Item value="errors">
+            <Accordion.Control>
+              <Text c="red">Errors ({result.errors.length})</Text>
+            </Accordion.Control>
+            <Accordion.Panel>
+              <Code block>{JSON.stringify(result.errors, null, 2)}</Code>
+            </Accordion.Panel>
+          </Accordion.Item>
+        </Accordion>
+      )}
+
+      <Text size="xs" c="dimmed">
+        Lot size {result.params?.lotSize} · gross P&L (no brokerage / taxes / slippage) · fills simulated from 1-minute bars.
+      </Text>
+    </Stack>
+  );
+};
+
+// --------------------------------------------------
 // Page
 // --------------------------------------------------
 
@@ -323,6 +528,8 @@ const BacktestRunPage = ({ config }) => {
   const navigate = useNavigate();
 
   const [date, setDate] = useState(null);
+  const [toDate, setToDate] = useState(null);
+  const range = !!config.dateRange;
   const [options, setOptions] = useState(config.defaultOptions || null);
 
   const [loading, setLoading] = useState(false);
@@ -334,10 +541,12 @@ const BacktestRunPage = ({ config }) => {
   const isWeekend = (d) => [0, 6].includes(dayjs(d).day());
 
   const optionsOk = !options || !config.optionsValid || config.optionsValid(options);
-  const canRun = date && optionsOk && !loading;
+  const rangeOk = !range || (toDate && !dayjs(toDate).isBefore(dayjs(date), "day") && dayjs(toDate).diff(dayjs(date), "day") < 31);
+  const canRun = date && rangeOk && optionsOk && !loading;
 
   const runBacktest = async () => {
     const day = dayjs(date).format("YYYY-MM-DD");
+    const last = range ? dayjs(toDate).format("YYYY-MM-DD") : day;
     setLoading(true);
     setError(null);
     setResult(null);
@@ -345,7 +554,7 @@ const BacktestRunPage = ({ config }) => {
     try {
       let res;
       try {
-        res = await api.post(url, { date: day, ...(options ? { options } : {}) });
+        res = await api.post(url, { date: day, ...(range ? { toDate: last } : {}), ...(options ? { options } : {}) });
       } catch (err) {
         // session expired: refresh once, then retry (axios directly to keep the server's error message)
         if (err.response?.status !== 401) throw err;
@@ -355,7 +564,7 @@ const BacktestRunPage = ({ config }) => {
           window.location.href = "/auth/login";
           return;
         }
-        res = await api.post(url, { date: day, ...(options ? { options } : {}) });
+        res = await api.post(url, { date: day, ...(range ? { toDate: last } : {}), ...(options ? { options } : {}) });
       }
       setResult(res.data);
     } catch (err) {
@@ -375,7 +584,7 @@ const BacktestRunPage = ({ config }) => {
   const day = result?.days?.find((d) => d.status === "ok") || result?.days?.[0];
 
   return (
-    <Box p="md" maw={1300}>
+    <Box p="md" maw={1300} style={{ width: 0, minWidth: "100%" }}>
       {/* Header */}
       <Anchor size="sm" onClick={() => navigate("/backtest")} mb="xs" style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
         <IconArrowLeft size={14} /> Backtest
@@ -389,9 +598,9 @@ const BacktestRunPage = ({ config }) => {
 
       {/* Inputs */}
       <Paper withBorder radius="md" p="md" mb="lg">
-        <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md" maw={640}>
+        <SimpleGrid cols={{ base: 1, sm: 2, lg: range ? 3 : 2 }} spacing="md" maw={range ? 960 : 640}>
           <DateInput
-            label="Date"
+            label={range ? "From date" : "Date"}
             placeholder="Pick a trading day"
             value={date}
             onChange={setDate}
@@ -403,6 +612,21 @@ const BacktestRunPage = ({ config }) => {
             required
             clearable
           />
+          {range && (
+            <DateInput
+              label="To date"
+              placeholder="Pick a trading day"
+              value={toDate}
+              onChange={setToDate}
+              valueFormat="DD MMM YYYY (ddd)"
+              defaultDate={date || yesterday}
+              minDate={date ? dayjs(date).format("YYYY-MM-DD") : minDate}
+              maxDate={yesterday}
+              excludeDate={isWeekend}
+              required
+              clearable
+            />
+          )}
           <Button
             mt={{ base: 0, sm: 25 }}
             leftSection={loading ? <Loader size={16} color="white" /> : <IconPlayerPlay size={16} />}
@@ -418,7 +642,7 @@ const BacktestRunPage = ({ config }) => {
           </Box>
         )}
         <Text size="xs" c="dimmed" mt="sm">
-          Pick any weekday up to yesterday. The backtest runs on 1-minute NIFTY option data for that day.
+          Pick any weekday up to yesterday{range ? " (a range of up to 31 days)" : ""}. The backtest runs on 1-minute NIFTY option data for that day.
         </Text>
       </Paper>
 
@@ -427,9 +651,9 @@ const BacktestRunPage = ({ config }) => {
         <Paper withBorder radius="md" p="xl" mb="lg">
           <Stack align="center" gap="xs">
             <Loader />
-            <Text fw={500}>Loading option data and simulating the day…</Text>
+            <Text fw={500}>{range ? "Loading option data and simulating each day…" : "Loading option data and simulating the day…"}</Text>
             <Text size="sm" c="dimmed">
-              Usually 10–30 seconds
+              {range ? "About 20–40 seconds per trading day, so a month takes several minutes — keep this tab open" : "Usually 10–30 seconds"}
             </Text>
           </Stack>
         </Paper>
@@ -460,19 +684,21 @@ const BacktestRunPage = ({ config }) => {
       )}
 
       {/* Day not traded (holiday / skipped / data error) */}
-      {result && day && day.status !== "ok" && (
+      {!range && result && day && day.status !== "ok" && (
         <Alert color={day.status === "holiday" ? "yellow" : "red"} radius="md" mb="lg" icon={<IconAlertCircle />} title={`${day.date} (${day.day}) — ${day.status}`}>
           {day.message}
         </Alert>
       )}
-      {result && !day && (
+      {!range && result && !day && (
         <Alert color="yellow" radius="md" mb="lg" icon={<IconAlertCircle />} title="No trading day in this selection">
           The selected date returned no data.
         </Alert>
       )}
 
       {/* Result */}
-      {result && day?.status === "ok" && (
+      {range && result && <RangeResults result={result} config={config} />}
+
+      {!range && result && day?.status === "ok" && (
         <Stack gap="lg">
           <Group justify="space-between">
             <Group gap="xs">
@@ -493,70 +719,7 @@ const BacktestRunPage = ({ config }) => {
             </Text>
           </Group>
 
-          {/* Stats */}
-          <SimpleGrid cols={{ base: 2, sm: 3, lg: 6 }} spacing="md">
-            {config.stats(day, result).map((s) => (
-              <Stat key={s.label} {...s} />
-            ))}
-          </SimpleGrid>
-
-          {/* Legs */}
-          <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md">
-            <LegCard name="CE" leg={day.ce} />
-            <LegCard name="PE" leg={day.pe} />
-          </SimpleGrid>
-
-          {/* P&L curve */}
-          {day.trades.length > 0 && (
-            <Paper withBorder radius="md" p="md">
-              <Text fw={600} mb="xs">
-                Realized P&L through the day
-              </Text>
-              <PnlCurve trades={day.trades} />
-            </Paper>
-          )}
-
-          {/* Trades */}
-          <Paper withBorder radius="md" p="md">
-            <Text fw={600} mb="sm">
-              Trades ({day.trades.length})
-            </Text>
-            {day.trades.length === 0 ? (
-              <Text size="sm" c="dimmed">
-                No trades on this day.
-              </Text>
-            ) : (
-              <Table.ScrollContainer minWidth={1100}>
-                <Table striped highlightOnHover verticalSpacing="xs" fz="sm">
-                  <Table.Thead>
-                    <Table.Tr>
-                      <Table.Th>#</Table.Th>
-                      {config.tradeColumns.map((c) => (
-                        <Table.Th key={c.header} ta={c.align}>
-                          {c.header}
-                        </Table.Th>
-                      ))}
-                    </Table.Tr>
-                  </Table.Thead>
-                  <Table.Tbody>
-                    {day.trades.map((t, i) => (
-                      <Table.Tr key={i}>
-                        <Table.Td>{i + 1}</Table.Td>
-                        {config.tradeColumns.map((c) => (
-                          <Table.Td key={c.header} ta={c.align} style={c.wrap ? undefined : { whiteSpace: "nowrap" }}>
-                            {c.render(t)}
-                          </Table.Td>
-                        ))}
-                      </Table.Tr>
-                    ))}
-                  </Table.Tbody>
-                </Table>
-              </Table.ScrollContainer>
-            )}
-          </Paper>
-
-          {/* Strategy-specific sections */}
-          {config.extraPanels?.(day, result)}
+          <DayDetails day={day} result={result} config={config} />
 
           {/* Analysis */}
           {result.analysis?.length > 0 && (
