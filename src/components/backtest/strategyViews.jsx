@@ -7,6 +7,7 @@ import { HourlyCyclesPanel } from "./HourlyCyclesPanel";
 import { HourlyOptionsForm } from "./HourlyOptionsForm";
 import { IndexCandlesPanel } from "./IndexCandlesPanel";
 import { HOURLY_DEFAULT_OPTIONS, hourlyOptionsValid } from "./hourlyOptions";
+import { BearishCandlesPanel, BearishSelectionPanel } from "./BearishPanels";
 
 /*
  * How each backtest's result is shown (stat tiles, trade-table columns, extra panels).
@@ -296,6 +297,67 @@ const NIFTY_HOURLY_RANGE_TOUCH_CUSTOM = {
   ),
 };
 
+// ---------- nifty_bearish_breakout_option_buying ----------
+const NIFTY_BEARISH_BREAKOUT_OPTION_BUYING = {
+  subtitle:
+    "CE and PE run independently, each on one strike priced at or just above 200 at 09:30. The latest bearish 15-min candle marks its high; a tick above high + 4 buys 1 lot, " +
+    "SL = low of that 15-min candle, then the stop follows the low of every completed 5-min Heikin Ashi candle (up or down). After an exit a fresh bearish 15-min candle is needed. Square off 15:14.",
+
+  stats: (day, result) => [
+    { label: "Day P&L", value: inr(day.dayPnl), color: pnlColor(day.dayPnl) },
+    { label: "CE P&L", value: inr(day.ce.pnl), color: pnlColor(day.ce.pnl) },
+    { label: "PE P&L", value: inr(day.pe.pnl), color: pnlColor(day.pe.pnl) },
+    { label: "Trades", value: day.totalTrades, sub: `${day.trails} trail · ${day.stopLosses} candle-low SL` },
+    {
+      label: "Win rate",
+      value: `${result.summary?.winRatePct ?? 0}%`,
+      sub: `avg win ${inr(result.summary?.avgWin)} · avg loss ${inr(result.summary?.avgLoss)}`,
+    },
+    { label: "Strikes", value: `${day.selection?.CE?.strike ?? "-"} / ${day.selection?.PE?.strike ?? "-"}`, sub: "CE / PE at 09:30" },
+  ],
+
+  tradeColumns: [
+    { header: "Side", render: (t) => <SideBadge side={t.side} /> },
+    { header: "Strike", render: (t) => <Text size="sm" fw={600}>{t.strike}</Text> },
+    { header: "Entry", render: (t) => <PriceTime price={t.entryPrice} time={t.entryTime} /> },
+    { header: "Exit", render: (t) => <PriceTime price={t.exitPrice} time={t.exitTime} /> },
+    {
+      header: "Bearish candle",
+      render: (t) => (
+        <>
+          <Text size="sm">{t.bearishCandle?.start}</Text>
+          <Text size="xs" c="dimmed">
+            high {t.markedHigh} → above {t.entryLevel}
+          </Text>
+        </>
+      ),
+    },
+    { header: "Initial SL", render: (t) => <Text size="sm" c="red">{t.initialSl}</Text> },
+    {
+      header: "Last stop",
+      render: (t) => (
+        <>
+          <Text size="sm">{t.finalSl}</Text>
+          <Badge size="xs" variant="light" color={t.slMoves?.length ? "orange" : "gray"}>
+            {t.slMoves?.length ? `${t.slMoves.length} HA move${t.slMoves.length === 1 ? "" : "s"}` : "candle low"}
+          </Badge>
+        </>
+      ),
+    },
+    { header: "Exit type", wrap: true, render: (t) => <ExitCell t={t} /> },
+    { header: "Points", align: "right", render: (t) => <Text size="sm" c={pnlColor(t.points)}>{t.points}</Text> },
+    { header: "P&L", align: "right", render: (t) => <Text size="sm" fw={700} c={pnlColor(t.pnl)}>{inr(t.pnl)}</Text> },
+    { header: "Side P&L", align: "right", render: (t) => <Text size="sm" c={pnlColor(t.sidePnlAfter)}>{inr(t.sidePnlAfter)}</Text> },
+  ],
+
+  extraPanels: (day) => (
+    <>
+      <BearishSelectionPanel selection={day.selection} />
+      <BearishCandlesPanel legCandles={day.legCandles} trades={day.trades} />
+    </>
+  ),
+};
+
 export const STRATEGY_VIEWS = {
   pivot_option_buying_cum: PIVOT_OPTION_BUYING_CUM,
   nifty_option_pivot_buffer: NIFTY_OPTION_PIVOT_BUFFER,
@@ -304,4 +366,5 @@ export const STRATEGY_VIEWS = {
   nifty_hourly_range_touch: NIFTY_HOURLY_RANGE_TOUCH,
   nifty_hourly_range_touch_1m: NIFTY_HOURLY_RANGE_TOUCH_1M,
   nifty_hourly_range_touch_custom: NIFTY_HOURLY_RANGE_TOUCH_CUSTOM,
+  nifty_bearish_breakout_option_buying: NIFTY_BEARISH_BREAKOUT_OPTION_BUYING,
 };
