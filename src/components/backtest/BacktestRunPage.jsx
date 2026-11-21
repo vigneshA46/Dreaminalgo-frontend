@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Accordion,
   Alert,
@@ -12,6 +12,7 @@ import {
   List,
   Loader,
   Paper,
+  Progress,
   SimpleGrid,
   Stack,
   Table,
@@ -24,6 +25,7 @@ import {
   IconArrowLeft,
   IconArrowRight,
   IconPlayerPlay,
+  IconPlayerStop,
   IconRefresh,
   IconTarget,
   IconTrendingDown,
@@ -520,6 +522,32 @@ const RangeResults = ({ result, config }) => {
   );
 };
 
+const RangeProgress = ({ progress, onStop, stopping }) => {
+  const total = progress?.total || 0;
+  const done = progress?.done || 0;
+  const pct = total ? Math.round((100 * done) / total) : 0;
+  return (
+    <Paper withBorder radius="md" p="md">
+      <Group justify="space-between" mb="xs" wrap="nowrap">
+        <Group gap="xs">
+          <Loader size={16} />
+          <Text fw={600}>
+            {total ? `Day ${Math.min(done + 1, total)} of ${total}` : "Starting…"}
+            {progress?.date ? ` · simulating ${dayjs(progress.date).format("DD MMM")}` : ""}
+          </Text>
+        </Group>
+        <Button size="xs" variant="light" color="red" leftSection={<IconPlayerStop size={14} />} onClick={onStop} disabled={stopping}>
+          {stopping ? "Stopping…" : "Stop"}
+        </Button>
+      </Group>
+      <Progress value={pct} animated radius="xl" />
+      <Text size="xs" c="dimmed" mt={6}>
+        {done} of {total} days finished{progress?.elapsedSec ? ` · ${progress.elapsedSec}s` : ""}. Finished days appear below as they complete — you can open them while the rest runs.
+      </Text>
+    </Paper>
+  );
+};
+
 // --------------------------------------------------
 // Page
 // --------------------------------------------------
@@ -530,6 +558,11 @@ const BacktestRunPage = ({ config }) => {
   const [date, setDate] = useState(null);
   const [toDate, setToDate] = useState(null);
   const range = !!config.dateRange;
+  const [progress, setProgress] = useState(null);
+  const [stopped, setStopped] = useState(false);
+  const [stopping, setStopping] = useState(false);
+  const jobRef = useRef(null);
+  const aliveRef = useRef(true);
   const [options, setOptions] = useState(config.defaultOptions || null);
 
   const [loading, setLoading] = useState(false);
@@ -544,14 +577,93 @@ const BacktestRunPage = ({ config }) => {
   const rangeOk = !range || (toDate && !dayjs(toDate).isBefore(dayjs(date), "day") && dayjs(toDate).diff(dayjs(date), "day") < 31);
   const canRun = date && rangeOk && optionsOk && !loading;
 
+  // session expired: refresh once, then retry (axios directly to keep the server's error message)
+  const authed = async (fn) => {
+    try {
+      return await fn();
+    } catch (err) {
+      if (err.response?.status !== 401) throw err;
+      try {
+        await api.post("/api/auth/refresh");
+      } catch {
+        window.location.href = "/auth/login";
+        throw err;
+      }
+      return fn();
+    }
+  };
+
+  // date range: start a background job, then poll it; finished days show up while the rest runs
+  const runRange = async (day, last) => {
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+    const body = { date: day, toDate: last, ...(options ? { options } : {}) };
+    const started = await authed(() => api.post(`/api/backtest-access/my/start/${config.key}`, body));
+    const id = started.data.jobId;
+    jobRef.current = id;
+    let fails = 0;
+    while (aliveRef.current) {
+      await sleep(2000);
+      let data;
+      try {
+        data = (await authed(() => api.get(`/api/backtest-access/my/jobs/${id}`))).data;
+        fails = 0;
+      } catch (err) {
+        // a few network hiccups are fine, a missing job or a long outage is not
+        if (err.response?.status === 404 || ++fails >= 5) throw err;
+        continue;
+      }
+      if (data.result) setResult(data.result);
+      setProgress({ ...data.progress, elapsedSec: data.elapsedSec });
+      if (data.status === "error") {
+        throw { response: { status: data.error.status, data: { message: data.error.message, errors: data.error.errors, logs: data.error.logs } } };
+      }
+      if (data.status !== "running") {
+        setStopped(data.status === "stopped");
+        break;
+      }
+    }
+    jobRef.current = null;
+  };
+
+  const stopRun = async () => {
+    const id = jobRef.current;
+    if (!id) return;
+    setStopping(true);
+    try {
+      await authed(() => api.post(`/api/backtest-access/my/jobs/${id}/cancel`));
+    } catch {
+      /* the poll will report it */
+    }
+  };
+
+  // leaving the page stops the job, so it does not keep using Dhan calls for nobody
+  useEffect(() => {
+    aliveRef.current = true;
+    return () => {
+      aliveRef.current = false;
+      const id = jobRef.current;
+      if (id) {
+        const stop = (id) => authed(() => api.post(`/api/backtest-access/my/jobs/${id}/cancel`));
+        stop(id).catch(() => {});
+      }
+    };
+  }, []);
+
   const runBacktest = async () => {
     const day = dayjs(date).format("YYYY-MM-DD");
     const last = range ? dayjs(toDate).format("YYYY-MM-DD") : day;
     setLoading(true);
     setError(null);
     setResult(null);
+    setProgress(null);
+    setStopped(false);
+    setStopping(false);
     const url = `/api/backtest-access/my/run/${config.key}`;
     try {
+      if (range) {
+        await runRange(day, last);
+        return;
+      }
       let res;
       try {
         res = await api.post(url, { date: day, ...(range ? { toDate: last } : {}), ...(options ? { options } : {}) });
@@ -647,7 +759,7 @@ const BacktestRunPage = ({ config }) => {
       </Paper>
 
       {/* Loading */}
-      {loading && (
+      {loading && !range && (
         <Paper withBorder radius="md" p="xl" mb="lg">
           <Stack align="center" gap="xs">
             <Loader />
@@ -657,6 +769,12 @@ const BacktestRunPage = ({ config }) => {
             </Text>
           </Stack>
         </Paper>
+      )}
+
+      {loading && range && (
+        <Box mb="lg">
+          <RangeProgress progress={progress} onStop={stopRun} stopping={stopping} />
+        </Box>
       )}
 
       {/* Request error */}
@@ -696,6 +814,12 @@ const BacktestRunPage = ({ config }) => {
       )}
 
       {/* Result */}
+      {range && stopped && !loading && (
+        <Alert color="yellow" radius="md" mb="lg" icon={<IconAlertCircle />} title="Stopped">
+          Showing the {result?.days?.length ?? 0} day(s) that finished before the run was stopped.
+        </Alert>
+      )}
+
       {range && result && <RangeResults result={result} config={config} />}
 
       {!range && result && day?.status === "ok" && (
