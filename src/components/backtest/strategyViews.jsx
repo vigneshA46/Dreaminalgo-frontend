@@ -2,7 +2,7 @@ import React from "react";
 import { Badge, SimpleGrid, Text } from "@mantine/core";
 import { ExitCell, PivotPnlPanel, PriceTime, SideBadge } from "./BacktestRunPage";
 import { inr, pnlColor } from "./backtestUtils";
-import { LevelsTable, TargetsReachedPanel } from "./LevelBreakoutPanels";
+import { LevelsTable, SupertrendPanel, TargetsReachedPanel } from "./LevelBreakoutPanels";
 import { HourlyCyclesPanel } from "./HourlyCyclesPanel";
 import { HourlyOptionsForm } from "./HourlyOptionsForm";
 import { IndexCandlesPanel } from "./IndexCandlesPanel";
@@ -161,13 +161,13 @@ const NIFTY_OPTION_PIVOT_FIXED_TARGET = {
 const NIFTY_OPTION_LEVEL_BREAKOUT = {
   subtitle:
     "ATM from NIFTY 09:15 close. range = prev-day (H − L) × 26.11%, buy above = open + range, T1–T11 every range. " +
-    "5-min close above buy above (first entry: above buy above + 13.06%) → buy 1 lot, SL entry − 20 until T1, then trail on 5-min close below the last target touched.",
+    "5-min close above buy above → buy 1 lot. The only exit is the Supertrend (10, 3) of the option's 5-min chart turning sell (square off 15:14).",
 
   stats: (day, result) => [
     { label: "Day P&L", value: inr(day.dayPnl), color: pnlColor(day.dayPnl) },
     { label: "CE P&L", value: inr(day.ce.pnl), color: pnlColor(day.ce.pnl) },
     { label: "PE P&L", value: inr(day.pe.pnl), color: pnlColor(day.pe.pnl) },
-    { label: "Trades", value: day.totalTrades, sub: `${day.trails} trail · ${day.stopLosses} SL` },
+    { label: "Trades", value: day.totalTrades, sub: `${day.trails} Supertrend exit${day.trails === 1 ? "" : "s"}` },
     {
       label: "Win rate",
       value: `${result.summary?.winRatePct ?? 0}%`,
@@ -182,7 +182,19 @@ const NIFTY_OPTION_LEVEL_BREAKOUT = {
     { header: "Entry", render: (t) => <PriceTime price={t.entryPrice} time={t.entryTime} /> },
     { header: "Exit", render: (t) => <PriceTime price={t.exitPrice} time={t.exitTime} /> },
     { header: "Buy above", render: (t) => t.buyAbove },
-    { header: "Initial SL", render: (t) => <Text size="sm" c="red">{t.initialSl}</Text> },
+    {
+      header: "Supertrend",
+      render: (t) => (
+        <>
+          <Text size="xs">
+            entry: {t.supertrendAtEntry ? `${t.supertrendAtEntry.trend} ${t.supertrendAtEntry.value}` : "-"}
+          </Text>
+          <Text size="xs" c="dimmed">
+            exit: {t.supertrendAtExit ? `${t.supertrendAtExit.trend} ${t.supertrendAtExit.value}` : "-"}
+          </Text>
+        </>
+      ),
+    },
     {
       header: "Targets hit",
       render: (t) => (
@@ -191,7 +203,6 @@ const NIFTY_OPTION_LEVEL_BREAKOUT = {
         </Badge>
       ),
     },
-    { header: "Trail stop", render: (t) => t.trailStop ?? "-" },
     { header: "Exit type", wrap: true, render: (t) => <ExitCell t={t} /> },
     { header: "Points", align: "right", render: (t) => <Text size="sm" c={pnlColor(t.points)}>{t.points}</Text> },
     { header: "P&L", align: "right", render: (t) => <Text size="sm" fw={700} c={pnlColor(t.pnl)}>{inr(t.pnl)}</Text> },
@@ -206,6 +217,7 @@ const NIFTY_OPTION_LEVEL_BREAKOUT = {
           <LevelsTable side="PE" L={day.levels.PE} trades={day.trades} />
         </SimpleGrid>
       )}
+      <SupertrendPanel supertrend={day.supertrend} trades={day.trades} />
       <TargetsReachedPanel byTargetsHit={result.summary?.byTargetsHit} />
     </>
   ),
@@ -335,7 +347,19 @@ const NIFTY_BEARISH_BREAKOUT_OPTION_BUYING = {
         </>
       ),
     },
-    { header: "Initial SL", render: (t) => <Text size="sm" c="red">{t.initialSl}</Text> },
+    {
+      header: "Supertrend",
+      render: (t) => (
+        <>
+          <Text size="xs">
+            entry: {t.supertrendAtEntry ? `${t.supertrendAtEntry.trend} ${t.supertrendAtEntry.value}` : "-"}
+          </Text>
+          <Text size="xs" c="dimmed">
+            exit: {t.supertrendAtExit ? `${t.supertrendAtExit.trend} ${t.supertrendAtExit.value}` : "-"}
+          </Text>
+        </>
+      ),
+    },
     {
       header: "Last stop",
       render: (t) => (

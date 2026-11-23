@@ -1,5 +1,5 @@
 import React from "react";
-import { Group, Paper, Table, Text } from "@mantine/core";
+import { Badge, Group, Paper, Table, Tabs, Text } from "@mantine/core";
 import { SideBadge } from "./BacktestRunPage";
 import { inr, pnlColor } from "./backtestUtils";
 
@@ -30,11 +30,9 @@ export const LevelsTable = ({ side, L, trades }) => {
             <Table.Td fw={600}>Entry</Table.Td>
             <Table.Td ta="right" fw={700} c="blue">
               buy above {L.buyAbove}
-              {L.firstBuyAbove != null && ` (first entry ${L.firstBuyAbove})`}
             </Table.Td>
             <Table.Td ta="right" c="dimmed">
               sell below {L.sellBelow}
-              {L.firstSellBelow != null && ` (${L.firstSellBelow})`}
             </Table.Td>
           </Table.Tr>
           {L.buyTargets.map((v, i) => (
@@ -78,7 +76,7 @@ export const TargetsReachedPanel = ({ byTargetsHit }) => {
         <Table.Tbody>
           {rows.map(([k, v]) => (
             <Table.Tr key={k}>
-              <Table.Td fw={600}>{k === "T0" ? "No target (SL −20 / 15:14)" : k}</Table.Td>
+              <Table.Td fw={600}>{k === "T0" ? "No target touched" : k}</Table.Td>
               <Table.Td ta="right">{v.trades}</Table.Td>
               <Table.Td ta="right" fw={600} c={pnlColor(v.pnl)}>
                 {inr(v.pnl)}
@@ -87,6 +85,99 @@ export const TargetsReachedPanel = ({ byTargetsHit }) => {
           ))}
         </Table.Tbody>
       </Table>
+    </Paper>
+  );
+};
+
+/** The option's 5-min candles with the Supertrend (10, 3) value and trend, flips, and the trades on their candles. */
+export const SupertrendPanel = ({ supertrend, trades = [] }) => {
+  if (!supertrend?.CE?.length) return null;
+  const marks = (side, c) => {
+    const out = [];
+    for (const t of trades.filter((x) => x.side === side)) {
+      if (t.entryTime === c.end) out.push({ key: `in${t.entryTime}`, color: "teal", text: `BUY @ ${t.entryPrice}` });
+      if (t.exitTime === c.end) out.push({ key: `out${t.exitTime}${t.entryTime}`, color: pnlColor(t.pnl), text: `EXIT ${inr(t.pnl)}` });
+    }
+    return out;
+  };
+  return (
+    <Paper withBorder radius="md" p="md">
+      <Text fw={600} mb={2}>
+        Supertrend (10, 3)
+      </Text>
+      <Text size="xs" c="dimmed" mb="sm">
+        5-min candles of each option. The only exit is the trend turning from buy to sell on a candle close; the filled price is the next tick.
+        {supertrend.warmup?.CE ? ` Warmed up on ${supertrend.warmup.CE.candles} (CE) / ${supertrend.warmup.PE?.candles ?? 0} (PE) previous-day candles.` : ""}
+      </Text>
+      <Tabs defaultValue="CE" keepMounted={false}>
+        <Tabs.List mb="sm">
+          {["CE", "PE"].map((s) => (
+            <Tabs.Tab key={s} value={s}>
+              {s}
+            </Tabs.Tab>
+          ))}
+        </Tabs.List>
+        {["CE", "PE"].map((s) => (
+          <Tabs.Panel key={s} value={s}>
+            <Table.ScrollContainer minWidth={640} mah={420}>
+              <Table verticalSpacing={4} fz="sm" striped stickyHeader>
+                <Table.Thead>
+                  <Table.Tr>
+                    <Table.Th>Candle</Table.Th>
+                    <Table.Th ta="right">Open</Table.Th>
+                    <Table.Th ta="right">High</Table.Th>
+                    <Table.Th ta="right">Low</Table.Th>
+                    <Table.Th ta="right">Close</Table.Th>
+                    <Table.Th ta="right">Supertrend</Table.Th>
+                    <Table.Th>Trend</Table.Th>
+                    <Table.Th>Trades</Table.Th>
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>
+                  {supertrend[s].map((c) => {
+                    const m = marks(s, c);
+                    return (
+                      <Table.Tr key={c.time} bg={c.flip || m.length ? "var(--mantine-color-yellow-0)" : undefined}>
+                        <Table.Td style={{ whiteSpace: "nowrap" }}>
+                          {c.time} – {c.end}
+                        </Table.Td>
+                        <Table.Td ta="right">{c.open}</Table.Td>
+                        <Table.Td ta="right">{c.high}</Table.Td>
+                        <Table.Td ta="right">{c.low}</Table.Td>
+                        <Table.Td ta="right" fw={600}>
+                          {c.close}
+                        </Table.Td>
+                        <Table.Td ta="right" c="dimmed">
+                          {c.supertrend ?? "-"}
+                        </Table.Td>
+                        <Table.Td>
+                          {c.trend ? (
+                            <Badge size="xs" variant="light" color={c.trend === "buy" ? "teal" : "red"}>
+                              {c.trend}
+                              {c.flip ? ` · ${c.flip}` : ""}
+                            </Badge>
+                          ) : (
+                            "-"
+                          )}
+                        </Table.Td>
+                        <Table.Td>
+                          <Group gap={4} wrap="wrap">
+                            {m.map((x) => (
+                              <Badge key={x.key} size="xs" variant="light" color={x.color}>
+                                {x.text}
+                              </Badge>
+                            ))}
+                          </Group>
+                        </Table.Td>
+                      </Table.Tr>
+                    );
+                  })}
+                </Table.Tbody>
+              </Table>
+            </Table.ScrollContainer>
+          </Tabs.Panel>
+        ))}
+      </Tabs>
     </Paper>
   );
 };
