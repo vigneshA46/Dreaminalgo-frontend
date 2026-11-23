@@ -363,6 +363,7 @@ const NIFTY_BEARISH_BREAKOUT_OPTION_BUYING = {
 
 // ---------- nifty_hull_ma_option_buying ----------
 const NIFTY_HULL_MA_OPTION_BUYING = {
+  dateRange: true,
   subtitle:
     "Hull MA 24 on NIFTY candles (your timeframe). The colour at 09:30 is the starting colour; every later candle close with a new colour is a signal — " +
     "green buys CE, red buys PE (ATM or ITM1–ITM5 from that candle's close), and the other side is closed. 1 lot, optional day MTM target and day MTM SL, square off 15:14.",
