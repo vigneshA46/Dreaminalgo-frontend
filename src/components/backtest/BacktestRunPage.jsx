@@ -11,6 +11,7 @@ import {
   Group,
   List,
   Loader,
+  Modal,
   Paper,
   Progress,
   SimpleGrid,
@@ -401,8 +402,19 @@ const dayResult = (day, result) => {
   };
 };
 
+/** the settings a saved day was run with, as one short line */
+const savedSettingsText = (p) => {
+  if (!p) return "";
+  const bits = [];
+  if (p.candleMinutes) bits.push(`${p.candleMinutes}-min`);
+  if (typeof p.strike === "string") bits.push(p.strike.split(" from ")[0]);
+  if (p.dayTarget) bits.push(`day target ${inr(p.dayTarget)}`);
+  if (p.dayMaxLoss) bits.push(`day SL ${inr(p.dayMaxLoss)}`);
+  return bits.join(" · ");
+};
+
 /** Overall numbers of a multi-day run + each day as a collapsible row headed by its day P&L. */
-const RangeResults = ({ result, config }) => {
+export const RangeResults = ({ result, config }) => {
   const sm = result.summary;
   const days = result.days || [];
   const tiles = sm
@@ -429,7 +441,7 @@ const RangeResults = ({ result, config }) => {
               Overall · {days[0]?.date && dayjs(days[0].date).format("DD MMM")} – {days.length && dayjs(days[days.length - 1].date).format("DD MMM YYYY")}
             </Text>
             <Text size="xs" c="dimmed">
-              {result.meta?.durationSec}s
+              {result.meta?.durationSec ? `${result.meta.durationSec}s` : ""}
             </Text>
           </Group>
           <SimpleGrid cols={{ base: 2, sm: 3, lg: 5 }} spacing="md">
@@ -478,6 +490,13 @@ const RangeResults = ({ result, config }) => {
                   </Group>
                 </Accordion.Control>
                 <Accordion.Panel>
+                  {d.saved && (
+                    <Text size="xs" c="dimmed" mb="sm">
+                      Saved {dayjs(d.saved.at).format("DD MMM YYYY, HH:mm")}
+                      {d.saved.by ? ` by ${d.saved.by}` : ""}
+                      {savedSettingsText(d.saved.settings) ? ` · ${savedSettingsText(d.saved.settings)}` : ""}
+                    </Text>
+                  )}
                   <DayDetails day={d} result={dayResult(d, result)} config={config} />
                 </Accordion.Panel>
               </Accordion.Item>
@@ -564,6 +583,8 @@ const BacktestRunPage = ({ config }) => {
   const [stopped, setStopped] = useState(false);
   const [stopping, setStopping] = useState(false);
   const jobRef = useRef(null);
+  // saving (users with write rights): idle | saving | saved | error | conflict
+  const [save, setSave] = useState({ phase: "idle" });
   const aliveRef = useRef(true);
   const [options, setOptions] = useState(config.defaultOptions || null);
 
@@ -595,6 +616,27 @@ const BacktestRunPage = ({ config }) => {
     }
   };
 
+  // write rights: the server keeps its own copy of what was just run; ask it to save it (one version per day)
+  const doSave = async (token, replace) => {
+    setSave({ phase: "saving" });
+    try {
+      const res = await authed(() => api.post(`/api/backtest-access/my/save/${config.key}`, { token, ...(replace === undefined ? {} : { replace }) }));
+      const d = res.data;
+      if (d.status === "conflicts") setSave({ phase: "conflict", token, conflicts: d.conflicts, newDays: d.newDays, total: d.total });
+      else setSave({ phase: "saved", saved: d.saved, replaced: d.replaced, skipped: d.skipped });
+    } catch (err) {
+      setSave({ phase: "error", message: err.response?.data?.message || err.message || "Could not save the backtest" });
+    }
+  };
+  const autoSave = (token) => {
+    if (config.canWrite && token) doSave(token);
+  };
+  const keepOld = () => {
+    if (save.phase !== "conflict") return;
+    if (save.newDays > 0) doSave(save.token, false);
+    else setSave({ phase: "saved", saved: 0, replaced: 0, skipped: save.conflicts.length });
+  };
+
   // date range: start a background job, then poll it; finished days show up while the rest runs
   const runRange = async (day, last) => {
     const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -603,6 +645,7 @@ const BacktestRunPage = ({ config }) => {
     const id = started.data.jobId;
     jobRef.current = id;
     let fails = 0;
+    let finished = false;
     while (aliveRef.current) {
       await sleep(2000);
       let data;
@@ -621,10 +664,12 @@ const BacktestRunPage = ({ config }) => {
       }
       if (data.status !== "running") {
         setStopped(data.status === "stopped");
+        finished = true;
         break;
       }
     }
     jobRef.current = null;
+    if (finished) autoSave(id);
   };
 
   const stopRun = async () => {
@@ -662,6 +707,7 @@ const BacktestRunPage = ({ config }) => {
     setProgress(null);
     setStopped(false);
     setStopping(false);
+    setSave({ phase: "idle" });
     const url = `/api/backtest-access/my/run/${config.key}`;
     try {
       if (asRange) {
@@ -683,6 +729,7 @@ const BacktestRunPage = ({ config }) => {
         res = await api.post(url, { date: day, ...(options ? { options } : {}) });
       }
       setResult(res.data);
+      autoSave(res.data.saveToken);
     } catch (err) {
       const data = err.response?.data;
       setError({
@@ -779,6 +826,50 @@ const BacktestRunPage = ({ config }) => {
           <RangeProgress progress={progress} onStop={stopRun} stopping={stopping} />
         </Box>
       )}
+
+      {/* Saving (write rights) */}
+      {save.phase === "saving" && (
+        <Alert color="blue" radius="md" mb="lg" icon={<Loader size={16} />}>
+          Saving this backtest…
+        </Alert>
+      )}
+      {save.phase === "saved" && (
+        <Alert color="teal" radius="md" mb="lg" title="Backtest saved">
+          {save.saved > 0
+            ? `${save.saved} day${save.saved === 1 ? "" : "s"} saved${save.replaced ? ` (${save.replaced} replaced)` : ""}${save.skipped ? `, ${save.skipped} already saved day${save.skipped === 1 ? "" : "s"} kept` : ""}.`
+            : "Nothing new to save — these days were already saved and kept as they are."}
+        </Alert>
+      )}
+      {save.phase === "error" && (
+        <Alert color="red" radius="md" mb="lg" icon={<IconAlertCircle />} title="Could not save">
+          {save.message}
+        </Alert>
+      )}
+      <Modal opened={save.phase === "conflict"} onClose={keepOld} title={<Text fw={700}>Replace the saved data?</Text>} centered>
+        {save.phase === "conflict" && (
+          <Stack gap="sm">
+            <Text size="sm">
+              {save.conflicts.length} of {save.total} day{save.total === 1 ? "" : "s"} in this run {save.conflicts.length === 1 ? "is" : "are"} already saved for this strategy:
+            </Text>
+            <Text size="sm" fw={600}>
+              {save.conflicts.slice(0, 12).map((d) => dayjs(d).format("DD MMM")).join(", ")}
+              {save.conflicts.length > 12 ? ` … +${save.conflicts.length - 12} more` : ""}
+            </Text>
+            <Text size="sm" c="dimmed">
+              Replace deletes the old saved data of those days and saves this run instead.
+              {save.newDays > 0 ? ` The other ${save.newDays} day${save.newDays === 1 ? "" : "s"} will be saved either way.` : ""}
+            </Text>
+            <Group justify="flex-end" mt="xs">
+              <Button variant="default" onClick={keepOld}>
+                No, keep the old data
+              </Button>
+              <Button color="red" onClick={() => doSave(save.token, true)}>
+                Yes, replace
+              </Button>
+            </Group>
+          </Stack>
+        )}
+      </Modal>
 
       {/* Request error */}
       {error && (
