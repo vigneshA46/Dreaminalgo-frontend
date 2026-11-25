@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Accordion,
   Alert,
@@ -37,6 +37,7 @@ import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 import api from "../../utils/api";
 import { exitColor, inr, pnlColor } from "./backtestUtils";
+import { DayCharts, LazyDayCharts } from "./DayCharts";
 import "@mantine/core/styles.css";
 import "@mantine/dates/styles.css";
 
@@ -322,8 +323,11 @@ const LogLines = ({ logs }) => (
 // One day's stats, legs, P&L curve, trades and strategy panels (used by single-day and range views)
 // --------------------------------------------------
 
-const DayDetails = ({ day, result, config }) => (
+const DayDetails = ({ day, result, config, loadCharts, chartsOpen }) => (
   <Stack gap="lg" miw={0}>
+    {/* charts of the day: with a single-day result, or fetched when a day of a range run is opened */}
+    {day.charts ? <DayCharts charts={day.charts} /> : loadCharts && chartsOpen ? <LazyDayCharts date={day.date} load={loadCharts} /> : null}
+
     <SimpleGrid cols={{ base: 2, sm: 3, lg: 6 }} spacing="md">
       {config.stats(day, result).map((s) => (
         <Stat key={s.label} {...s} />
@@ -402,19 +406,54 @@ const dayResult = (day, result) => {
   };
 };
 
-/** the settings a saved day was run with, as one short line */
-const savedSettingsText = (p) => {
-  if (!p) return "";
-  const bits = [];
-  if (p.candleMinutes) bits.push(`${p.candleMinutes}-min`);
-  if (typeof p.strike === "string") bits.push(p.strike.split(" from ")[0]);
-  if (p.dayTarget) bits.push(`day target ${inr(p.dayTarget)}`);
-  if (p.dayMaxLoss) bits.push(`day SL ${inr(p.dayMaxLoss)}`);
-  return bits.join(" · ");
+/** the configs a saved day was run with: the main ones as chips, everything else on request */
+const SavedConfigs = ({ saved }) => {
+  const [open, setOpen] = useState(false);
+  const c = saved?.configs;
+  const chips = [];
+  if (c) {
+    if (c.timeframeMinutes) chips.push(`${c.timeframeMinutes}-min candles`);
+    if (c.strike) chips.push(`Strike ${c.strike}`);
+    if (c.daySl) chips.push(`Day SL ${inr(c.daySl)}`);
+    if (c.dayMtmTarget) chips.push(`Day MTM target ${inr(c.dayMtmTarget)}`);
+    if (c.cycleSl) chips.push(`Cycle SL ${inr(c.cycleSl)}`);
+    if (c.cycleProfit) chips.push(`Cycle profit ${inr(c.cycleProfit)}`);
+    if (c.tradeProfit) chips.push(`Trade profit ${inr(c.tradeProfit)}`);
+    if (c.touchBufferPoints !== undefined) chips.push(`Touch buffer ${c.touchBufferPoints} pts`);
+    if (c.lotSize) chips.push(`Lot size ${c.lotSize}`);
+    if (c.squareOff) chips.push(`Square off ${c.squareOff}`);
+  }
+  return (
+    <Stack gap={6} mb="sm">
+      <Text size="xs" c="dimmed">
+        Saved {dayjs(saved.at).format("DD MMM YYYY, HH:mm")}
+        {saved.by ? ` by ${saved.by}` : ""}
+      </Text>
+      {c && (
+        <>
+          <Group gap={6}>
+            <Text size="xs" fw={600}>
+              Configs
+            </Text>
+            {chips.map((x) => (
+              <Badge key={x} size="sm" variant="light" color="gray" tt="none">
+                {x}
+              </Badge>
+            ))}
+            <Anchor size="xs" onClick={() => setOpen((v) => !v)}>
+              {open ? "Hide all configs" : "All configs"}
+            </Anchor>
+          </Group>
+          {open && <Code block>{JSON.stringify({ ...(c.options ? { options: c.options } : {}), params: c.params }, null, 2)}</Code>}
+        </>
+      )}
+    </Stack>
+  );
 };
 
 /** Overall numbers of a multi-day run + each day as a collapsible row headed by its day P&L. */
-export const RangeResults = ({ result, config }) => {
+export const RangeResults = ({ result, config, chartsLoader }) => {
+  const [openDay, setOpenDay] = useState(null);
   const sm = result.summary;
   const days = result.days || [];
   const tiles = sm
@@ -467,7 +506,7 @@ export const RangeResults = ({ result, config }) => {
 
       <Stack gap="xs" miw={0}>
         <Text fw={600}>Days ({days.length})</Text>
-        <Accordion variant="separated" radius="md" chevronPosition="left">
+        <Accordion variant="separated" radius="md" chevronPosition="left" value={openDay} onChange={setOpenDay}>
           {days.map((d) =>
             d.status === "ok" ? (
               <Accordion.Item key={d.date} value={d.date}>
@@ -490,14 +529,8 @@ export const RangeResults = ({ result, config }) => {
                   </Group>
                 </Accordion.Control>
                 <Accordion.Panel>
-                  {d.saved && (
-                    <Text size="xs" c="dimmed" mb="sm">
-                      Saved {dayjs(d.saved.at).format("DD MMM YYYY, HH:mm")}
-                      {d.saved.by ? ` by ${d.saved.by}` : ""}
-                      {savedSettingsText(d.saved.settings) ? ` · ${savedSettingsText(d.saved.settings)}` : ""}
-                    </Text>
-                  )}
-                  <DayDetails day={d} result={dayResult(d, result)} config={config} />
+                  {d.saved && <SavedConfigs saved={d.saved} />}
+                  <DayDetails day={d} result={dayResult(d, result)} config={config} loadCharts={chartsLoader} chartsOpen={openDay === d.date} />
                 </Accordion.Panel>
               </Accordion.Item>
             ) : (
@@ -583,6 +616,7 @@ const BacktestRunPage = ({ config }) => {
   const [stopped, setStopped] = useState(false);
   const [stopping, setStopping] = useState(false);
   const jobRef = useRef(null);
+  const [lastJobId, setLastJobId] = useState(null); // charts of a range run's days are fetched with this id
   // saving (users with write rights): idle | saving | saved | error | conflict
   const [save, setSave] = useState({ phase: "idle" });
   const aliveRef = useRef(true);
@@ -644,6 +678,7 @@ const BacktestRunPage = ({ config }) => {
     const started = await authed(() => api.post(`/api/backtest-access/my/start/${config.key}`, body));
     const id = started.data.jobId;
     jobRef.current = id;
+    setLastJobId(id);
     let fails = 0;
     let finished = false;
     while (aliveRef.current) {
@@ -671,6 +706,8 @@ const BacktestRunPage = ({ config }) => {
     jobRef.current = null;
     if (finished) autoSave(id);
   };
+
+  const loadCharts = useCallback(async (date) => (await authed(() => api.get(`/api/backtest-access/my/jobs/${lastJobId}/charts/${date}`))).data.charts, [lastJobId]);
 
   const stopRun = async () => {
     const id = jobRef.current;
@@ -914,7 +951,7 @@ const BacktestRunPage = ({ config }) => {
         </Alert>
       )}
 
-      {ranAsRange && result && <RangeResults result={result} config={config} />}
+      {ranAsRange && result && <RangeResults result={result} config={config} chartsLoader={lastJobId ? loadCharts : undefined} />}
 
       {!ranAsRange && result && day?.status === "ok" && (
         <Stack gap="lg">
