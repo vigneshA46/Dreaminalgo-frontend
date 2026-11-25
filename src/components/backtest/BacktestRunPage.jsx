@@ -558,6 +558,8 @@ const BacktestRunPage = ({ config }) => {
   const [date, setDate] = useState(null);
   const [toDate, setToDate] = useState(null);
   const range = !!config.dateRange;
+  // what the LAST run was: a date range (background job, day dropdowns) or one day (full day view)
+  const [ranAsRange, setRanAsRange] = useState(false);
   const [progress, setProgress] = useState(null);
   const [stopped, setStopped] = useState(false);
   const [stopping, setStopping] = useState(false);
@@ -574,7 +576,7 @@ const BacktestRunPage = ({ config }) => {
   const isWeekend = (d) => [0, 6].includes(dayjs(d).day());
 
   const optionsOk = !options || !config.optionsValid || config.optionsValid(options);
-  const rangeOk = !range || (toDate && !dayjs(toDate).isBefore(dayjs(date), "day") && dayjs(toDate).diff(dayjs(date), "day") < 31);
+  const rangeOk = !range || !toDate || (!dayjs(toDate).isBefore(dayjs(date), "day") && dayjs(toDate).diff(dayjs(date), "day") < 31); // no To date = one day
   const canRun = date && rangeOk && optionsOk && !loading;
 
   // session expired: refresh once, then retry (axios directly to keep the server's error message)
@@ -651,7 +653,9 @@ const BacktestRunPage = ({ config }) => {
 
   const runBacktest = async () => {
     const day = dayjs(date).format("YYYY-MM-DD");
-    const last = range ? dayjs(toDate).format("YYYY-MM-DD") : day;
+    const last = range && toDate ? dayjs(toDate).format("YYYY-MM-DD") : day;
+    const asRange = range && last !== day;
+    setRanAsRange(asRange);
     setLoading(true);
     setError(null);
     setResult(null);
@@ -660,13 +664,13 @@ const BacktestRunPage = ({ config }) => {
     setStopping(false);
     const url = `/api/backtest-access/my/run/${config.key}`;
     try {
-      if (range) {
+      if (asRange) {
         await runRange(day, last);
         return;
       }
       let res;
       try {
-        res = await api.post(url, { date: day, ...(range ? { toDate: last } : {}), ...(options ? { options } : {}) });
+        res = await api.post(url, { date: day, ...(options ? { options } : {}) });
       } catch (err) {
         // session expired: refresh once, then retry (axios directly to keep the server's error message)
         if (err.response?.status !== 401) throw err;
@@ -676,7 +680,7 @@ const BacktestRunPage = ({ config }) => {
           window.location.href = "/auth/login";
           return;
         }
-        res = await api.post(url, { date: day, ...(range ? { toDate: last } : {}), ...(options ? { options } : {}) });
+        res = await api.post(url, { date: day, ...(options ? { options } : {}) });
       }
       setResult(res.data);
     } catch (err) {
@@ -735,7 +739,6 @@ const BacktestRunPage = ({ config }) => {
               minDate={date ? dayjs(date).format("YYYY-MM-DD") : minDate}
               maxDate={yesterday}
               excludeDate={isWeekend}
-              required
               clearable
             />
           )}
@@ -754,24 +757,24 @@ const BacktestRunPage = ({ config }) => {
           </Box>
         )}
         <Text size="xs" c="dimmed" mt="sm">
-          Pick any weekday up to yesterday{range ? " (a range of up to 31 days)" : ""}. The backtest runs on 1-minute NIFTY option data for that day.
+          Pick any weekday up to yesterday{range ? " (a range of up to 31 days; leave To date empty for one day with full details)" : ""}. The backtest runs on 1-minute NIFTY option data for that day.
         </Text>
       </Paper>
 
       {/* Loading */}
-      {loading && !range && (
+      {loading && !ranAsRange && (
         <Paper withBorder radius="md" p="xl" mb="lg">
           <Stack align="center" gap="xs">
             <Loader />
-            <Text fw={500}>{range ? "Loading option data and simulating each day…" : "Loading option data and simulating the day…"}</Text>
+            <Text fw={500}>Loading option data and simulating the day…</Text>
             <Text size="sm" c="dimmed">
-              {range ? "About 20–40 seconds per trading day, so a month takes several minutes — keep this tab open" : "Usually 10–30 seconds"}
+              Usually 10–30 seconds
             </Text>
           </Stack>
         </Paper>
       )}
 
-      {loading && range && (
+      {loading && ranAsRange && (
         <Box mb="lg">
           <RangeProgress progress={progress} onStop={stopRun} stopping={stopping} />
         </Box>
@@ -802,27 +805,27 @@ const BacktestRunPage = ({ config }) => {
       )}
 
       {/* Day not traded (holiday / skipped / data error) */}
-      {!range && result && day && day.status !== "ok" && (
+      {!ranAsRange && result && day && day.status !== "ok" && (
         <Alert color={day.status === "holiday" ? "yellow" : "red"} radius="md" mb="lg" icon={<IconAlertCircle />} title={`${day.date} (${day.day}) — ${day.status}`}>
           {day.message}
         </Alert>
       )}
-      {!range && result && !day && (
+      {!ranAsRange && result && !day && (
         <Alert color="yellow" radius="md" mb="lg" icon={<IconAlertCircle />} title="No trading day in this selection">
           The selected date returned no data.
         </Alert>
       )}
 
       {/* Result */}
-      {range && stopped && !loading && (
+      {ranAsRange && stopped && !loading && (
         <Alert color="yellow" radius="md" mb="lg" icon={<IconAlertCircle />} title="Stopped">
           Showing the {result?.days?.length ?? 0} day(s) that finished before the run was stopped.
         </Alert>
       )}
 
-      {range && result && <RangeResults result={result} config={config} />}
+      {ranAsRange && result && <RangeResults result={result} config={config} />}
 
-      {!range && result && day?.status === "ok" && (
+      {!ranAsRange && result && day?.status === "ok" && (
         <Stack gap="lg">
           <Group justify="space-between">
             <Group gap="xs">
