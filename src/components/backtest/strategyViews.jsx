@@ -12,8 +12,8 @@ import { HullCandlesPanel } from "./HullCandlesPanel";
 import { HullOptionsForm } from "./HullOptionsForm";
 import { HULL_DEFAULT_OPTIONS, hullOptionsValid } from "./hullOptions";
 import { EmaCandlesPanel } from "./EmaCandlesPanel";
-import { EmaOptionsForm, EmaRejectionOptionsForm, EmaSupertrendOptionsForm, SupertrendEma1minOptionsForm } from "./EmaOptionsForm";
-import { EMA_DEFAULT_OPTIONS, ST1M_DEFAULT_OPTIONS, emaOptionsValid } from "./emaOptions";
+import { EmaOptionsForm, EmaRejectionOptionsForm, EmaSupertrendOptionsForm, SupertrendEma1minOptionsForm, PivotCumOptionsForm } from "./EmaOptionsForm";
+import { EMA_DEFAULT_OPTIONS, ST1M_DEFAULT_OPTIONS, PIVOT_CUM_DEFAULT_OPTIONS, emaOptionsValid } from "./emaOptions";
 
 /*
  * How each backtest's result is shown (stat tiles, trade-table columns, extra panels).
@@ -22,7 +22,12 @@ import { EMA_DEFAULT_OPTIONS, ST1M_DEFAULT_OPTIONS, emaOptionsValid } from "./em
 
 // ---------- pivot_option_buying_cum ----------
 const PIVOT_OPTION_BUYING_CUM = {
-  subtitle: "Runs one trading day on Dhan expired-options 1-minute data with your Dhan credentials",
+  subtitle:
+    "Pivot option buying with cumulative side targets on Dhan expired-options 1-minute data. Pick one date or a range (a range shows overall analysis with one dropdown per day). The candle timeframe sets the option candles the candle-close entry and stop loss read; day MTM target and SL can each be switched on or off (SL default −₹13,000).",
+  dateRange: true,
+  defaultOptions: PIVOT_CUM_DEFAULT_OPTIONS,
+  OptionsForm: PivotCumOptionsForm,
+  optionsValid: emaOptionsValid,
 
   stats: (day, result) => [
     { label: "Day P&L", value: inr(day.dayPnl), color: pnlColor(day.dayPnl) },
