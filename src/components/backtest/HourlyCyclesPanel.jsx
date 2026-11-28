@@ -8,6 +8,7 @@ const stopColor = { "MAX LOSS": "red", "MAX PROFIT": "teal" };
  *  params = the run's params (cycle limits / max entries), so the panel fits every version. */
 export const HourlyCyclesPanel = ({ cycles, params }) => {
   if (!cycles?.length) return null;
+  const openClose = params?.rangeMode === "OPEN_CLOSE";
   const maxEntries = typeof params?.maxEntriesPerCycle === "number" ? params.maxEntriesPerCycle : null;
   const rules = [];
   if (params?.cycleMaxLoss != null) rules.push(`at ${inr(params.cycleMaxLoss)}`);
@@ -19,7 +20,7 @@ export const HourlyCyclesPanel = ({ cycles, params }) => {
   return (
     <Paper withBorder radius="md" p="md">
       <Text fw={600} mb="sm">
-        Hourly cycles
+        Hourly cycles{openClose ? " (range = hour's open / close)" : ""}
       </Text>
       <Table.ScrollContainer minWidth={720}>
         <Table verticalSpacing="xs" fz="sm" striped>
@@ -27,8 +28,10 @@ export const HourlyCyclesPanel = ({ cycles, params }) => {
             <Table.Tr>
               <Table.Th>Cycle</Table.Th>
               <Table.Th>NIFTY range</Table.Th>
-              <Table.Th ta="right">High</Table.Th>
-              <Table.Th ta="right">Low</Table.Th>
+              {openClose && <Table.Th ta="right">Open</Table.Th>}
+              {openClose && <Table.Th ta="right">Close</Table.Th>}
+              <Table.Th ta="right">{openClose ? "Upper" : "High"}</Table.Th>
+              <Table.Th ta="right">{openClose ? "Lower" : "Low"}</Table.Th>
               <Table.Th>Trades in</Table.Th>
               <Table.Th ta="right">Entries</Table.Th>
               <Table.Th ta="right">Cycle P&L</Table.Th>
@@ -40,6 +43,8 @@ export const HourlyCyclesPanel = ({ cycles, params }) => {
               <Table.Tr key={c.cycle}>
                 <Table.Td fw={700}>C{c.cycle}</Table.Td>
                 <Table.Td>{c.range.join(" – ")}</Table.Td>
+                {openClose && <Table.Td ta="right">{c.open ?? "-"}</Table.Td>}
+                {openClose && <Table.Td ta="right">{c.close ?? "-"}</Table.Td>}
                 <Table.Td ta="right" c="teal">
                   {c.high ?? "-"}
                 </Table.Td>

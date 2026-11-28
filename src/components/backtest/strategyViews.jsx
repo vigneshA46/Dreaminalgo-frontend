@@ -322,6 +322,12 @@ const NIFTY_HOURLY_RANGE_TOUCH_CUSTOM = {
   ),
 };
 
+// ---------- nifty_hourly_open_close_touch (custom view, range = hour's open / close) ----------
+const NIFTY_HOURLY_OPEN_CLOSE_TOUCH = {
+  ...NIFTY_HOURLY_RANGE_TOUCH_CUSTOM,
+  subtitle: "NIFTY hourly Open / Close (first 5 hours; upper = the larger of the hour's open and close, lower = the smaller), each traded in the next hour, with your settings below. Line touch → candle close beyond it with line < avg < close → CE / PE at the chosen strike (ATM / ITM / OTM), 1 lot. Exits: candle close back through the entry line, a NIFTY touch of the cycle's other line (that line stays armed for the next entry in the same cycle) or the limits below. A line counts as touched within the touch buffer and stays touched until an entry uses it; after a stop loss that line stays armed, after a target a fresh touch is needed. No entry limit. Pick one date or a range; a range shows overall analysis with one dropdown per day.",
+};
+
 // ---------- nifty_bearish_breakout_option_buying ----------
 const NIFTY_BEARISH_BREAKOUT_OPTION_BUYING = {
   subtitle:
@@ -837,6 +843,7 @@ export const STRATEGY_VIEWS = {
   nifty_hourly_range_touch: NIFTY_HOURLY_RANGE_TOUCH,
   nifty_hourly_range_touch_1m: NIFTY_HOURLY_RANGE_TOUCH_1M,
   nifty_hourly_range_touch_custom: NIFTY_HOURLY_RANGE_TOUCH_CUSTOM,
+  nifty_hourly_open_close_touch: NIFTY_HOURLY_OPEN_CLOSE_TOUCH,
   nifty_bearish_breakout_option_buying: NIFTY_BEARISH_BREAKOUT_OPTION_BUYING,
   nifty_hull_ma_option_buying: NIFTY_HULL_MA_OPTION_BUYING,
   nifty_ema_crossover_retest_option_buying: NIFTY_EMA_CROSSOVER_RETEST_OPTION_BUYING,
